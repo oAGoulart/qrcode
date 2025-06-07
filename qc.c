@@ -452,7 +452,6 @@ main()
     |byte 1   |byte 2   |byte 3    to 19 |
   */
   uint8_t bitstream[DATA_LEN];
-  memset(&bitstream[0], 0, DATA_LEN);
   bitstream[0] = (GEN_MODE << 4) | (uint8_t)(count >> 4);
   bitstream[1] = (uint8_t)count << 4;
   uint16_t i = 0;
@@ -461,6 +460,7 @@ main()
     bitstream[i + 1] |= (uint8_t)str[i] >> 4;
     bitstream[i + 2] |= (uint8_t)str[i] << 4;
   }
+  memset(&bitstream[i + 2], 0, DATA_LEN - (i + 2));
 
   // initialize error-correction codes bits
   uint8_t ecc[DATA_LEN];
