@@ -525,7 +525,6 @@ main()
   }
 
   // calculate each mask's penalty scores
-  // FIXME: incorrect calculations
   uint16_t final_scores[NUM_MASKS];
   uint16_t min_score = 0;
   for (i = 0; i < NUM_MASKS; i++)
