@@ -186,20 +186,22 @@ mask_ht[NUM_MASKS][BIT_COUNT] = {
   }
 };
 
+// NOTE: 15 bits each
 static const uint16_t
 maskinfo[NUM_MASKS] = {
-  30660, 29427, 32170, 30877, 26159, 25368, 27713, 26998
+  30660,29427,32170,30877,26159,25368,27713,26998
 };
 
+// NOTE: maskinfo is duplicated into two different positions
 static const uint16_t
 maskinfo_ht[2][MASKINFO_LEN] = {
   {
-    168, 169, 170, 171, 172, 173, 175, 176,
-    155, 113, 92, 71, 50, 29, 8
+    168,169,170,171,172,173,175,176,
+    155,113,92,71,50,29,8
   },
   {
-    428, 407, 386, 365, 344, 323, 302,
-    181, 182, 183, 184, 185, 186, 187, 188
+    428,407,386,365,344,323,302,
+    181,182,183,184,185,186,187,188
   }
 };
 
@@ -208,7 +210,7 @@ bitmask[8] = {
   128,64,32,16,8,4,2,1
 };
 
-struct qrmask_t {
+struct qrmask_s {
   uint8_t mask[MATRIX_COUNT];
   uint16_t dark_modules;
   uint16_t light_modules;
@@ -323,14 +325,14 @@ module_penalty(uint8_t* matrix)
   {
     uint16_t row = i * MATRIX_ORDER;
     uint16_t j = 0;
-    // row direction >>>
+    // Step 1: row direction >>>
     for (; j < MATRIX_ORDER - 1; j++)
     {
       uint8_t* module = &matrix[row + j];
       uint8_t* next = &matrix[row + j + 1];
       if (*module == *next)
       {
-        // square penalty
+        // NOTE: square penalty
         if (i < MATRIX_ORDER - 1) {
           if (*(module + MATRIX_ORDER) == *module &&
               *(next + MATRIX_ORDER) == *module)
@@ -338,7 +340,7 @@ module_penalty(uint8_t* matrix)
             penalty += 3;
           }
         }
-        // sequential line penalty (row)
+        // NOTE: sequential line penalty (row)
         if (j < MATRIX_ORDER - 4)
         {
           uint16_t count = j;
@@ -350,7 +352,7 @@ module_penalty(uint8_t* matrix)
           }
         }
       }
-      // pattern penalty (row)
+      // NOTE: pattern penalty (row)
       if (j < MATRIX_ORDER - 10)
       {
         if (*module == 0 && *next == 0)
@@ -377,14 +379,14 @@ module_penalty(uint8_t* matrix)
         }
       }
     }
-    // column direction vvv
+    // Step 2: column direction vvv
     for (j = 0; j < MATRIX_COUNT - (4 * MATRIX_ORDER); j += MATRIX_ORDER)
     {
       uint8_t* module = &matrix[i + j];
       uint8_t* next = &matrix[i + j + MATRIX_ORDER];
       if (*module == *next)
       {
-        // sequential line penalty (column)
+        // NOTE: sequential line penalty (column)
         uint16_t count = j;
         for (; *(next + j) == *module; j += MATRIX_ORDER);
         count = (uint16_t)floor((j - count) / MATRIX_ORDER);
@@ -393,7 +395,7 @@ module_penalty(uint8_t* matrix)
           penalty += (uint16_t)(3 + (count - 5));
         }
       }
-      // pattern penalty (column)
+      // NOTE: pattern penalty (column)
       if (j < MATRIX_COUNT - (10 * MATRIX_ORDER))
       {
         if (*module == 0 && *next == 0)
@@ -446,11 +448,10 @@ main()
     return -1;
   }
 
-  /* initialize data bits
-    |mode|    count|                 data|
-    |0100 0000|0000 0000|0000 0000 . . . |
-    |byte 1   |byte 2   |byte 3    to 19 |
-  */
+  // Step 1: initialize data bits
+  //         |mode|    count|                 data|
+  //         |0100 0000|0000 0000|0000 0000 . . . |
+  //         |byte 1   |byte 2   |byte 3    to 19 |
   uint8_t bitstream[DATA_LEN];
   bitstream[0] = (GEN_MODE << 4) | (uint8_t)(count >> 4);
   bitstream[1] = (uint8_t)count << 4;
@@ -462,11 +463,12 @@ main()
   }
   memset(&bitstream[i + 2], 0, DATA_LEN - (i + 2));
 
-  // initialize error-correction codes bits
+  // Step 2: initialize error-correction codes
   uint8_t ecc[DATA_LEN];
   memcpy(&ecc[0], &bitstream[0], DATA_LEN);
 
-  // NOTE: long division loop
+  // Step 3: polynomial division (long division)
+  //         using Galois field arithmetic
   for (i = 0; i < DATA_LEN; i++)
   {
     uint8_t lead = ecc[0];
@@ -482,13 +484,13 @@ main()
     }
   }
   
-  // concatenate data and error-correction codes
+  // Step 4: concatenate data and error-correction codes
   uint8_t final_bits[DATA_LEN + ECC_LEN];
   memcpy(&final_bits[0], &bitstream[0], DATA_LEN);
   memcpy(&final_bits[DATA_LEN], &ecc[0], ECC_LEN);
 
-  // initialize masks
-  struct qrmask_t masks[NUM_MASKS];
+  // Step 5: initialize masks
+  struct qrmask_s masks[NUM_MASKS];
   for (i = 0; i < NUM_MASKS; i++)
   {
     memcpy(&(masks[i].mask[0]), &qr_ht[0], MATRIX_COUNT);
@@ -496,7 +498,7 @@ main()
     masks[i].light_modules = BASENUM_LIGHTMODULES;
   }
   
-  // translate bitstream into modules
+  // Step 6: translate bitstream into modules for each mask
   for (i = 0; i < BYTE_COUNT; i++)
   {
     uint16_t offset = i * 8;
@@ -505,7 +507,6 @@ main()
     for (; j >= 0; j--)
     {
       uint8_t module = (final_bits[i] & bitmask[7 - j]) >> j & 1;
-      // NOTE: placement based on each mask's pattern
       uint8_t k = 0;
       for (; k < NUM_MASKS; k++)
       {
@@ -524,15 +525,15 @@ main()
     }
   }
 
-  // calculate each mask's penalty scores
+  // Step 7: calculate each mask's penalty score
   uint16_t final_scores[NUM_MASKS];
   uint16_t min_score = 0;
   for (i = 0; i < NUM_MASKS; i++)
   {
     final_scores[i] = 0;
-    // 1st, 2nd and 3rd penalty scores
+    // NOTE: 1st, 2nd and 3rd penalty scores
     final_scores[i] += module_penalty(&masks[i].mask[0]);
-    // 4th penalty score
+    // NOTE: 4th penalty score
     final_scores[i] += percentage_penalty(masks[i].dark_modules);
     if (final_scores[i] < final_scores[min_score])
     {
@@ -540,7 +541,7 @@ main()
     }
   }
 
-  // add version info
+  // Step 8: add version info
   for (i = 0; i < MASKINFO_LEN; i++)
   {
     masks[min_score].mask[maskinfo_ht[0][i]] =
@@ -549,7 +550,7 @@ main()
       (maskinfo[min_score] >> (MASKINFO_LEN - i - 1)) & 1;
   }
 
+  // Step 9: print it unto terminal
   qcshow(&masks[min_score].mask[0], MATRIX_ORDER);
-
   return 0;
 }
