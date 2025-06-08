@@ -435,18 +435,18 @@ module_penalty(uint8_t* matrix)
 }
 
 int
-main()
+main(int argc, char* argv[])
 {
-  // change to code page 65001 to show block characters
-  system("chcp 65001>nul");
-
-  // TODO: get string from user input
-  const char* str = "google.com";
-  size_t count = strlen(str);
-  if (count > STRING_MAX)
-  {
+  if (argc < 2) {
+    printf("Usage: qc [string]\r\n"
+           "           max:17\r\n");
     return -1;
   }
+  char str[STRING_MAX + 1];
+  size_t count = strlen(argv[1]);
+  count = (count > STRING_MAX) ? STRING_MAX : count;
+  memcpy(str, argv[1], count);
+  memset(&str[count], '\0', STRING_MAX + 1 - count);
 
   // Step 1: initialize data bits
   //         |mode|    count|                 data|
@@ -551,6 +551,8 @@ main()
   }
 
   // Step 9: print it unto terminal
+  //         use code page 65001 to show block characters
+  system("chcp 65001>nul");
   qcshow(&masks[min_score].mask[0], MATRIX_ORDER);
   return 0;
 }
