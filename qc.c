@@ -442,26 +442,26 @@ main(int argc, char* argv[])
            "           max:17\r\n");
     return -1;
   }
-  char str[STRING_MAX + 1];
+  // NOTE: byte string, not null-terminated
+  char str[STRING_MAX];
   size_t count = strlen(argv[1]);
   count = (count > STRING_MAX) ? STRING_MAX : count;
   memcpy(str, argv[1], count);
-  memset(&str[count], '\0', STRING_MAX + 1 - count);
 
   // Step 1: initialize data bits
   //         |mode|    count|                 data|
   //         |0100 0000|0000 0000|0000 0000 . . . |
   //         |byte 1   |byte 2   |byte 3    to 19 |
   uint8_t bitstream[DATA_LEN];
+  memset(&bitstream[0], 0, DATA_LEN);
   bitstream[0] = (GEN_MODE << 4) | (uint8_t)(count >> 4);
   bitstream[1] = (uint8_t)count << 4;
   uint16_t i = 0;
   for (; i < count; i++)
   {
-    bitstream[i + 1] |= (uint8_t)str[i] >> 4;
-    bitstream[i + 2] |= (uint8_t)str[i] << 4;
+    bitstream[i + 1] |= (uint8_t)(str[i] >> 4);
+    bitstream[i + 2] |= (uint8_t)(str[i] << 4);
   }
-  memset(&bitstream[i + 2], 0, DATA_LEN - (i + 2));
 
   // Step 2: initialize error-correction codes
   uint8_t ecc[DATA_LEN];
