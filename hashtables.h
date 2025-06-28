@@ -3,9 +3,10 @@
 
 #include <stdint.h>
 
-#define LOGTABLE_LEN 256
+// NOTE: Galois field
+#define GF_MAX UINT8_MAX
 const uint8_t
-alog_ht[LOGTABLE_LEN] = {
+alog_ht[GF_MAX + 1] = {
   1,2,4,8,16,32,64,128,29,58,116,232,205,135,19,38,
   76,152,45,90,180,117,234,201,143,3,6,12,24,48,96,192,
   157,39,78,156,37,74,148,53,106,212,181,119,238,193,159,35,
@@ -26,7 +27,7 @@ alog_ht[LOGTABLE_LEN] = {
 
 // NOTE: index 0 is illegal
 const uint8_t
-log_ht[LOGTABLE_LEN] = {
+log_ht[GF_MAX + 1] = {
   0,0,1,25,2,50,26,198,3,223,51,238,27,104,199,75,
   4,100,224,14,52,141,239,129,28,193,105,248,200,8,76,113,
   5,138,101,47,225,36,15,33,53,147,142,218,240,18,130,69,
@@ -45,14 +46,25 @@ log_ht[LOGTABLE_LEN] = {
   79,174,213,233,230,231,173,232,116,214,244,234,168,80,88,175
 };
 
-#define GENERATOR_L1_LEN 8
+#define MAX_VERSION 5
 const uint8_t
-gen1_ht[GENERATOR_L1_LEN] = {0,87,229,146,149,238,102,21};
+string_max[MAX_VERSION] = {17,32,53,78,106};
+const uint8_t
+matrix_order[MAX_VERSION] = {21,25,29,33,37};
+const uint16_t
+matrix_count[MAX_VERSION] = {441,625,841,1089,1369};
+const uint8_t
+ecc_count[MAX_VERSION] = {7,10,15,20,26};
+const uint8_t
+byte_count[MAX_VERSION] = {26,44,70,100,134};
+const uint16_t
+bit_count[MAX_VERSION] = {208,352,560,800,1072};
 
-#define MATRIX_L1_ORDER 21
-#define MATRIX_L1_LEN MATRIX_L1_ORDER * MATRIX_L1_ORDER
 const uint8_t
-qr1_ht[MATRIX_L1_LEN] = {
+gen1_ht[ecc_count[0] + 1] = {0,87,229,146,149,238,102,21};
+
+const uint8_t
+qr1_ht[matrix_count[0]] = {
   1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,
   1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,
   1,0,1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,1,0,1,
@@ -76,10 +88,8 @@ qr1_ht[MATRIX_L1_LEN] = {
   1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
-#define BYTE_L1_COUNT 26
-#define BIT_L1_COUNT BYTE_L1_COUNT * 8
 const uint16_t
-idx1_ht[BIT_L1_COUNT] = {
+idx1_ht[bit_count[0]] = {
   440,439,419,418,398,397,377,376,356,355,335,334,
   314,313,293,292,272,271,251,250,230,229,209,208, // top
   207,206,228,227,249,248,270,269,291,290,312,311,
@@ -102,7 +112,7 @@ idx1_ht[BIT_L1_COUNT] = {
 
 #define NUM_MASKS 8
 const uint8_t
-mask1_ht[NUM_MASKS][BIT_L1_COUNT] = {
+mask1_ht[NUM_MASKS][bit_count[0]] = {
   {
     1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,0,0,1,1,0,0,1,
     1,0,0,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,0,1,1,0,

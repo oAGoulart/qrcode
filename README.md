@@ -1,8 +1,10 @@
 # QR-Code
 
-WIP
+**WIP**
 
-NOTE: Only L1 codes (17-bytes maximum)
+**Objective** -- from version 1 to 5, with EC level L. Currently, only 1L, but modules are already printed on terminal.
+
+*NOTE:* Only L1 codes (17-bytes maximum)
 
 **Pre-generated hash-tables:**
 1. ECC generator polynomial.

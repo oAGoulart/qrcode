@@ -7,9 +7,6 @@
 
 // WARNING: do not change defined values
 #define GEN_MODE 4
-#define STRING_MAX 17
-#define DATA_LEN STRING_MAX + 2
-#define ECC_LEN 7
 #define UNICODE_LEN 4
 #define BASENUM_DARKMODULES 106
 #define BASENUM_LIGHTMODULES 107
@@ -18,7 +15,7 @@ static const uint8_t
 bitmask[8] = {128,64,32,16,8,4,2,1};
 
 struct qrmask_s {
-  uint8_t mask[MATRIX_L1_LEN];
+  uint8_t mask[matrix_count[0]];
   uint16_t dark_modules;
   uint16_t light_modules;
 };
@@ -115,7 +112,7 @@ qcshow(const uint8_t* m, const uint16_t order)
 static uint16_t
 percentage_penalty(uint16_t count)
 {
-  double percentage = (count / MATRIX_L1_LEN) * 10;
+  double percentage = (count / matrix_count[0]) * 10;
   double prev = floor(percentage) * 10;
   double next = percentage - fmod(percentage * 10, 5.0) + 5;
   prev = fabs(prev - 50) / 5;
@@ -128,27 +125,27 @@ module_penalty(uint8_t* matrix)
 {
   uint16_t penalty = 0;
   uint16_t i = 0;
-  for (; i < MATRIX_L1_ORDER; i++)
+  for (; i < matrix_order[0]; i++)
   {
-    uint16_t row = i * MATRIX_L1_ORDER;
+    uint16_t row = i * matrix_order[0];
     uint16_t j = 0;
     // Step 1: row direction >>>
-    for (; j < MATRIX_L1_ORDER - 1; j++)
+    for (; j < matrix_order[0] - 1; j++)
     {
       uint8_t* module = &matrix[row + j];
       uint8_t* next = &matrix[row + j + 1];
       if (*module == *next)
       {
         // NOTE: square penalty
-        if (i < MATRIX_L1_ORDER - 1) {
-          if (*(module + MATRIX_L1_ORDER) == *module &&
-              *(next + MATRIX_L1_ORDER) == *module)
+        if (i < matrix_order[0] - 1) {
+          if (*(module + matrix_order[0]) == *module &&
+              *(next + matrix_order[0]) == *module)
           {
             penalty += 3;
           }
         }
         // NOTE: sequential line penalty (row)
-        if (j < MATRIX_L1_ORDER - 4)
+        if (j < matrix_order[0] - 4)
         {
           uint16_t count = j;
           for (; *(next + j + 1) == *module; j++);
@@ -160,7 +157,7 @@ module_penalty(uint8_t* matrix)
         }
       }
       // NOTE: pattern penalty (row)
-      if (j < MATRIX_L1_ORDER - 10)
+      if (j < matrix_order[0] - 10)
       {
         if (*module == 0 && *next == 0)
         {
@@ -187,50 +184,51 @@ module_penalty(uint8_t* matrix)
       }
     }
     // Step 2: column direction vvv
-    for (j = 0; j < MATRIX_L1_LEN - (4 * MATRIX_L1_ORDER); j += MATRIX_L1_ORDER)
+    for (j = 0; j < matrix_count[0] - (4 * matrix_order[0]);
+         j += matrix_order[0])
     {
       uint8_t* module = &matrix[i + j];
-      uint8_t* next = &matrix[i + j + MATRIX_L1_ORDER];
+      uint8_t* next = &matrix[i + j + matrix_order[0]];
       if (*module == *next)
       {
         // NOTE: sequential line penalty (column)
         uint16_t count = j;
-        for (; *(next + j) == *module; j += MATRIX_L1_ORDER);
-        count = (uint16_t)floor((j - count) / MATRIX_L1_ORDER);
+        for (; *(next + j) == *module; j += matrix_order[0]);
+        count = (uint16_t)floor((j - count) / matrix_order[0]);
         if (count > 4)
         {
           penalty += (uint16_t)(3 + (count - 5));
         }
       }
       // NOTE: pattern penalty (column)
-      if (j < MATRIX_L1_LEN - (10 * MATRIX_L1_ORDER))
+      if (j < matrix_count[0] - (10 * matrix_order[0]))
       {
         if (*module == 0 && *next == 0)
         {
-          if (*(module + (2 * MATRIX_L1_ORDER)) == 0 &&
-              *(module + (3 * MATRIX_L1_ORDER)) == 0 &&
-              *(module + (4 * MATRIX_L1_ORDER)) == 1 &&
-              *(module + (5 * MATRIX_L1_ORDER)) == 0 &&
-              *(module + (6 * MATRIX_L1_ORDER)) == 1 &&
-              *(module + (7 * MATRIX_L1_ORDER)) == 1 &&
-              *(module + (8 * MATRIX_L1_ORDER)) == 1 &&
-              *(module + (9 * MATRIX_L1_ORDER)) == 0 &&
-              *(module + (10 * MATRIX_L1_ORDER)) == 1)
+          if (*(module + (2 * matrix_order[0])) == 0 &&
+              *(module + (3 * matrix_order[0])) == 0 &&
+              *(module + (4 * matrix_order[0])) == 1 &&
+              *(module + (5 * matrix_order[0])) == 0 &&
+              *(module + (6 * matrix_order[0])) == 1 &&
+              *(module + (7 * matrix_order[0])) == 1 &&
+              *(module + (8 * matrix_order[0])) == 1 &&
+              *(module + (9 * matrix_order[0])) == 0 &&
+              *(module + (10 * matrix_order[0])) == 1)
           {
             penalty += 40;
           }
         }
         else if (*module == 1 && *next == 0)
         {
-          if (*(module + (2 * MATRIX_L1_ORDER)) == 1 &&
-              *(module + (3 * MATRIX_L1_ORDER)) == 1 &&
-              *(module + (4 * MATRIX_L1_ORDER)) == 1 &&
-              *(module + (5 * MATRIX_L1_ORDER)) == 0 &&
-              *(module + (6 * MATRIX_L1_ORDER)) == 1 &&
-              *(module + (7 * MATRIX_L1_ORDER)) == 0 &&
-              *(module + (8 * MATRIX_L1_ORDER)) == 0 &&
-              *(module + (9 * MATRIX_L1_ORDER)) == 0 &&
-              *(module + (10 * MATRIX_L1_ORDER)) == 0)
+          if (*(module + (2 * matrix_order[0])) == 1 &&
+              *(module + (3 * matrix_order[0])) == 1 &&
+              *(module + (4 * matrix_order[0])) == 1 &&
+              *(module + (5 * matrix_order[0])) == 0 &&
+              *(module + (6 * matrix_order[0])) == 1 &&
+              *(module + (7 * matrix_order[0])) == 0 &&
+              *(module + (8 * matrix_order[0])) == 0 &&
+              *(module + (9 * matrix_order[0])) == 0 &&
+              *(module + (10 * matrix_order[0])) == 0)
           {
             penalty += 40;
           }
@@ -250,17 +248,18 @@ main(int argc, char* argv[])
     return -1;
   }
   // NOTE: byte string, not null-terminated
-  char str[STRING_MAX];
+  char str[string_max[0]];
   size_t count = strlen(argv[1]);
-  count = (count > STRING_MAX) ? STRING_MAX : count;
+  count = (count > string_max[0]) ? string_max[0] : count;
   memcpy(str, argv[1], count);
 
   // Step 1: initialize data bits
   //         |mode|    count|                 data|
   //         |0100 0000|0000 0000|0000 0000 . . . |
-  //         |byte 1   |byte 2   |byte 3    to 19 |
-  uint8_t bitstream[DATA_LEN];
-  memset(&bitstream[0], 0, DATA_LEN);
+  //         |byte 1   |byte 2   |byte 3    to  n |
+  const uint8_t data_len = string_max[0] + 2;
+  uint8_t bitstream[data_len];
+  memset(&bitstream[0], 0, data_len);
   bitstream[0] = (GEN_MODE << 4) | (uint8_t)(count >> 4);
   bitstream[1] = (uint8_t)count << 4;
   uint16_t i = 0;
@@ -271,42 +270,42 @@ main(int argc, char* argv[])
   }
 
   // Step 2: initialize error-correction codes
-  uint8_t ecc[DATA_LEN];
-  memcpy(&ecc[0], &bitstream[0], DATA_LEN);
+  uint8_t ecc[data_len];
+  memcpy(&ecc[0], &bitstream[0], data_len);
 
   // Step 3: polynomial division (long division)
   //         using Galois field arithmetic
-  for (i = 0; i < DATA_LEN; i++)
+  for (i = 0; i < data_len; i++)
   {
     uint8_t lead = ecc[0];
     uint16_t j = 0;
-    for (j = 0; j < GENERATOR_L1_LEN; j++)
+    for (j = 0; j < ecc_count[0] + 1; j++)
     {
-      ecc[j] ^= alog_ht[(gen1_ht[j] + log_ht[lead]) % UINT8_MAX];
+      ecc[j] ^= alog_ht[(gen1_ht[j] + log_ht[lead]) % GF_MAX];
     }
     if (ecc[0] == 0)
     {
       // NOTE: if multiplier is zero, then discard it
-      vshift(&ecc[0], DATA_LEN);
+      vshift(&ecc[0], data_len);
     }
   }
   
   // Step 4: concatenate data and error-correction codes
-  uint8_t final_bits[DATA_LEN + ECC_LEN];
-  memcpy(&final_bits[0], &bitstream[0], DATA_LEN);
-  memcpy(&final_bits[DATA_LEN], &ecc[0], ECC_LEN);
+  uint8_t final_bits[byte_count[0]];
+  memcpy(&final_bits[0], &bitstream[0], data_len);
+  memcpy(&final_bits[data_len], &ecc[0], ecc_count[0]);
 
   // Step 5: initialize masks
   struct qrmask_s masks[NUM_MASKS];
   for (i = 0; i < NUM_MASKS; i++)
   {
-    memcpy(&(masks[i].mask[0]), &qr1_ht[0], MATRIX_L1_LEN);
+    memcpy(&(masks[i].mask[0]), &qr1_ht[0], matrix_count[0]);
     masks[i].dark_modules = BASENUM_DARKMODULES;
     masks[i].light_modules = BASENUM_LIGHTMODULES;
   }
   
   // Step 6: translate bitstream into modules for each mask
-  for (i = 0; i < BYTE_L1_COUNT; i++)
+  for (i = 0; i < byte_count[0]; i++)
   {
     uint16_t offset = i * 8;
     // NOTE: bitstream goes from bit 7 to bit 0
@@ -360,6 +359,6 @@ main(int argc, char* argv[])
   // Step 9: print it unto terminal
   //         use code page 65001 to show block characters
   system("chcp 65001>nul");
-  qcshow(&masks[min_score].mask[0], MATRIX_L1_ORDER);
+  qcshow(&masks[min_score].mask[0], matrix_order[0]);
   return 0;
 }
