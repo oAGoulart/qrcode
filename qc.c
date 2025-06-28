@@ -15,7 +15,7 @@ static const uint8_t
 bitmask[8] = {128,64,32,16,8,4,2,1};
 
 struct qrmask_s {
-  uint8_t mask[matrix_count[0]];
+  uint8_t mask[441]; // TODO: declare on initialization;
   uint16_t dark_modules;
   uint16_t light_modules;
 };
