@@ -2,7 +2,6 @@
 #define MASK_H 1
 
 #include <stdint.h>
-#include <errno.h>
 
 typedef struct qrmask_s qrmask_t;
 
