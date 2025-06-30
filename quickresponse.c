@@ -74,7 +74,22 @@ struct qrcode_s
   uint8_t slen_;
   uint8_t chosen_;
   qrmask_t* masks_[NUM_MASKS];
+  uint8_t version_;
 };
+
+uint8_t
+minversion_(uint8_t count)
+{
+  uint8_t minv = 0;
+  for (; minv < MAX_VERSION; minv++)
+  {
+    if (count < strmax_[minv])
+    {
+      break;
+    }
+  }
+  return minv;
+}
 
 static void
 vshift_(uint8_t* v, uint8_t length)
@@ -94,11 +109,11 @@ create_qrcode(qrcode_t** self, char* str)
   {
     return EINVAL;
   }
-  // TODO: select version based on string length
   size_t str_count = strlen(str);
   if (str_count > strmax_[0])
   {
-    fprintf(stderr, "ERROR: string must be less than %ui characters long\r\n",
+    // FIXME: set strmax_[0] to latest version added
+    fprintf(stderr, "\tstring must be less than %ui characters long\r\n",
             strmax_[0]);
     return EINVAL;
   }
@@ -107,7 +122,9 @@ create_qrcode(qrcode_t** self, char* str)
   {
     return ENOMEM;
   }
-  const uint8_t data_len = strmax_[0] + 2;
+  const uint8_t version = minversion_((uint8_t)str_count);
+  (*self)->version_ = version;
+  const uint8_t data_len = strmax_[version] + 2;
   (*self)->slen_ = data_len;
   (*self)->stream_ = (uint8_t*)malloc(data_len);
   if ((*self)->stream_ == NULL)
@@ -133,9 +150,9 @@ create_qrcode(qrcode_t** self, char* str)
   {
     uint8_t lead = ecc[0];
     uint8_t uj8 = 0;
-    for (; uj8 < ecclen_[0] + 1; uj8++)
+    for (; uj8 < ecclen_[version] + 1; uj8++)
     {
-      ecc[uj8] ^= alog_[(gen_[0][uj8] + log_[lead]) % GF_MAX];
+      ecc[uj8] ^= alog_[(gen_[version][uj8] + log_[lead]) % GF_MAX];
     }
     if (ecc[0] == 0)
     {
@@ -143,7 +160,7 @@ create_qrcode(qrcode_t** self, char* str)
       vshift_(&ecc[0], data_len);
     }
   }
-  const uint8_t total_bytes = numbytes_[0];
+  const uint8_t total_bytes = numbytes_[version];
   uint8_t* tmp_ptr = (uint8_t*)realloc((*self)->stream_, total_bytes);
   if (tmp_ptr == NULL)
   {
@@ -153,11 +170,11 @@ create_qrcode(qrcode_t** self, char* str)
     return ENOMEM;
   }
   (*self)->stream_ = tmp_ptr;
-  memcpy(&(*self)->stream_[data_len], &ecc[0], ecclen_[0]);
+  memcpy(&(*self)->stream_[data_len], &ecc[0], ecclen_[version]);
   for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
   {
     (*self)->masks_[ui8] = NULL;
-    if (create_qrmask(&(*self)->masks_[ui8], 1, ui8) != 0)
+    if (create_qrmask(&(*self)->masks_[ui8], version, ui8) != 0)
     {
       delete_qrcode(self);
       return ENOMEM;

@@ -9,7 +9,7 @@ int
 main(int argc, char* argv[])
 {
   if (argc < 2) {
-    fprintf(stderr, "Usage: qc <string[max:17]>\r\n");
+    fprintf(stderr, "Usage: qc <string>\r\n");
     return EINVAL;
   }
 
@@ -20,10 +20,12 @@ main(int argc, char* argv[])
 
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr, argv[1]);
-  if (!err)
+  if (err)
   {
-    qrcode_print(qr);
-    delete_qrcode(&qr);
+    fprintf(stderr, "Runtime error: %i\r\n", err);
+    return err;
   }
-  return err;
+  qrcode_print(qr);
+  delete_qrcode(&qr);
+  return 0;
 }

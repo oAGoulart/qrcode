@@ -392,7 +392,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   {
     return ENOMEM;
   }
-  (*self)->version_ = --version;
+  (*self)->version_ = version;
   (*self)->masknum_ = masknum;
   (*self)->v_ = (uint8_t*)malloc(count_[version]);
   if ((*self)->v_ == NULL)
