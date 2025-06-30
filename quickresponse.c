@@ -59,8 +59,6 @@ static const uint8_t
 ecclen_[MAX_VERSION] = {7,10,15,20,26};
 static const uint8_t
 numbytes_[MAX_VERSION] = {26,44,70,100,134};
-/*static const uint16_t
-numbits_[MAX_VERSION] = {208,352,560,800,1072};*/
 
 // FIXME: add generator for v2-5
 static const uint8_t
