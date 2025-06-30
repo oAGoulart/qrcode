@@ -20,9 +20,9 @@ count_[MAX_VERSION] = {441,625,841,1089,1369};
 static const uint16_t
 numbits_[MAX_VERSION] = {208,359,0,0,0};
 static const uint16_t
-basedark_[MAX_VERSION] = {106,127,0,0,0};
+basedark_[MAX_VERSION] = {91,112,0,0,0};
 static const uint16_t
-baselight_[MAX_VERSION] = {107,119,0,0,0};
+baselight_[MAX_VERSION] = {127,139,0,0,0};
 
 static const uint8_t
 m1_[441] = {
