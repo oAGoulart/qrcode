@@ -1,12 +1,17 @@
-# QR-Code
+# Command-line QR-Code generator
 
 **WIP**
 
-**Objective** -- from version 1 to 5, with EC level L. Currently, only 1L, but modules are already printed on terminal.
+**Objective:** Byte mode, from version 1 to 5, with EC level L. Currently, only 1L, but modules are already printed on terminal.
 
-*NOTE:* Only L1 codes (17-bytes maximum)
+**Progress:**
+- [x] EC code generation
+- [x] Masking patterns penalty score calculation
+- [x] Selection of minimum version
+- [x] Module printing on terminal
+- [ ] Version 2 to 5 hash tables
 
-**Pre-generated hash-tables:**
+**Pre-generated hash tables:**
 1. ECC generator polynomial.
 2. Galois field log and anti-log table.
 3. QR-code alignment and timing patterns.
