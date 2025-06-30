@@ -88,7 +88,7 @@ minversion_(uint8_t count)
   uint8_t minv = 0;
   for (; minv < MAX_VERSION; minv++)
   {
-    if (count < strmax_[minv])
+    if (count <= strmax_[minv])
     {
       break;
     }
