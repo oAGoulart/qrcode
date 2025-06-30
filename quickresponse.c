@@ -59,11 +59,18 @@ static const uint8_t
 ecclen_[MAX_VERSION] = {7,10,15,20,26};
 static const uint8_t
 numbytes_[MAX_VERSION] = {26,44,70,100,134};
-
-// FIXME: add generator for v2-5
 static const uint8_t
-gen_[1][8] = {
-  {0,87,229,146,149,238,102,21}
+padbits_[MAX_VERSION] = {0,7,0,0,0};
+
+static const uint8_t
+gen1_[8] = {0,87,229,146,149,238,102,21};
+
+static const uint8_t
+gen2_[11] = {0,251,67,46,61,118,70,64,94,32,45};
+
+static const uint8_t*
+gen_[MAX_VERSION] = {
+  (uint8_t*)&gen1_, (uint8_t*)&gen2_, NULL, NULL, NULL
 };
 
 struct qrcode_s
@@ -108,11 +115,11 @@ create_qrcode(qrcode_t** self, char* str)
     return EINVAL;
   }
   size_t str_count = strlen(str);
-  if (str_count > strmax_[0])
+  if (str_count > strmax_[1])
   {
     // FIXME: set strmax_[0] to latest version added
     fprintf(stderr, "\tstring must be less than %ui characters long\r\n",
-            strmax_[0]);
+            strmax_[1]);
     return EINVAL;
   }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
@@ -192,6 +199,16 @@ create_qrcode(qrcode_t** self, char* str)
         uint16_t index = (uint16_t)(offset + (7 - bit));
         qrmask_set((*self)->masks_[uj8], index, module);
       }
+    }
+  }
+  // NOTE: padding bits
+  for (ui8 = 0; ui8 < padbits_[version]; ui8++)
+  {
+    uint8_t uj8 = 0;
+    for (; uj8 < NUM_MASKS; uj8++)
+    {
+      uint16_t index = (uint16_t)(total_bytes * 8) + ui8;
+      qrmask_set((*self)->masks_[uj8], index, 0);
     }
   }
   int32_t curr_score = 0;
