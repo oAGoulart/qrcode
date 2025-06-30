@@ -9,7 +9,12 @@
 - [x] Masking patterns penalty score calculation
 - [x] Selection of minimum version
 - [x] Module printing on terminal
-- [ ] Version 2 to 5 hash tables
+- [ ] Version 1 to 5 hash tables
+    - [x] Version 1 (limited tests performed)
+    - [x] Version 2 (detected but not valid)
+    - [ ] Version 3
+    - [ ] Version 4
+    - [ ] Version 5
 
 **Pre-generated hash tables:**
 1. ECC generator polynomial.
