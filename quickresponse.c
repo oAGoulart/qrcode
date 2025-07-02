@@ -10,9 +10,6 @@
 #define GEN_MODE 4
 
 static const uint8_t
-bitmask_[8] = {1,2,4,8,16,32,64,128};
-
-static const uint8_t
 alog_[GF_MAX + 1] = {
   1,2,4,8,16,32,64,128,29,58,116,232,205,135,19,38,
   76,152,45,90,180,117,234,201,143,3,6,12,24,48,96,192,
@@ -54,15 +51,6 @@ log_[GF_MAX + 1] = {
 };
 
 static const uint8_t
-strmax_[MAX_VERSION] = {17,32,53,78,106};
-static const uint8_t
-ecclen_[MAX_VERSION] = {7,10,15,20,26};
-static const uint8_t
-numbytes_[MAX_VERSION] = {26,44,70,100,134};
-static const uint8_t
-padbits_[MAX_VERSION] = {0,7,0,0,0};
-
-static const uint8_t
 gen1_[8] = {0,87,229,146,149,238,102,21};
 
 static const uint8_t
@@ -82,20 +70,6 @@ struct qrcode_s
   uint8_t version_;
 };
 
-uint8_t
-minversion_(uint8_t count)
-{
-  uint8_t minv = 0;
-  for (; minv < MAX_VERSION; minv++)
-  {
-    if (count <= strmax_[minv])
-    {
-      break;
-    }
-  }
-  return minv;
-}
-
 static void
 vshift_(uint8_t* v, uint8_t length)
 {
@@ -110,16 +84,22 @@ vshift_(uint8_t* v, uint8_t length)
 int
 create_qrcode(qrcode_t** self, char* str)
 {
+  const uint8_t bitmask[8] = {1, 2, 4, 8, 16, 32, 64, 128};
+  const uint8_t strmax[MAX_VERSION] = {17, 32, 53, 78, 106};
+  const uint8_t ecclen[MAX_VERSION] = {7, 10, 15, 20, 26};
+  const uint8_t numbytes[MAX_VERSION] = {26, 44, 70, 100, 134};
+  const uint8_t padbits[MAX_VERSION] = {0, 7, 0, 0, 0};
+
   if (*self != NULL)
   {
     return EINVAL;
   }
   size_t str_count = strlen(str);
-  if (str_count > strmax_[1])
+  if (str_count > strmax[1])
   {
-    // FIXME: set strmax_[0] to latest version added
+    // FIXME: set strmax_[1] to latest version added
     fprintf(stderr, "\tstring must be less than %ui characters long\r\n",
-            strmax_[1]);
+            strmax[1]);
     return EINVAL;
   }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
@@ -127,9 +107,16 @@ create_qrcode(qrcode_t** self, char* str)
   {
     return ENOMEM;
   }
-  const uint8_t version = minversion_((uint8_t)str_count);
+  uint8_t version = 0;
+  for (; version < MAX_VERSION; version++)
+  {
+    if (str_count <= strmax[version])
+    {
+      break;
+    }
+  }
   (*self)->version_ = version;
-  const uint8_t data_len = strmax_[version] + 2;
+  const uint8_t data_len = strmax[version] + 2;
   (*self)->slen_ = data_len;
   (*self)->stream_ = (uint8_t*)malloc(data_len);
   if ((*self)->stream_ == NULL)
@@ -155,7 +142,7 @@ create_qrcode(qrcode_t** self, char* str)
   {
     uint8_t lead = ecc[0];
     uint8_t uj8 = 0;
-    for (; uj8 < ecclen_[version] + 1; uj8++)
+    for (; uj8 < ecclen[version] + 1; uj8++)
     {
       ecc[uj8] ^= alog_[(gen_[version][uj8] + log_[lead]) % GF_MAX];
     }
@@ -165,7 +152,7 @@ create_qrcode(qrcode_t** self, char* str)
       vshift_(&ecc[0], data_len);
     }
   }
-  const uint8_t total_bytes = numbytes_[version];
+  const uint8_t total_bytes = numbytes[version];
   uint8_t* tmp_ptr = (uint8_t*)realloc((*self)->stream_, total_bytes);
   if (tmp_ptr == NULL)
   {
@@ -175,7 +162,7 @@ create_qrcode(qrcode_t** self, char* str)
     return ENOMEM;
   }
   (*self)->stream_ = tmp_ptr;
-  memcpy(&(*self)->stream_[data_len], &ecc[0], ecclen_[version]);
+  memcpy(&(*self)->stream_[data_len], &ecc[0], ecclen[version]);
   for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
   {
     (*self)->masks_[ui8] = NULL;
@@ -192,7 +179,7 @@ create_qrcode(qrcode_t** self, char* str)
     int8_t bit = 7;
     for (; bit >= 0; bit--)
     {
-      uint8_t module = ((*self)->stream_[ui8] & bitmask_[bit]) >> bit & 1;
+      uint8_t module = ((*self)->stream_[ui8] & bitmask[bit]) >> bit & 1;
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
@@ -202,7 +189,7 @@ create_qrcode(qrcode_t** self, char* str)
     }
   }
   // NOTE: padding bits
-  for (ui8 = 0; ui8 < padbits_[version]; ui8++)
+  for (ui8 = 0; ui8 < padbits[version]; ui8++)
   {
     uint8_t uj8 = 0;
     for (; uj8 < NUM_MASKS; uj8++)
