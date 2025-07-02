@@ -11,18 +11,16 @@
 #define MASK_LIGHT 0
 #define UNICODE_LEN 4
 
-static const uint8_t
-order_[MAX_VERSION] = {21,25,29,33,37};
-static const uint16_t
-count_[MAX_VERSION] = {441,625,841,1089,1369};
-
-// FIXME: for v3-5
-/*static const uint16_t
-numbits_[MAX_VERSION] = {208,359,0,0,0};*/
-static const uint16_t
-basedark_[MAX_VERSION] = {91,112,0,0,0};
-static const uint16_t
-baselight_[MAX_VERSION] = {127,139,0,0,0};
+struct qrmask_s {
+  uint8_t* v_;
+  uint8_t version_;
+  uint8_t order_;
+  uint16_t count_;
+  uint8_t masknum_;
+  uint16_t dark_;
+  uint16_t light_;
+  uint16_t penalty_;
+};
 
 static const uint8_t
 m1_[441] = {
@@ -138,24 +136,6 @@ indexes_[MAX_VERSION] = {
   (uint16_t*)&idx1_, (uint16_t*)&idx2_, NULL, NULL, NULL
 };
 
-static const uint16_t
-maskinfo_[NUM_MASKS] = {
-  30660,29427,32170,30877,26159,25368,27713,26998
-};
-
-// NOTE: maskinfo is duplicated into two different positions
-static const uint16_t
-maskpos_[2][2][MASKINFO_LEN] = {
-  {
-    {168,169,170,171,172,173,175,176,155,113,92,71,50,29,8},
-    {428,407,386,365,344,323,302,181,182,183,184,185,186,187,188}
-  },
-  {
-    {200,201,202,203,204,205,207,208,183,133,108,83,58,33,8},
-    {608,583,558,533,508,483,458,217,218,219,220,221,222,223,224}
-  }
-};
-
 static uint8_t
 should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
 {
@@ -247,19 +227,10 @@ mask_single_(uint8_t* v, uint16_t order)
   }
 }
 
-struct qrmask_s {
-  uint8_t* v_;
-  uint8_t version_;
-  uint8_t masknum_;
-  uint16_t dark_;
-  uint16_t light_;
-  uint16_t penalty_;
-};
-
 static void
 percentage_penalty_(qrmask_t* self)
 {
-  double percentage = (self->dark_ / count_[self->version_]) * 10;
+  double percentage = (self->dark_ / self->count_) * 10;
   double prev = floor(percentage) * 10;
   double next = percentage - fmod(percentage * 10, 5.0) + 5;
   prev = fabs(prev - 50) / 5;
@@ -270,34 +241,32 @@ percentage_penalty_(qrmask_t* self)
 static void
 module_penalty_(qrmask_t* self)
 {
-  const uint8_t order = order_[self->version_];
-  const uint16_t qrlen = count_[self->version_];
   uint16_t penalty = 0;
   uint16_t i = 0;
-  for (; i < order; i++)
+  for (; i < self->order_; i++)
   {
-    uint16_t row = i * order;
+    uint16_t row = i * self->order_;
     uint16_t j = 0;
     // Step 1: row direction >>>
-    for (; j < order - 1; j++)
+    for (; j < self->order_ - 1; j++)
     {
       uint8_t* module = &self->v_[row + j];
       uint8_t* next = &self->v_[row + j + 1];
       if (*module == *next)
       {
         // NOTE: square penalty
-        if (i < order - 1) {
-          if (*(module + order) == *module &&
-              *(next + order) == *module)
+        if (i < self->order_ - 1) {
+          if (*(module + self->order_) == *module &&
+              *(next + self->order_) == *module)
           {
             penalty += 3;
           }
         }
         // NOTE: sequential line penalty (row)
-        if (j < order - 4)
+        if (j < self->order_ - 4)
         {
           uint16_t count = j;
-          for (; next + j + 1 < self->v_ + qrlen; j++)
+          for (; next + j + 1 < self->v_ + self->count_; j++)
           {
             if (*(next + j + 1) != *module)
             {
@@ -312,7 +281,7 @@ module_penalty_(qrmask_t* self)
         }
       }
       // NOTE: pattern penalty (row)
-      if (j < order - 10)
+      if (j < self->order_ - 10)
       {
         if (*module == 0 && *next == 0)
         {
@@ -339,56 +308,56 @@ module_penalty_(qrmask_t* self)
       }
     }
     // Step 2: column direction vvv
-    for (j = 0; j < qrlen - (4 * order); j += order)
+    for (j = 0; j < self->count_ - (4 * self->order_); j += self->order_)
     {
       uint8_t* module = &self->v_[i + j];
-      uint8_t* next = &self->v_[i + j + order];
+      uint8_t* next = &self->v_[i + j + self->order_];
       if (*module == *next)
       {
         // NOTE: sequential line penalty (column)
         uint16_t count = j;
-        for (; next + j < self->v_ + qrlen; j += order)
+        for (; next + j < self->v_ + self->count_; j += self->order_)
         {
           if (*(next + j) != *module)
           {
             break;
           }
         }
-        count = (uint16_t)floor((j - count) / order);
+        count = (uint16_t)floor((j - count) / self->order_);
         if (count > 4)
         {
           penalty += (uint16_t)(3 + (count - 5));
         }
       }
       // NOTE: pattern penalty (column)
-      if (j < qrlen - (10 * order))
+      if (j < self->count_ - (10 * self->order_))
       {
         if (*module == 0 && *next == 0)
         {
-          if (*(module + (2 * order)) == 0 &&
-              *(module + (3 * order)) == 0 &&
-              *(module + (4 * order)) == 1 &&
-              *(module + (5 * order)) == 0 &&
-              *(module + (6 * order)) == 1 &&
-              *(module + (7 * order)) == 1 &&
-              *(module + (8 * order)) == 1 &&
-              *(module + (9 * order)) == 0 &&
-              *(module + (10 * order)) == 1)
+          if (*(module + (2 * self->order_)) == 0 &&
+              *(module + (3 * self->order_)) == 0 &&
+              *(module + (4 * self->order_)) == 1 &&
+              *(module + (5 * self->order_)) == 0 &&
+              *(module + (6 * self->order_)) == 1 &&
+              *(module + (7 * self->order_)) == 1 &&
+              *(module + (8 * self->order_)) == 1 &&
+              *(module + (9 * self->order_)) == 0 &&
+              *(module + (10 * self->order_)) == 1)
           {
             penalty += 40;
           }
         }
         else if (*module == 1 && *next == 0)
         {
-          if (*(module + (2 * order)) == 1 &&
-              *(module + (3 * order)) == 1 &&
-              *(module + (4 * order)) == 1 &&
-              *(module + (5 * order)) == 0 &&
-              *(module + (6 * order)) == 1 &&
-              *(module + (7 * order)) == 0 &&
-              *(module + (8 * order)) == 0 &&
-              *(module + (9 * order)) == 0 &&
-              *(module + (10 * order)) == 0)
+          if (*(module + (2 * self->order_)) == 1 &&
+              *(module + (3 * self->order_)) == 1 &&
+              *(module + (4 * self->order_)) == 1 &&
+              *(module + (5 * self->order_)) == 0 &&
+              *(module + (6 * self->order_)) == 1 &&
+              *(module + (7 * self->order_)) == 0 &&
+              *(module + (8 * self->order_)) == 0 &&
+              *(module + (9 * self->order_)) == 0 &&
+              *(module + (10 * self->order_)) == 0)
           {
             penalty += 40;
           }
@@ -402,6 +371,11 @@ module_penalty_(qrmask_t* self)
 int
 create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 {
+  const uint8_t qr_order[MAX_VERSION] = {21, 25, 29, 33, 37};
+  const uint16_t qr_count[MAX_VERSION] = {441, 625, 841, 1089, 1369};
+  const uint16_t qr_basedark[MAX_VERSION] = {91, 112, 0, 0, 0};
+  const uint16_t qr_baselight[MAX_VERSION] = {127, 139, 0, 0, 0};
+
   if (*self != NULL && version == 0 && version > MAX_VERSION)
   {
     return EINVAL;
@@ -412,17 +386,19 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
     return ENOMEM;
   }
   (*self)->version_ = version;
+  (*self)->order_ = qr_order[version];
+  (*self)->count_ = qr_count[version];
   (*self)->masknum_ = masknum;
-  (*self)->v_ = (uint8_t*)malloc(count_[version]);
+  (*self)->v_ = (uint8_t*)malloc((*self)->count_);
   if ((*self)->v_ == NULL)
   {
     free(*self);
     *self = NULL;
     return ENOMEM;
   }
-  memcpy((*self)->v_, &modules_[version][0], count_[version]);
-  (*self)->dark_ = basedark_[version];
-  (*self)->light_ = baselight_[version];
+  memcpy((*self)->v_, &modules_[version][0], (*self)->count_);
+  (*self)->dark_ = qr_basedark[version];
+  (*self)->light_ = qr_baselight[version];
   (*self)->penalty_ = 0;
   return 0;
 }
@@ -444,7 +420,7 @@ delete_qrmask(qrmask_t** self)
 void
 qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
 {
-  if (should_xor_(order_[self->version_],
+  if (should_xor_(self->order_,
                   indexes_[self->version_][index],
                   self->masknum_))
   {
@@ -475,13 +451,34 @@ qrmask_penalty(qrmask_t *self)
 void
 qrmask_apply(qrmask_t *self)
 {
+  const uint16_t maskinfo[NUM_MASKS] = {
+    30660, 29427, 32170, 30877, 26159, 25368, 27713, 26998
+  };
   uint8_t i = 0;
   for (; i < MASKINFO_LEN; i++)
   {
-    self->v_[maskpos_[self->version_][0][i]] =
-      (maskinfo_[self->masknum_] >> (MASKINFO_LEN - i - 1)) & 1;
-    self->v_[maskpos_[self->version_][1][i]] =
-      (maskinfo_[self->masknum_] >> (MASKINFO_LEN - i - 1)) & 1;
+    int idx1 = 0;
+    int idx2 = 0;
+    if (i < 8)
+    {
+      idx1 = self->order_ * 8 + i;
+      idx1 += (i > 5) ? 1 : 0;
+    }
+    else
+    {
+      idx1 = (15 - i) * self->order_ + 8;
+      idx1 -= (i > 8) ? self->order_ : 0;
+    }
+    if (i < 7)
+    {
+      idx2 = self->order_ * (self->order_ - i - 1) + 8;
+    }
+    else
+    {
+      idx2 = self->order_ * 8 + self->order_ - 8 + i - 7;
+    }
+    self->v_[idx1] = (maskinfo[self->masknum_] >> (MASKINFO_LEN - i - 1)) & 1;
+    self->v_[idx2] = (maskinfo[self->masknum_] >> (MASKINFO_LEN - i - 1)) & 1;
   }
 }
 
@@ -489,15 +486,14 @@ void
 qrmask_print(qrmask_t *self)
 {
   puts("");
-  const uint8_t order = order_[self->version_];
   uint16_t line = 0;
-  for (; line < order - 1; line += 2)
+  for (; line < self->order_ - 1; line += 2)
   {
-    mask_double_(&self->v_[line * order], order);
+    mask_double_(&self->v_[line * self->order_], self->order_);
   }
-  if (order % 2 != 0)
+  if (self->order_ % 2 != 0)
   {
-    mask_single_(&self->v_[(order - 1) * order], order);
+    mask_single_(&self->v_[(self->order_ - 1) * self->order_], self->order_);
   }
   puts("");
 }

@@ -15,6 +15,26 @@ def dups(v):
     if v.count(e) > 1:
       print(f"{e}")
 
+def maskinfo(order):
+  for i in range(15):
+    if i < 8:
+      index = 8*order+i
+      if i > 5:
+        index += 1
+      #print(index)
+    else:
+      index = (15-i)*order+8
+      if i > 8:
+        index -= order
+      #print(index)
+    if i < 7:
+      index=order*(order-i-1)+8
+      print(index)
+    else:
+      index=order*8+order-8+i-7
+      print(index)
+
+
 def xorp(v, order, pattern):
   for i, e in enumerate(v):
     row = math.floor(e / order)
@@ -62,4 +82,5 @@ v = [
 
 #print_indexes(21, [])
 #dups(v)
-xorp(v, 21, 0)
+#xorp(v, 21, 0)
+maskinfo(21)
