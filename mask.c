@@ -147,20 +147,12 @@ maskinfo_[NUM_MASKS] = {
 static const uint16_t
 maskpos_[2][2][MASKINFO_LEN] = {
   {
-    {
-      168,169,170,171,172,173,175,176,155,113,92,71,50,29,8
-    },
-    {
-      428,407,386,365,344,323,302,181,182,183,184,185,186,187,188
-    }
+    {168,169,170,171,172,173,175,176,155,113,92,71,50,29,8},
+    {428,407,386,365,344,323,302,181,182,183,184,185,186,187,188}
   },
   {
-    {
-      200,201,202,203,204,205,207,208,183,133,108,83,58,33,8
-    },
-    {
-      608,583,558,533,508,483,458,217,218,219,220,221,222,223,224
-    }
+    {200,201,202,203,204,205,207,208,183,133,108,83,58,33,8},
+    {608,583,558,533,508,483,458,217,218,219,220,221,222,223,224}
   }
 };
 
@@ -184,9 +176,9 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
   case 5:
     return ((row * col) % 2) + ((row * col) % 3) == 0;
   case 6:
-    return (((row * col) % 2) + ((row * col) % 3) ) % 2 == 0;
+    return (((row * col) % 2) + ((row * col) % 3)) % 2 == 0;
   case 7:
-    return (((row + col) % 2) + ((row * col) % 3) ) % 2 == 0;
+    return (((row + col) % 2) + ((row * col) % 3)) % 2 == 0;
   default:
     return 0;
   }
@@ -452,7 +444,9 @@ delete_qrmask(qrmask_t** self)
 void
 qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
 {
-  if (should_xor_(order_[self->version_], index, self->masknum_))
+  if (should_xor_(order_[self->version_],
+                  indexes_[self->version_][index],
+                  self->masknum_))
   {
     module = (module) ? 0 : 1;
   }

@@ -17,8 +17,8 @@ def dups(v):
 
 def xorp(v, order, pattern):
   for i, e in enumerate(v):
-    row = math.floor(i / order)
-    col = i % order
+    row = math.floor(e / order)
+    col = e % order
     print(f"{row} {col} |", end='')
     if (pattern == 0):
       print(f"{(row + col) % 2 == 0},", end='')
@@ -60,6 +60,6 @@ v = [
   190,189,211,210,232,231,253,252
 ]
 
-#print_indexes(21, v)
-dups(v)
-#xorp(v, 21, 8)
+#print_indexes(21, [])
+#dups(v)
+xorp(v, 21, 0)
