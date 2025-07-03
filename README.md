@@ -18,11 +18,8 @@
 
 **Pre-generated hash tables:**
 1. ECC generator polynomial.
-2. Galois field log and anti-log table.
-3. QR-code alignment and timing patterns.
-4. Indexes of data/ecc bits on the module matrix.
-5. Each of eight masks' XORing pattern.
-6. Indexes of mask information bits on the module matrix.
+1. Galois field log and anti-log table.
+1. Indexes of data/ecc bits on the module matrix.
 
 **Input:** "google.com"
 
