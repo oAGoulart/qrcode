@@ -11,7 +11,7 @@
 - [x] Module printing on terminal
 - [ ] Version 1 to 5 hash tables
     - [x] Version 1 (limited tests performed)
-    - [x] Version 2 (detected but not valid)
+    - [x] Version 2 (not always valid)
     - [ ] Version 3
     - [ ] Version 4
     - [ ] Version 5
