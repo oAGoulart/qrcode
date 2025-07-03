@@ -194,7 +194,7 @@ place_finder_(qrmask_t* self)
   size_t idx3 = (self->order_ - 8u) * self->order_;
   for (i = 0; i < 15; i++)
   {
-    if (i < 8)
+    if (i < 7)
     {
       self->v_[idx1++] = 0;
       self->v_[idx2--] = 0;
