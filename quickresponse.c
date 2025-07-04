@@ -98,7 +98,7 @@ create_qrcode(qrcode_t** self, char* str)
   if (str_count > strmax[1])
   {
     // FIXME: set strmax_[1] to latest version added
-    fprintf(stderr, "\tstring must be less than %ui characters long\r\n",
+    fprintf(stderr, "\tstring must be less than %u characters long\r\n",
             strmax[1]);
     return EINVAL;
   }
