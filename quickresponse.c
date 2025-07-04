@@ -127,12 +127,12 @@ create_qrcode(qrcode_t** self, char* str)
   }
   memset((*self)->stream_, 0, data_len);
   (*self)->stream_[0] = (GEN_MODE << 4) | (uint8_t)(str_count >> 4);
-  (*self)->stream_[1] = (uint8_t)str_count << 4;
+  (*self)->stream_[1] = (uint8_t)(str_count << 4);
   uint8_t ui8 = 0;
   for (; ui8 < str_count; ui8++)
   {
     (*self)->stream_[ui8 + 1] |= (uint8_t)(str[ui8] >> 4);
-    (*self)->stream_[ui8 + 2] |= (uint8_t)(str[ui8] << 4);
+    (*self)->stream_[ui8 + 2] = (uint8_t)(str[ui8] << 4);
   }
 
   uint8_t ecc[data_len];
