@@ -93,13 +93,13 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
   case 3:
     return (row + col) % 3 == 0;
   case 4:
-    return (uint16_t)(floor(row / 2) + floor(col / 3)) % 2 == 0;
+    return (uint16_t)floor((row / 2) + (col / 3)) % 2 == 0;
   case 5:
     return ((row * col) % 2) + ((row * col) % 3) == 0;
   case 6:
-    return (((row * col) % 2) + ((row * col) % 3)) % 2 == 0;
+    return (((row * col) % 3) + row * col) % 2 == 0;
   case 7:
-    return (((row + col) % 2) + ((row * col) % 3)) % 2 == 0;
+    return (((row * col) % 3) + row + col) % 2 == 0;
   default:
     return 0;
   }
