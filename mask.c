@@ -93,13 +93,13 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
   case 3:
     return (row + col) % 3 == 0;
   case 4:
-    return (uint16_t)floor((row / 2) + (col / 3)) % 2 == 0;
+    return (long)(floor(row / 2) + floor(col / 3)) % 2 == 0;
   case 5:
     return ((row * col) % 2) + ((row * col) % 3) == 0;
   case 6:
-    return (((row * col) % 3) + row * col) % 2 == 0;
+    return (((row * col) % 2) + ((row * col) % 3)) % 2 == 0;
   case 7:
-    return (((row * col) % 3) + row + col) % 2 == 0;
+    return (((row + col) % 2) + ((row * col) % 3)) % 2 == 0;
   default:
     return 0;
   }
@@ -421,7 +421,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
     place_align_(*self);
   }
   // NOTE: dark module
-  (*self)->v_[((*self)->order_ - 8) * (*self)->order_ + 8] = 1;
+  (*self)->v_[((*self)->order_ - 8) * (*self)->order_ + 8] = MASK_DARK;
   return 0;
 }
 
@@ -442,13 +442,12 @@ delete_qrmask(qrmask_t** self)
 void
 qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
 {
-  if (should_xor_(self->order_,
-                  indexes_[self->version_][index],
-                  self->masknum_))
+  const uint16_t idx = indexes_[self->version_][index];
+  if (should_xor_(self->order_, idx, self->masknum_))
   {
     module = (module) ? 0 : 1;
   }
-  self->v_[indexes_[self->version_][index]] = module;
+  self->v_[idx] = module;
   if (module == MASK_LIGHT)
   {
     self->light_++;
