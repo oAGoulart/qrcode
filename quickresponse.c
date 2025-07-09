@@ -146,11 +146,7 @@ create_qrcode(qrcode_t** self, char* str)
     {
       ecc[uj8] ^= alog_[(gen_[version][uj8] + log_[lead]) % GF_MAX];
     }
-    if (ecc[0] == 0)
-    {
-      // NOTE: if multiplier is zero, then discard it
-      vshift_(&ecc[0], data_len);
-    }
+    vshift_(&ecc[0], data_len);
   }
   const uint8_t total_bytes = numbytes[version];
   uint8_t* tmp_ptr = (uint8_t*)realloc((*self)->stream_, total_bytes);
