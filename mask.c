@@ -7,8 +7,6 @@
 #include "shared.h"
 #include "mask.h"
 
-#define MASK_DARK 1
-#define MASK_LIGHT 0
 #define UNICODE_LEN 4
 
 struct qrmask_s {
@@ -196,15 +194,15 @@ place_finder_(qrmask_t* self)
   {
     if (i < 7)
     {
-      self->v_[idx1++] = 0;
-      self->v_[idx2--] = 0;
-      self->v_[idx3++] = 0;
+      self->v_[idx1++] = MASK_LIGHT;
+      self->v_[idx2--] = MASK_LIGHT;
+      self->v_[idx3++] = MASK_LIGHT;
     }
     else
     {
-      self->v_[idx1] = 0;
-      self->v_[idx2] = 0;
-      self->v_[idx3] = 0;
+      self->v_[idx1] = MASK_LIGHT;
+      self->v_[idx2] = MASK_LIGHT;
+      self->v_[idx3] = MASK_LIGHT;
       idx1 -= self->order_;
       idx2 -= self->order_;
       idx3 += self->order_;
@@ -238,8 +236,8 @@ place_timing_(qrmask_t* self)
   size_t i = 0;
   for (; i < self->order_ - 16u; i++)
   {
-    self->v_[idx1] = (i % 2 == 0) ? 1 : 0;
-    self->v_[idx2] = (i % 2 == 0) ? 1 : 0;
+    self->v_[idx1] = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
+    self->v_[idx2] = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
     idx1++;
     idx2 += self->order_;
   }
@@ -298,24 +296,24 @@ module_penalty_(qrmask_t* self)
       // NOTE: pattern penalty (row)
       if (j < self->order_ - 10)
       {
-        if (*module == 0 && *next == 0)
+        if (*module == MASK_LIGHT && *next == MASK_LIGHT)
         {
-          if (*(module + 2) == 0 && *(module + 3) == 0 &&
-              *(module + 4) == 1 && *(module + 5) == 0 &&
-              *(module + 6) == 1 && *(module + 7) == 1 &&
-              *(module + 8) == 1 && *(module + 9) == 0 &&
-              *(module + 10) == 1)
+          if (*(module + 2) == MASK_LIGHT && *(module + 3) == MASK_LIGHT &&
+              *(module + 4) == MASK_DARK && *(module + 5) == MASK_LIGHT &&
+              *(module + 6) == MASK_DARK && *(module + 7) == MASK_DARK &&
+              *(module + 8) == MASK_DARK && *(module + 9) == MASK_LIGHT &&
+              *(module + 10) == MASK_DARK)
           {
             penalty += 40;
           }
         }
-        else if (*module == 1 && *next == 0)
+        else if (*module == MASK_DARK && *next == MASK_LIGHT)
         {
-          if (*(module + 2) == 1 && *(module + 3) == 1 &&
-              *(module + 4) == 1 && *(module + 5) == 0 &&
-              *(module + 6) == 1 && *(module + 7) == 0 &&
-              *(module + 8) == 0 && *(module + 9) == 0 &&
-              *(module + 10) == 0)
+          if (*(module + 2) == MASK_DARK && *(module + 3) == MASK_DARK &&
+              *(module + 4) == MASK_DARK && *(module + 5) == MASK_LIGHT &&
+              *(module + 6) == MASK_DARK && *(module + 7) == MASK_LIGHT &&
+              *(module + 8) == MASK_LIGHT && *(module + 9) == MASK_LIGHT &&
+              *(module + 10) == MASK_LIGHT)
           {
             penalty += 40;
           }
@@ -347,32 +345,32 @@ module_penalty_(qrmask_t* self)
       // NOTE: pattern penalty (column)
       if (j < self->count_ - (10 * self->order_))
       {
-        if (*module == 0 && *next == 0)
+        if (*module == MASK_LIGHT && *next == MASK_LIGHT)
         {
-          if (*(module + (2 * self->order_)) == 0 &&
-              *(module + (3 * self->order_)) == 0 &&
-              *(module + (4 * self->order_)) == 1 &&
-              *(module + (5 * self->order_)) == 0 &&
-              *(module + (6 * self->order_)) == 1 &&
-              *(module + (7 * self->order_)) == 1 &&
-              *(module + (8 * self->order_)) == 1 &&
-              *(module + (9 * self->order_)) == 0 &&
-              *(module + (10 * self->order_)) == 1)
+          if (*(module + (2 * self->order_)) == MASK_LIGHT &&
+              *(module + (3 * self->order_)) == MASK_LIGHT &&
+              *(module + (4 * self->order_)) == MASK_DARK &&
+              *(module + (5 * self->order_)) == MASK_LIGHT &&
+              *(module + (6 * self->order_)) == MASK_DARK &&
+              *(module + (7 * self->order_)) == MASK_DARK &&
+              *(module + (8 * self->order_)) == MASK_DARK &&
+              *(module + (9 * self->order_)) == MASK_LIGHT &&
+              *(module + (10 * self->order_)) == MASK_DARK)
           {
             penalty += 40;
           }
         }
-        else if (*module == 1 && *next == 0)
+        else if (*module == MASK_DARK && *next == MASK_LIGHT)
         {
-          if (*(module + (2 * self->order_)) == 1 &&
-              *(module + (3 * self->order_)) == 1 &&
-              *(module + (4 * self->order_)) == 1 &&
-              *(module + (5 * self->order_)) == 0 &&
-              *(module + (6 * self->order_)) == 1 &&
-              *(module + (7 * self->order_)) == 0 &&
-              *(module + (8 * self->order_)) == 0 &&
-              *(module + (9 * self->order_)) == 0 &&
-              *(module + (10 * self->order_)) == 0)
+          if (*(module + (2 * self->order_)) == MASK_DARK &&
+              *(module + (3 * self->order_)) == MASK_DARK &&
+              *(module + (4 * self->order_)) == MASK_DARK &&
+              *(module + (5 * self->order_)) == MASK_LIGHT &&
+              *(module + (6 * self->order_)) == MASK_DARK &&
+              *(module + (7 * self->order_)) == MASK_LIGHT &&
+              *(module + (8 * self->order_)) == MASK_LIGHT &&
+              *(module + (9 * self->order_)) == MASK_LIGHT &&
+              *(module + (10 * self->order_)) == MASK_LIGHT)
           {
             penalty += 40;
           }
@@ -445,7 +443,7 @@ qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
   const uint16_t idx = indexes_[self->version_][index];
   if (should_xor_(self->order_, idx, self->masknum_))
   {
-    module = (module) ? 0 : 1;
+    module = (module == MASK_DARK) ? MASK_LIGHT : MASK_DARK;
   }
   self->v_[idx] = module;
   if (module == MASK_LIGHT)
@@ -487,7 +485,7 @@ qrmask_apply(qrmask_t *self)
     }
     else
     {
-      idx1 = (15 - i) * self->order_ + 8;
+      idx1 = (MASKINFO_LEN - i) * self->order_ + 8;
       idx1 -= (i > 8) ? self->order_ : 0;
     }
     if (i < 7)

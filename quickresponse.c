@@ -191,7 +191,7 @@ create_qrcode(qrcode_t** self, char* str)
     for (; uj8 < NUM_MASKS; uj8++)
     {
       uint16_t index = (uint16_t)(total_bytes * 8) + ui8;
-      qrmask_set((*self)->masks_[uj8], index, 0);
+      qrmask_set((*self)->masks_[uj8], index, MASK_LIGHT);
     }
   }
   int32_t curr_score = 0;
