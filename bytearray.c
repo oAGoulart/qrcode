@@ -93,3 +93,9 @@ bytearray_length(bytearray_t* self)
 {
   return self->count_;
 }
+
+void
+bytearray_update(bytearray_t* self, size_t count)
+{
+  self->count_ = count;
+}

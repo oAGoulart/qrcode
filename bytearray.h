@@ -19,5 +19,7 @@ __attribute__((__nonnull__)) const uint8_t*
 bytearray_data(bytearray_t* self);
 __attribute__((__nonnull__)) size_t
 bytearray_length(bytearray_t* self);
+__attribute__((__nonnull__)) void
+bytearray_update(bytearray_t* self, size_t count);
 
 #endif
