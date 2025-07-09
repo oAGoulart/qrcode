@@ -11,7 +11,7 @@
 - [x] Module printing on terminal
 - [ ] Version 1 to 5 lookup tables
     - [x] Version 1 (limited tests performed)
-    - [x] Version 2 (not always valid)
+    - [x] Version 2 (limited tests performed)
     - [ ] Version 3
     - [ ] Version 4
     - [ ] Version 5
