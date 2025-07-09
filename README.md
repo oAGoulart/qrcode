@@ -1,4 +1,7 @@
 # Command-line QR-Code generator
+![GitHub Release](https://img.shields.io/github/v/release/oagoulart/qrcode?color=green)
+![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)
+[![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
 **WIP**
 
