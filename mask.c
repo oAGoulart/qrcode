@@ -246,9 +246,12 @@ place_timing_(qrmask_t* self)
 static void
 percentage_penalty_(qrmask_t* self)
 {
-  double percentage = ((double)self->dark_ / self->count_) * 100;
-  double diff = fabs(percentage - 50) / 5;
-  self->penalty_ += (uint16_t)(diff * 10);
+  double percentage = (self->dark_ / self->count_) * 10;
+  double prev = floor(percentage) * 10;
+  double next = percentage - fmod(percentage * 10, 5.0) + 5;
+  prev = fabs(prev - 50) / 5;
+  next = fabs(next - 50) / 5;
+  self->penalty_ += (uint16_t)(fmin(prev, next) * 10);
 }
 
 static void
