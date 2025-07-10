@@ -9,7 +9,7 @@ int
 main(int argc, char* argv[])
 {
   if (argc < 2) {
-    fprintf(stderr, "Usage: qc <string>\r\n");
+    fprintf(stderr, "Usage: qrcode <string>\r\n");
     return EINVAL;
   }
 

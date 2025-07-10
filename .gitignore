@@ -1,2 +1,4 @@
 .vscode
 nul
+bin/
+build/
