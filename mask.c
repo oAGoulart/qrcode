@@ -392,7 +392,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   const uint16_t qr_basedark[MAX_VERSION] = {91, 112, 0, 0, 0};
   const uint16_t qr_baselight[MAX_VERSION] = {127, 139, 0, 0, 0};
 
-  if (*self != NULL && version == 0 && version > MAX_VERSION)
+  if (*self != NULL || version >= MAX_VERSION)
   {
     return EINVAL;
   }

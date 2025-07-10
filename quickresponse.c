@@ -52,23 +52,9 @@ log_[GF_MAX + 1] = {
 
 static const uint8_t
 gen1_[8] = {0,87,229,146,149,238,102,21};
-
 static const uint8_t
 gen2_[11] = {0,251,67,46,61,118,70,64,94,32,45};
 
-static const uint8_t*
-gen_[MAX_VERSION] = {
-  (uint8_t*)&gen1_, (uint8_t*)&gen2_, NULL, NULL, NULL
-};
-
-struct qrcode_s
-{
-  uint8_t* stream_;
-  uint8_t slen_;
-  uint8_t chosen_;
-  qrmask_t* masks_[NUM_MASKS];
-  uint8_t version_;
-};
 
 static void
 vshift_(uint8_t* v, uint8_t length)
@@ -81,6 +67,15 @@ vshift_(uint8_t* v, uint8_t length)
   v[length - 1] = 0;
 }
 
+struct qrcode_s
+{
+  uint8_t* stream_;
+  uint8_t slen_;
+  uint8_t chosen_;
+  qrmask_t* masks_[NUM_MASKS];
+  uint8_t version_;
+};
+
 int
 create_qrcode(qrcode_t** self, char* str)
 {
@@ -89,6 +84,9 @@ create_qrcode(qrcode_t** self, char* str)
   const uint8_t ecclen[MAX_VERSION] = {7, 10, 15, 20, 26};
   const uint8_t numbytes[MAX_VERSION] = {26, 44, 70, 100, 134};
   const uint8_t padbits[MAX_VERSION] = {0, 7, 0, 0, 0};
+  const uint8_t* gen[MAX_VERSION] = {
+    (uint8_t*)&gen1_, (uint8_t*)&gen2_, NULL, NULL, NULL
+  };
 
   if (*self != NULL)
   {
@@ -144,7 +142,7 @@ create_qrcode(qrcode_t** self, char* str)
     uint8_t uj8 = 0;
     for (; uj8 < ecclen[version] + 1; uj8++)
     {
-      ecc[uj8] ^= alog_[(gen_[version][uj8] + log_[lead]) % GF_MAX];
+      ecc[uj8] ^= alog_[(gen[version][uj8] + log_[lead]) % GF_MAX];
     }
     vshift_(&ecc[0], data_len);
   }
