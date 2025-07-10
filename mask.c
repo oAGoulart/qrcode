@@ -8,6 +8,7 @@
 #include "mask.h"
 
 #define UNICODE_LEN 4
+#define MASKINFO_LEN 15
 
 struct qrmask_s {
   uint8_t* v_;
@@ -301,22 +302,16 @@ module_penalty_(qrmask_t* self)
       {
         if (*module == MASK_LIGHT && *next == MASK_LIGHT)
         {
-          if (*(module + 2) == MASK_LIGHT && *(module + 3) == MASK_LIGHT &&
-              *(module + 4) == MASK_DARK && *(module + 5) == MASK_LIGHT &&
-              *(module + 6) == MASK_DARK && *(module + 7) == MASK_DARK &&
-              *(module + 8) == MASK_DARK && *(module + 9) == MASK_LIGHT &&
-              *(module + 10) == MASK_DARK)
+          const uint8_t pattern[9] = {0, 0, 1, 0, 1, 1, 1, 0, 1};
+          if (!memcmp(module + 2, &pattern[0], 9))
           {
             penalty += 40;
           }
         }
         else if (*module == MASK_DARK && *next == MASK_LIGHT)
         {
-          if (*(module + 2) == MASK_DARK && *(module + 3) == MASK_DARK &&
-              *(module + 4) == MASK_DARK && *(module + 5) == MASK_LIGHT &&
-              *(module + 6) == MASK_DARK && *(module + 7) == MASK_LIGHT &&
-              *(module + 8) == MASK_LIGHT && *(module + 9) == MASK_LIGHT &&
-              *(module + 10) == MASK_LIGHT)
+          const uint8_t pattern[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
+          if (!memcmp(module + 2, &pattern[0], 9))
           {
             penalty += 40;
           }
@@ -412,6 +407,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
     *self = NULL;
     return ENOMEM;
   }
+  memset((*self)->v_, 0, (*self)->count_);
   (*self)->dark_ = qr_basedark[version];
   (*self)->light_ = qr_baselight[version];
   (*self)->penalty_ = 0;
