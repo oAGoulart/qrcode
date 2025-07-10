@@ -54,7 +54,8 @@ static const uint8_t
 gen1_[8] = {0,87,229,146,149,238,102,21};
 static const uint8_t
 gen2_[11] = {0,251,67,46,61,118,70,64,94,32,45};
-
+static const uint8_t
+gen3_[16] = {0,8,183,61,91,202,37,51,58,58,237,140,124,5,99,105};
 
 static void
 vshift_(uint8_t* v, uint8_t length)
@@ -83,9 +84,9 @@ create_qrcode(qrcode_t** self, char* str)
   const uint8_t strmax[MAX_VERSION] = {17, 32, 53, 78, 106};
   const uint8_t ecclen[MAX_VERSION] = {7, 10, 15, 20, 26};
   const uint8_t numbytes[MAX_VERSION] = {26, 44, 70, 100, 134};
-  const uint8_t padbits[MAX_VERSION] = {0, 7, 0, 0, 0};
+  const uint8_t padbits[MAX_VERSION] = {0, 7, 7, 7, 7};
   const uint8_t* gen[MAX_VERSION] = {
-    (uint8_t*)&gen1_, (uint8_t*)&gen2_, NULL, NULL, NULL
+    (uint8_t*)&gen1_, (uint8_t*)&gen2_, (uint8_t*)&gen3_, NULL, NULL
   };
 
   if (*self != NULL)
@@ -93,11 +94,10 @@ create_qrcode(qrcode_t** self, char* str)
     return EINVAL;
   }
   size_t str_count = strlen(str);
-  if (str_count > strmax[1])
+  if (str_count > strmax[2])
   {
-    // FIXME: set strmax_[1] to latest version added
     fprintf(stderr, "\tstring must be less than %u characters long\r\n",
-            strmax[1]);
+            strmax[2]);
     return EINVAL;
   }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
