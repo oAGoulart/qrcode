@@ -1,6 +1,8 @@
 #ifndef QUICKRESPONSE_H
 #define QUICKRESPONSE_H 1
 
+#define GF_MAX 255
+
 typedef struct qrcode_s qrcode_t;
 
 __attribute__((__nonnull__)) int
