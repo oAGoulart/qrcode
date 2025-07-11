@@ -144,8 +144,20 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
   }
 }
 
+static int
+colcmp_(const uint8_t* v, uint16_t order, const uint8_t* arr, uint16_t n)
+{
+  int eq = 0;
+  uint16_t ui16 = 0;
+  for (; ui16 < n; ui16++)
+  {
+    eq += v[ui16 * order] - arr[ui16];
+  }
+  return ui16;
+}
+
 static void
-mask_double_(uint8_t* v, uint16_t order)
+mask_double_(const uint8_t* v, uint16_t order)
 {
   char str[(order * UNICODE_LEN) + 1];
   uint16_t top = 0;
@@ -182,7 +194,7 @@ mask_double_(uint8_t* v, uint16_t order)
 }
 
 static void
-mask_single_(uint8_t* v, uint16_t order)
+mask_single_(const uint8_t* v, uint16_t order)
 {
   char str[(order * UNICODE_LEN) + 1];
   uint16_t top = 0;
@@ -227,28 +239,7 @@ place_finder_(qrmask_t* self)
     memcpy(&self->v_[(self->order_ - 7u) * self->order_ +
                      self->order_ * i], &finder[i], 7);
   }
-  // NOTE: separators
-  size_t idx1 = 7 * self->order_;
-  size_t idx2 = 7u * self->order_ + self->order_ - 1;
-  size_t idx3 = (self->order_ - 8u) * self->order_;
-  for (i = 0; i < 15; i++)
-  {
-    if (i < 7)
-    {
-      self->v_[idx1++] = MASK_LIGHT;
-      self->v_[idx2--] = MASK_LIGHT;
-      self->v_[idx3++] = MASK_LIGHT;
-    }
-    else
-    {
-      self->v_[idx1] = MASK_LIGHT;
-      self->v_[idx2] = MASK_LIGHT;
-      self->v_[idx3] = MASK_LIGHT;
-      idx1 -= self->order_;
-      idx2 -= self->order_;
-      idx3 += self->order_;
-    }
-  }
+  // NOTE: separators not required
 }
 
 static void
@@ -385,30 +376,18 @@ module_penalty_(qrmask_t* self)
       {
         if (*module == MASK_LIGHT && *next == MASK_LIGHT)
         {
-          if (*(module + (2 * self->order_)) == MASK_LIGHT &&
-              *(module + (3 * self->order_)) == MASK_LIGHT &&
-              *(module + (4 * self->order_)) == MASK_DARK &&
-              *(module + (5 * self->order_)) == MASK_LIGHT &&
-              *(module + (6 * self->order_)) == MASK_DARK &&
-              *(module + (7 * self->order_)) == MASK_DARK &&
-              *(module + (8 * self->order_)) == MASK_DARK &&
-              *(module + (9 * self->order_)) == MASK_LIGHT &&
-              *(module + (10 * self->order_)) == MASK_DARK)
+          const uint8_t pattern[9] = {0, 0, 1, 0, 1, 1, 1, 0, 1};
+          if (!colcmp_(module + (2 * self->order_),
+                       self->order_, &pattern[0], 9))
           {
             penalty += 40;
           }
         }
         else if (*module == MASK_DARK && *next == MASK_LIGHT)
         {
-          if (*(module + (2 * self->order_)) == MASK_DARK &&
-              *(module + (3 * self->order_)) == MASK_DARK &&
-              *(module + (4 * self->order_)) == MASK_DARK &&
-              *(module + (5 * self->order_)) == MASK_LIGHT &&
-              *(module + (6 * self->order_)) == MASK_DARK &&
-              *(module + (7 * self->order_)) == MASK_LIGHT &&
-              *(module + (8 * self->order_)) == MASK_LIGHT &&
-              *(module + (9 * self->order_)) == MASK_LIGHT &&
-              *(module + (10 * self->order_)) == MASK_LIGHT)
+          const uint8_t pattern[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
+          if (!colcmp_(module + (2 * self->order_),
+                       self->order_, &pattern[0], 9))
           {
             penalty += 40;
           }
@@ -424,8 +403,8 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 {
   const uint8_t qr_order[MAX_VERSION] = {21, 25, 29, 33, 37};
   const uint16_t qr_count[MAX_VERSION] = {441, 625, 841, 1089, 1369};
-  const uint16_t qr_basedark[MAX_VERSION] = {91, 112, 114, 0, 0};
-  const uint16_t qr_baselight[MAX_VERSION] = {127, 139, 141, 0, 0};
+  const uint16_t qr_basedark[MAX_VERSION] = {91, 112, 114, 118, 122};
+  const uint16_t qr_baselight[MAX_VERSION] = {127, 139, 141, 145, 149};
 
   if (*self != NULL || version >= MAX_VERSION)
   {
