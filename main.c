@@ -22,12 +22,17 @@ main(int argc, char* argv[])
     fputs("Usage: qrcode [--silent] <string>", stderr);
     return EINVAL;
   }
-  else if (argv[1][0] == '-')
+  size_t i = 1;
+  while (argv[i] != NULL)
   {
-    if (!strcmp(argv[1], "--silent"))
+    if (argv[i][0] == '-')
     {
-      options |= ARG_SILENT;
+      if (!strcmp(argv[i], "--silent"))
+      {
+        options |= ARG_SILENT;
+      }
     }
+    i++;
   }
 
 #ifdef _WIN32
@@ -41,7 +46,7 @@ main(int argc, char* argv[])
          PROJECT_COPYRIGHT "\r\n" PROJECT_LICENSE);
   }
 
-  char* str = (options == ARG_NONE) ? argv[1] : argv[2];
+  char* str = argv[argc - 1];
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr, str);
   if (err)
