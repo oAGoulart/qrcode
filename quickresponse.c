@@ -8,6 +8,7 @@
 #include "quickresponse.h"
 
 #define GEN_MODE 4
+#define NUM_PADBITS 7
 
 static const uint8_t
 alog_[GF_MAX + 1] = {
@@ -78,13 +79,12 @@ struct qrcode_s
 };
 
 int
-create_qrcode(qrcode_t** self, char* str)
+create_qrcode(qrcode_t** self, char* str, uint8_t should_debug)
 {
   const uint8_t bitmask[8] = {1, 2, 4, 8, 16, 32, 64, 128};
   const uint8_t strmax[MAX_VERSION] = {17, 32, 53, 78, 106};
   const uint8_t ecclen[MAX_VERSION] = {7, 10, 15, 20, 26};
   const uint8_t numbytes[MAX_VERSION] = {26, 44, 70, 100, 134};
-  const uint8_t padbits[MAX_VERSION] = {0, 7, 7, 7, 7};
   const uint8_t* gen[MAX_VERSION] = {
     (uint8_t*)&gen1_, (uint8_t*)&gen2_, (uint8_t*)&gen3_, NULL, NULL
   };
@@ -157,6 +157,16 @@ create_qrcode(qrcode_t** self, char* str)
   }
   (*self)->stream_ = tmp_ptr;
   memcpy(&(*self)->stream_[data_len], &ecc[0], ecclen[version]);
+  if (should_debug)
+  {
+    printf("\r\nCalculated bytes (%d): [%d", total_bytes, (*self)->stream_[0]);
+    for (ui8 = 1; ui8 < total_bytes; ui8++)
+    {
+      printf(" %d", (*self)->stream_[ui8]);
+    }
+    puts("]");
+  }
+
   for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
   {
     (*self)->masks_[ui8] = NULL;
@@ -182,14 +192,17 @@ create_qrcode(qrcode_t** self, char* str)
       }
     }
   }
-  // NOTE: padding bits
-  for (ui8 = 0; ui8 < padbits[version]; ui8++)
+  // NOTE: padding bits, MUST check xor
+  if (version > 0)
   {
-    uint8_t uj8 = 0;
-    for (; uj8 < NUM_MASKS; uj8++)
+    for (ui8 = 0; ui8 < NUM_PADBITS; ui8++)
     {
-      uint16_t index = (uint16_t)(total_bytes * 8) + ui8;
-      qrmask_set((*self)->masks_[uj8], index, MASK_LIGHT);
+      uint8_t uj8 = 0;
+      for (; uj8 < NUM_MASKS; uj8++)
+      {
+        uint16_t index = (uint16_t)(total_bytes * 8) + ui8;
+        qrmask_set((*self)->masks_[uj8], index, MASK_LIGHT);
+      }
     }
   }
   int32_t curr_score = 0;
@@ -231,7 +244,14 @@ delete_qrcode(qrcode_t** self)
   }
 }
 
-void qrcode_print(qrcode_t* self)
+void qrcode_print(qrcode_t* self, uint8_t use_raw)
 {
-  qrmask_print(self->masks_[self->chosen_]);
+  if (use_raw)
+  {
+    qrmask_raw(self->masks_[self->chosen_]);
+  }
+  else
+  {
+    qrmask_print(self->masks_[self->chosen_]);
+  }
 }

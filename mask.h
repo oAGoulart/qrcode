@@ -24,5 +24,7 @@ __attribute__((__nonnull__)) void
 qrmask_apply(qrmask_t* self);
 __attribute__((__nonnull__)) void
 qrmask_print(qrmask_t* self);
+__attribute__((__nonnull__)) void
+qrmask_raw(qrmask_t* self);
 
 #endif

@@ -140,7 +140,7 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
   case 7:
     return (((row + col) % 2) + ((row * col) % 3)) % 2 == 0;
   default:
-    return 0;
+    return FALSE;
   }
 }
 
@@ -533,4 +533,18 @@ qrmask_print(qrmask_t *self)
     mask_single_(&self->v_[(self->order_ - 1) * self->order_], self->order_);
   }
   puts("");
+}
+
+void qrmask_raw(qrmask_t *self)
+{
+  size_t i = 0;
+  for (; i < self->order_; i++)
+  {
+    size_t j = 0;
+    for (; j < self->order_; j++)
+    {
+      printf(" %d", self->v_[i * self->order_ + j]);
+    }
+    puts("");
+  }
 }
