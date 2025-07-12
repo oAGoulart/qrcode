@@ -9,6 +9,7 @@
 #include "shared.h"
 
 #define NUM_ARGS 3
+#define NUM_MANDATORY 1
 
 typedef enum targ_e {
   ARG_NONE = 0,
@@ -17,15 +18,22 @@ typedef enum targ_e {
   ARG_RAW = 4
 } targ_t;
 
+static int
+print_help_(const char* cmdln)
+{
+  fprintf(stderr, "Usage: %s --[silent,debug,raw] <string>\r\n", cmdln);
+  return EINVAL;
+}
+
 int
 main(int argc, char* argv[])
 {
   targ_t options = ARG_NONE;
-  if (argc < 2)
+  if (argc < NUM_MANDATORY + 1)
   {
-    fprintf(stderr, "Usage: %s --[silent,debug,raw] <string>\r\n", argv[0]);
-    return EINVAL;
+    return print_help_(argv[0]);
   }
+  int arg_count = 0;
   size_t i = 1;
   while (argv[i] != NULL)
   {
@@ -39,10 +47,15 @@ main(int argc, char* argv[])
         if (!strcmp(argv[i], args[j]))
         {
           options |= arge[j];
+          arg_count++;
         }
       }
     }
     i++;
+  }
+  if (argc - arg_count < NUM_MANDATORY + 1)
+  {
+    return print_help_(argv[0]);
   }
 
 #ifdef _WIN32
