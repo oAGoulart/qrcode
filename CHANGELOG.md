@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-07-13
+
+Added Version 3 QR Codes.
+
 - Added Makefile
 - Added project information on execution
 - Added Version 3 codes
@@ -25,5 +29,6 @@ Initial release.
 - Added Version 1 and 2 QR Codes
 
 
-[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.0.0..HEAD
+[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.1.0..HEAD
+[1.1.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.1.0
 [1.0.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.0.0
