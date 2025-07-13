@@ -189,7 +189,7 @@ mask_double_(const uint8_t* v, uint16_t order)
   if (str_index > 0)
   {
     str[str_index + 1] = '\0';
-    printf("  %s  \r\n", str);
+    printf("    %s    \r\n", str);
   }
 }
 
@@ -215,7 +215,7 @@ mask_single_(const uint8_t* v, uint16_t order)
   if (str_index > 0)
   {
     str[str_index + 1] = '\0';
-    printf("  %s  \r\n", &str[0]);
+    printf("    %s    \r\n", &str[0]);
   }
 }
 
@@ -522,7 +522,7 @@ qrmask_apply(qrmask_t *self)
 void
 qrmask_print(qrmask_t *self)
 {
-  puts("");
+  puts("\r\n");
   uint16_t line = 0;
   for (; line < self->order_ - 1; line += 2)
   {
@@ -532,7 +532,7 @@ qrmask_print(qrmask_t *self)
   {
     mask_single_(&self->v_[(self->order_ - 1) * self->order_], self->order_);
   }
-  puts("");
+  puts("\r\n");
 }
 
 void qrmask_raw(qrmask_t *self)
