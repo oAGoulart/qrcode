@@ -1,9 +1,12 @@
 # Command-line QR Code generator
-![GitHub Release](https://img.shields.io/github/v/release/oagoulart/qrcode?color=green)
-![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)
+[![Static Badge](https://img.shields.io/badge/ISO%2FIEC-18004%3A2024-red)](https://www.iso.org/standard/83389.html)
+[![GitHub Release](https://img.shields.io/github/v/release/oagoulart/qrcode?color=green)](https://github.com/oAGoulart/qrcode/releases)
+[![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** ISO/IEC 18004:2015 Model 2, byte mode, from version 1 to 5, with EC level L. There are no dependencies, generator can be built from code on Windows and Linux.
+**Objective:** Model 2<sup>(1)</sup>, byte mode, from version 1 to 5, with EC level L. There are no dependencies, generator can be built from code on Windows and Linux.
+
+<sup>(1).</sup> As specified on ISO/IEC 18004:2024.
 
 **Progress:**
 - [x] EC code generation
@@ -20,17 +23,20 @@
 **Pre-generated lookup tables:**
 1. Reed-Solomon EC generator polynomials.
 1. Galois field of 256 (285 primitive) log and anti-log table.
-1. Index of each data and error correction bit on encoding region.
+1. Placement index of each data and error correction bit on the encoding region.
 
 **Scan tests performed:**
 - Version 1 through 3 on iOS 18.5.
 
 ## Example
 
-**Input:** "oagoulart.github.io/rambles/keep-thyself-credible"
+**Command-line:** 
+```bash
+qrcode --silent oagoulart.github.io/rambles/keep-thyself-credible
+```
 
 **Output:**
-```
+```bash
 
   █▀▀▀▀▀█  ▀▀▀██  ▄ ▀ ▄ █▀▀▀▀▀█  
   █ ███ █ ▄▀▄ █▄▀█ ▄  ▄ █ ███ █  
@@ -72,4 +78,4 @@ How to contribute with **code**:
 ## Disclaimer
 QR Code, iQR Code SQRC and FrameQR are registered trademarks of DENSO WAVE INCORPORATED in Japan and in other countries.
 
-Information technology — Automatic identification and data capture techniques — QR Code bar code symbology specification is &copy; ISO/IEC 2015 – All rights reserved.
+ISO/IEC 18004:2024 - Information technology — Automatic identification and data capture techniques — QR Code bar code symbology specification is &copy; ISO/IEC 2024 – All rights reserved.
