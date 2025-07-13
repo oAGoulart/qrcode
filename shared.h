@@ -1,7 +1,7 @@
 #ifndef SHARED_H
 #define SHARED_H 1
 
-#define PROJECT_TITLE "Command-line QR-Code generator"
+#define PROJECT_TITLE "Command-line QR Code generator"
 #define PROJECT_VERSION "v1.0.0"
 #define PROJECT_COPYRIGHT "Copyright (c) 2025. Augusto Goulart."
 #define PROJECT_LICENSE "Microsoft Reciprocal License (Ms-RL)"
