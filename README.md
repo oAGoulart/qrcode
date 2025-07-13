@@ -1,9 +1,9 @@
-# Command-line QR-Code generator
+# Command-line QR Code generator
 ![GitHub Release](https://img.shields.io/github/v/release/oagoulart/qrcode?color=green)
 ![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** Byte mode, from version 1 to 5, with EC level L. Currently, only 1, 2, and 3, but modules are already printed on terminal. There are no dependencies, generator can be built from code on Windows and Linux.
+**Objective:** ISO/IEC 18004:2015 Model 2, byte mode, from version 1 to 5, with EC level L. There are no dependencies, generator can be built from code on Windows and Linux.
 
 **Progress:**
 - [x] EC code generation
@@ -18,9 +18,9 @@
     - [ ] Version 5 (up to 106 characters)
 
 **Pre-generated lookup tables:**
-1. Reed-Solomon generator polynomials.
-1. Galois field log and anti-log table.
-1. Indexes of data/ecc bits on the module matrix.
+1. Reed-Solomon EC generator polynomials.
+1. Galois field of 256 (285 primitive) log and anti-log table.
+1. Index of each data and error correction bit on encoding region.
 
 **Scan tests performed:**
 - Version 1 through 3 on iOS 18.5.
@@ -57,14 +57,19 @@ _As a screenshot:_
 ## Contributing
 
 All contributions that furthers this project's **objective** (see above) are welcome.
-As of right now, this project needs quantitative testing of generated QR-Codes.
+As of right now, this project needs quantitative testing of generated QR codes.
 
 How to contribute with **testing**:
 1. Compile the code with `make` (use MinGW or other on Windows);
-1. Generate _at least_ two QR-Codes for each version (see characters capacity above) and try to scan it with your mobile device;
+1. Generate _at least_ two QR codes for each version (see characters capacity above) and try to scan it with your mobile device;
 1. Open an issue in this repo with your results (even if all scans succeeded).
 
 How to contribute with **code**:
 1. Before opening any PR, create an issue discussing your proposed changes and why they are necessary (e.g. better design pattern);
 1. Compile on Windows and Linux before pushing the code;
 1. If your code does anything with heap memory, make sure to run it through [Valgrind](https://valgrind.org).
+
+## Disclaimer
+QR Code, iQR Code SQRC and FrameQR are registered trademarks of DENSO WAVE INCORPORATED in Japan and in other countries.
+
+Information technology — Automatic identification and data capture techniques — QR Code bar code symbology specification is &copy; ISO/IEC 2015 – All rights reserved.
