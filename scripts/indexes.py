@@ -21,8 +21,8 @@ def generate_indexes(version: int) -> None:
     if row == 6:
       return True
     if version > 1:
-      if (row > order - 9 and row < order - 4) and\
-         (column > order - 9 and column < order - 4):
+      if (row > order - 10 and row < order - 4) and\
+         (column > order - 10 and column < order - 4):
         return True
     return False
 
