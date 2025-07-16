@@ -306,10 +306,10 @@ module_penalty_(qrmask_t* self)
 int
 create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 {
-  const uint8_t qr_order[MAX_VERSION] = {21, 25, 29, 33, 37};
-  const uint16_t qr_count[MAX_VERSION] = {441, 625, 841, 1089, 1369};
-  const uint16_t qr_basedark[MAX_VERSION] = {91, 112, 114, 118, 122};
-  const uint16_t qr_baselight[MAX_VERSION] = {127, 139, 141, 145, 149};
+  const uint8_t qr_order[MAX_VERSION] = {21u, 25u, 29u, 33u, 37u};
+  const uint16_t qr_count[MAX_VERSION] = {441u, 625u, 841u, 1089u, 1369u};
+  const uint16_t qr_basedark[MAX_VERSION] = {91u, 112u, 114u, 118u, 122u};
+  const uint16_t qr_baselight[MAX_VERSION] = {127u, 139u, 141u, 145u, 149u};
 
   if (*self != NULL || version >= MAX_VERSION)
   {
@@ -397,7 +397,7 @@ void
 qrmask_apply(qrmask_t *self)
 {
   const uint16_t maskinfo[NUM_MASKS] = {
-    30660, 29427, 32170, 30877, 26159, 25368, 27713, 26998
+    30660u, 29427u, 32170u, 30877u, 26159u, 25368u, 27713u, 26998u
   };
   uint8_t i = 0;
   for (; i < MASKINFO_LEN; i++)

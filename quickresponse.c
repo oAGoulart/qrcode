@@ -37,20 +37,20 @@ struct qrcode_s
 int
 create_qrcode(qrcode_t** self, char* str, uint8_t should_debug)
 {
-  const uint8_t bitmask[8] = {1, 2, 4, 8, 16, 32, 64, 128};
-  const uint8_t strmax[MAX_VERSION] = {17, 32, 53, 78, 106};
-  const uint8_t ecclen[MAX_VERSION] = {7, 10, 15, 20, 26};
-  const uint8_t numbytes[MAX_VERSION] = {26, 44, 70, 100, 134};
+  const uint8_t bitmask[8] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
+  const uint8_t strmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
+  const uint8_t ecclen[MAX_VERSION] = {7u, 10u, 15u, 20u, 26u};
+  const uint8_t numbytes[MAX_VERSION] = {26u, 44u, 70u, 100u, 134u};
 
   if (*self != NULL)
   {
     return EINVAL;
   }
   size_t str_count = strlen(str);
-  if (str_count > strmax[2])
+  if (str_count > strmax[MAX_VERSION - 1])
   {
     fprintf(stderr, "\tstring must be less than %u characters long\r\n",
-            strmax[2]);
+            strmax[MAX_VERSION - 1]);
     return EINVAL;
   }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));

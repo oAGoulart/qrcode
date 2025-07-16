@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Added Version 4 and 5 codes
 - Added script to generate module indexes lookup table
 - Changed gcc flags to optimize `make` build
 - Moved lookup tables to assembly file `lookup.S`
