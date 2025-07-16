@@ -146,7 +146,7 @@ place_finder_(qrmask_t* self)
     memcpy(&self->v_[(self->order_ - 7u) * self->order_ +
                      self->order_ * i], &finder[i], 7);
   }
-  // NOTE: separators not required
+  // NOTE: separators not required (array is initialized to 0)
 }
 
 static void
@@ -284,8 +284,7 @@ module_penalty_(qrmask_t* self)
         if (*module == MASK_LIGHT && *next == MASK_LIGHT)
         {
           const uint8_t pattern[9] = {0, 0, 1, 0, 1, 1, 1, 0, 1};
-          if (!colcmp_(module + (2 * self->order_),
-                       self->order_, &pattern[0], 9))
+          if (!colcmp_(module + (2 * self->order_), self->order_, pattern, 9))
           {
             penalty += 40;
           }
@@ -293,8 +292,7 @@ module_penalty_(qrmask_t* self)
         else if (*module == MASK_DARK && *next == MASK_LIGHT)
         {
           const uint8_t pattern[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
-          if (!colcmp_(module + (2 * self->order_),
-                       self->order_, &pattern[0], 9))
+          if (!colcmp_(module + (2 * self->order_), self->order_, pattern, 9))
           {
             penalty += 40;
           }
@@ -366,7 +364,7 @@ void
 qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
 {
   const uint16_t* qr_region[MAX_VERSION] = {
-    qrindex, qrindex + 208u, qrindex + 567u, qrindex + 1134u, 0
+    qrindex, qrindex + 208u, qrindex + 567u, qrindex + 1134u, qrindex + 1941u
   };
   const uint16_t idx = qr_region[self->version_][index];
   if (should_xor_(self->order_, idx, self->masknum_))
