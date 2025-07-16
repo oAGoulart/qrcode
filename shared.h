@@ -2,7 +2,7 @@
 #define SHARED_H 1
 
 #define PROJECT_TITLE "Command-line QR Code generator"
-#define PROJECT_VERSION "v1.1.0"
+#define PROJECT_VERSION "v1.2.0"
 #define PROJECT_COPYRIGHT "© 2025 Augusto Goulart."
 #define PROJECT_LICENSE "Licensed under Microsoft Reciprocal License (Ms-RL)."
 

@@ -4,21 +4,16 @@
 [![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** Model 2<sup>(1)</sup>, byte mode, from version 1 to 5, with EC level L. There are no dependencies, generator can be built from code on Windows and Linux.
+**Objective:** Model 2, byte mode, from version 1 to 5, with EC level L, as specified on ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on Windows and Linux.
 
-<sup>(1).</sup> As specified on ISO/IEC 18004:2024.
+**Available generation:**
+- Version 1 (up to 17 characters)
+- Version 2 (up to 32 characters)
+- Version 3 (up to 53 characters)
+- Version 4 (up to 78 characters)
+- Version 5 (up to 106 characters)
 
-**Progress:**
-- [x] EC code generation
-- [x] Masking patterns penalty score calculation
-- [x] Selection of minimum version
-- [x] Module printing on terminal
-- [ ] Version 1 to 5 lookup tables
-    - [x] Version 1 (up to 17 characters)
-    - [x] Version 2 (up to 32 characters)
-    - [x] Version 3 (up to 53 characters)
-    - [ ] Version 4 (up to 78 characters)
-    - [ ] Version 5 (up to 106 characters)
+*NOTE:* generator will auto-select smallest Version possible.
 
 **Pre-generated lookup tables:**
 1. Reed-Solomon EC generator polynomials.
@@ -26,9 +21,9 @@
 1. Placement index of each data and error correction bit on the encoding region.
 
 **Scan tests performed:**
-- Version 1 through 3 on iOS 18.5.
+- Version 1 through 5 on iOS 18.5 with all modules visible.
 
-## Example
+## Usage example
 
 **Command-line:** 
 ```bash
