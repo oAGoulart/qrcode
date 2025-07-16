@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - Added script to generate module indexes lookup table
 - Changed gcc flags to optimize `make` build
+- Moved lookup tables to assembly file `lookup.S`
 
 ## [1.1.0] - 2025-07-13
 
