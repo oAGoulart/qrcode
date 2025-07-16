@@ -1,7 +1,7 @@
 TARGET_EXEC := qrcode
 
 CC := gcc
-CFLAGS := -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 --std=c11 -g3 -O0
+CFLAGS := -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 --std=c11 -g0 -O3
 LDFLAGS := -lm
 
 BUILD_DIR := ./bin
