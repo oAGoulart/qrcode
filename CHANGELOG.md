@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Added script to generate module indexes lookup table
+- Changed gcc flags to optimize `make` build
+
 ## [1.1.0] - 2025-07-13
 
 Added Version 3 QR Codes.
