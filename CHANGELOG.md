@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Added `--mask` option to force program to print a specif mask (e.g.: `--mask 3`)
+- Added more debug information when `--debug` is selected
+- Fixed mask penalty calculation when comparing columns
+
 ## [1.2.0] - 2025-07-16
 
 Added Version 4 and Version 5 QR Codes
