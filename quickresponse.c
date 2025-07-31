@@ -115,11 +115,11 @@ create_qrcode(qrcode_t** self, char* str, uint8_t should_debug)
   memcpy(&(*self)->stream_[data_len], &ecc[0], ecclen[version]);
   if (should_debug)
   {
-    printf("(INFO) Calculated bytes (%d): [%x",
+    printf("(INFO) Calculated bytes (%d): [0x%x",
            total_bytes, (*self)->stream_[0]);
     for (ui8 = 1; ui8 < total_bytes; ui8++)
     {
-      printf(", %d", (*self)->stream_[ui8]);
+      printf(", 0x%x", (*self)->stream_[ui8]);
     }
     puts("]");
   }
