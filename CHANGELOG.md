@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Added `--mask` option to force program to print a specif mask (e.g.: `--mask 3`)
+## [1.2.1] - 2025-07-31
+
+Fixed mask penalty calculation
+
+- Added `--mask` option to force program to print a specific mask (e.g.: `--mask 3`)
 - Added more debug information when `--debug` is selected
 - Fixed mask penalty calculation when comparing columns
 
@@ -42,7 +46,8 @@ Initial release.
 - Added Version 1 and 2 QR Codes
 
 
-[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.2.0..HEAD
+[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.2.1..HEAD
+[1.2.1]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.1
 [1.2.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.0
 [1.1.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.1.0
 [1.0.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.0.0
