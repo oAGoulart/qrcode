@@ -115,10 +115,11 @@ create_qrcode(qrcode_t** self, char* str, uint8_t should_debug)
   memcpy(&(*self)->stream_[data_len], &ecc[0], ecclen[version]);
   if (should_debug)
   {
-    printf("\r\nCalculated bytes (%d): [%d", total_bytes, (*self)->stream_[0]);
+    printf("(INFO) Calculated bytes (%d): [%x",
+           total_bytes, (*self)->stream_[0]);
     for (ui8 = 1; ui8 < total_bytes; ui8++)
     {
-      printf(" %d", (*self)->stream_[ui8]);
+      printf(", %d", (*self)->stream_[ui8]);
     }
     puts("]");
   }
@@ -161,20 +162,28 @@ create_qrcode(qrcode_t** self, char* str, uint8_t should_debug)
       }
     }
   }
-  int32_t curr_score = 0;
-  int32_t min_score = UINT16_MAX;
+  uint16_t curr_score = 0;
+  uint16_t min_score = UINT16_MAX;
   uint8_t chosen = 0;
   for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
   {
     curr_score = qrmask_penalty((*self)->masks_[ui8]);
+    qrmask_apply((*self)->masks_[ui8]);
     if (curr_score < min_score)
     {
       min_score = curr_score;
       chosen = ui8;
     }
+    if (should_debug)
+    {
+      printf("(INFO) Mask [%d] penalty: %d\r\n", ui8, curr_score);
+    }
   }
   (*self)->chosen_ = chosen;
-  qrmask_apply((*self)->masks_[chosen]);
+  if (should_debug)
+  {
+    printf("(INFO) Mask chosen: %d\r\n", chosen);
+  }
   return 0;
 }
 
@@ -200,14 +209,17 @@ delete_qrcode(qrcode_t** self)
   }
 }
 
-void qrcode_print(qrcode_t* self, uint8_t use_raw)
+void
+qrcode_print(qrcode_t* self, uint8_t use_raw, int force_mask)
 {
+  uint8_t mask = (force_mask >= 0 && force_mask < 8) ?
+    (uint8_t)force_mask : self->chosen_;
   if (use_raw)
   {
-    qrmask_raw(self->masks_[self->chosen_]);
+    qrmask_raw(self->masks_[mask]);
   }
   else
   {
-    qrmask_print(self->masks_[self->chosen_]);
+    qrmask_print(self->masks_[mask]);
   }
 }
