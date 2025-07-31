@@ -23,7 +23,7 @@ struct qrmask_s {
   uint16_t penalty_;
 };
 
-static uint8_t
+static __inline__ uint8_t __attribute__ ((const))
 should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
 {
   const uint16_t row = (uint16_t)floor(index / order);
@@ -51,16 +51,19 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
   }
 }
 
-static int
+static __inline__ int
 colcmp_(const uint8_t* v, uint16_t order, const uint8_t* arr, uint16_t n)
 {
-  int eq = 0;
   uint16_t ui16 = 0;
   for (; ui16 < n; ui16++)
   {
-    eq += v[ui16 * order] - arr[ui16];
+    int diff = v[ui16 * order] - arr[ui16];
+    if (diff != 0)
+    {
+      return diff;
+    }
   }
-  return ui16;
+  return 0;
 }
 
 static void
@@ -196,7 +199,8 @@ percentage_penalty_(qrmask_t* self)
 static void
 module_penalty_(qrmask_t* self)
 {
-  uint16_t penalty = 0;
+  const uint8_t patleft[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
+  const uint8_t patright[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
   uint16_t i = 0;
   for (; i < self->order_; i++)
   {
@@ -214,7 +218,7 @@ module_penalty_(qrmask_t* self)
           if (*(module + self->order_) == *module &&
               *(next + self->order_) == *module)
           {
-            penalty += 3;
+            self->penalty_ += 3;
           }
         }
         // NOTE: sequential line penalty (row)
@@ -231,28 +235,17 @@ module_penalty_(qrmask_t* self)
           count = j - count;
           if (count > 4)
           {
-            penalty += (uint16_t)(3 + (count - 5));
+            self->penalty_ += (uint16_t)(3 + (count - 5));
           }
         }
       }
       // NOTE: pattern penalty (row)
-      if (j < self->order_ - 10)
+      if (j < self->order_ - 10 && *next == MASK_LIGHT)
       {
-        if (*module == MASK_LIGHT && *next == MASK_LIGHT)
+        const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
+        if (!memcmp(module + 2, pattern, 9))
         {
-          const uint8_t pattern[9] = {0, 0, 1, 0, 1, 1, 1, 0, 1};
-          if (!memcmp(module + 2, &pattern[0], 9))
-          {
-            penalty += 40;
-          }
-        }
-        else if (*module == MASK_DARK && *next == MASK_LIGHT)
-        {
-          const uint8_t pattern[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
-          if (!memcmp(module + 2, &pattern[0], 9))
-          {
-            penalty += 40;
-          }
+          self->penalty_ += 40;
         }
       }
     }
@@ -275,32 +268,20 @@ module_penalty_(qrmask_t* self)
         count = (uint16_t)floor((j - count) / self->order_);
         if (count > 4)
         {
-          penalty += (uint16_t)(3 + (count - 5));
+          self->penalty_ += (uint16_t)(3 + (count - 5));
         }
       }
       // NOTE: pattern penalty (column)
-      if (j < self->count_ - (10 * self->order_))
+      if (j < self->count_ - (10 * self->order_) && *next == MASK_LIGHT)
       {
-        if (*module == MASK_LIGHT && *next == MASK_LIGHT)
+        const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
+        if (!colcmp_(module + (2 * self->order_), self->order_, pattern, 9))
         {
-          const uint8_t pattern[9] = {0, 0, 1, 0, 1, 1, 1, 0, 1};
-          if (!colcmp_(module + (2 * self->order_), self->order_, pattern, 9))
-          {
-            penalty += 40;
-          }
-        }
-        else if (*module == MASK_DARK && *next == MASK_LIGHT)
-        {
-          const uint8_t pattern[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
-          if (!colcmp_(module + (2 * self->order_), self->order_, pattern, 9))
-          {
-            penalty += 40;
-          }
+          self->penalty_ += 40;
         }
       }
     }
   }
-  self->penalty_ += penalty;
 }
 
 int
@@ -443,7 +424,8 @@ qrmask_print(qrmask_t *self)
   puts("\r\n");
 }
 
-void qrmask_raw(qrmask_t *self)
+void
+qrmask_raw(qrmask_t *self)
 {
   size_t i = 0;
   for (; i < self->order_; i++)
