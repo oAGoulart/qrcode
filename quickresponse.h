@@ -11,6 +11,6 @@ __attribute__((__nonnull__)) void
 delete_qrcode(qrcode_t** self);
 
 __attribute__((__nonnull__)) void
-qrcode_print(qrcode_t* self, uint8_t use_raw);
+qrcode_print(qrcode_t* self, uint8_t use_raw, int force_mask);
 
 #endif

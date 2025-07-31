@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <errno.h>
 #ifdef _WIN32
@@ -8,39 +9,41 @@
 #include "quickresponse.h"
 #include "shared.h"
 
-#define NUM_ARGS 3
+#define NUM_ARGS 4
 #define NUM_MANDATORY 1
 
 typedef enum targ_e {
   ARG_NONE = 0,
   ARG_SILENT = 1,
   ARG_DEBUG = 2,
-  ARG_RAW = 4
+  ARG_RAW = 4,
+  ARG_MASK = 8
 } targ_t;
 
 static int
 print_help_(const char* cmdln)
 {
-  fprintf(stderr, "Usage: %s --[silent,debug,raw] <string>\r\n", cmdln);
+  fprintf(stderr, "Usage: %s --[silent,debug,raw,mask] <string>\r\n", cmdln);
   return EINVAL;
 }
 
 int
 main(int argc, char* argv[])
 {
-  targ_t options = ARG_NONE;
   if (argc < NUM_MANDATORY + 1)
   {
     return print_help_(argv[0]);
   }
+  targ_t options = ARG_NONE;
+  int force_mask = -1;
   int arg_count = 0;
-  size_t i = 1;
-  while (argv[i] != NULL)
+  int i = 1;
+  for (; i < argc; i++)
   {
     if (argv[i][0] == '-')
     {
-      const char* args[NUM_ARGS] = {"--silent", "--debug", "--raw"};
-      const targ_t arge[NUM_ARGS] = {ARG_SILENT, ARG_DEBUG, ARG_RAW};
+      const char* args[NUM_ARGS] = {"--silent", "--debug", "--raw", "--mask"};
+      const targ_t arge[NUM_ARGS] = {ARG_SILENT, ARG_DEBUG, ARG_RAW, ARG_MASK};
       size_t j = 0;
       for (; j < NUM_ARGS; j++)
       {
@@ -48,10 +51,16 @@ main(int argc, char* argv[])
         {
           options |= arge[j];
           arg_count++;
+          if (arge[j] == ARG_MASK)
+          {
+            force_mask = (uint8_t)atoi(argv[i + 1]);
+            arg_count++;
+            i++;
+          }
+          break;
         }
       }
     }
-    i++;
   }
   if (argc - arg_count < NUM_MANDATORY + 1)
   {
@@ -77,7 +86,11 @@ main(int argc, char* argv[])
     perror("\t[^] runtime error");
     return err;
   }
-  qrcode_print(qr, options & ARG_RAW);
+  if (options & ARG_DEBUG && options & ARG_MASK)
+  {
+    printf("(INFO) Forced mask: %d\r\n", force_mask);
+  }
+  qrcode_print(qr, options & ARG_RAW, force_mask);
   delete_qrcode(&qr);
   return 0;
 }
