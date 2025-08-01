@@ -2,7 +2,7 @@
 #ifdef _WIN32
   .section rdata, "rd"
 #else
-  .section rodata, "a", @progbits
+  .section rodata, "aR", @progbits
 #endif
 
 .global logt

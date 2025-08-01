@@ -14,6 +14,7 @@ extern const uint16_t qrindex[];
 
 struct qrmask_s {
   uint8_t* v_;
+  const uint16_t* i_;
   uint8_t version_;
   uint8_t order_;
   uint16_t count_;
@@ -72,33 +73,33 @@ mask_double_(const uint8_t* v, uint16_t order)
   char str[(order * UNICODE_LEN) + 1];
   uint16_t top = 0;
   uint16_t bottom = 0;
-  uint16_t str_index = 0;
+  uint16_t strindex = 0;
   for (bottom = order; top < order; top++, bottom++)
   {
     uint8_t ch_case = (uint8_t)(v[top] << 1) + v[bottom];
     switch (ch_case)
     {
     case 0:
-      strcpy(&str[str_index], " ");
-      str_index += 3;
+      strcpy(&str[strindex], " ");
+      strindex += 3;
       break;
     case 1:
-      strcpy(&str[str_index], "▄");
-      str_index += 3;
+      strcpy(&str[strindex], "▄");
+      strindex += 3;
       break;
     case 2:
-      strcpy(&str[str_index], "▀");
-      str_index += 3;
+      strcpy(&str[strindex], "▀");
+      strindex += 3;
       break;
     default:
-      strcpy(&str[str_index], "█");
-      str_index += 3;
+      strcpy(&str[strindex], "█");
+      strindex += 3;
       break;
     }
   }
-  if (str_index > 0)
+  if (strindex > 0)
   {
-    str[str_index + 1] = '\0';
+    str[strindex + 1] = '\0';
     printf("    %s    \r\n", str);
   }
 }
@@ -108,23 +109,23 @@ mask_single_(const uint8_t* v, uint16_t order)
 {
   char str[(order * UNICODE_LEN) + 1];
   uint16_t top = 0;
-  uint16_t str_index = 0;
+  uint16_t strindex = 0;
   for (; top < order; top++)
   {
     if (v[top] == 0)
     {
-      strcpy(&str[str_index], " ");
-      str_index += 3;
+      strcpy(&str[strindex], " ");
+      strindex += 3;
     }
     else
     {
-      strcpy(&str[str_index], "▀");
-      str_index += 3;
+      strcpy(&str[strindex], "▀");
+      strindex += 3;
     }
   }
-  if (str_index > 0)
+  if (strindex > 0)
   {
-    str[str_index + 1] = '\0';
+    str[strindex + 1] = '\0';
     printf("    %s    \r\n", &str[0]);
   }
 }
@@ -291,6 +292,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   const uint16_t qr_count[MAX_VERSION] = {441u, 625u, 841u, 1089u, 1369u};
   const uint16_t qr_basedark[MAX_VERSION] = {91u, 112u, 114u, 118u, 122u};
   const uint16_t qr_baselight[MAX_VERSION] = {127u, 139u, 141u, 145u, 149u};
+  const uint16_t qr_offset[MAX_VERSION] = {0, 208u, 567u, 1134u, 1941u};
 
   if (*self != NULL || version >= MAX_VERSION)
   {
@@ -305,6 +307,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   (*self)->order_ = qr_order[version];
   (*self)->count_ = qr_count[version];
   (*self)->masknum_ = masknum;
+  (*self)->i_ = qrindex + qr_offset[version];
   (*self)->v_ = (uint8_t*)malloc((*self)->count_);
   if ((*self)->v_ == NULL)
   {
@@ -344,10 +347,7 @@ delete_qrmask(qrmask_t** self)
 void
 qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
 {
-  const uint16_t* qr_region[MAX_VERSION] = {
-    qrindex, qrindex + 208u, qrindex + 567u, qrindex + 1134u, qrindex + 1941u
-  };
-  const uint16_t idx = qr_region[self->version_][index];
+  const uint16_t idx = self->i_[index];
   if (should_xor_(self->order_, idx, self->masknum_))
   {
     module = (module == MASK_DARK) ? MASK_LIGHT : MASK_DARK;
@@ -433,7 +433,7 @@ qrmask_raw(qrmask_t *self)
     size_t j = 0;
     for (; j < self->order_; j++)
     {
-      printf(" %d", self->v_[i * self->order_ + j]);
+      printf(" %u", self->v_[i * self->order_ + j]);
     }
     puts("");
   }
