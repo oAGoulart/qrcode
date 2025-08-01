@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Added option description to help text
+- Changed `--debug` option name to `--verbose`
+
 ## [1.2.1] - 2025-07-31
 
 Fixed mask penalty calculation
