@@ -15,7 +15,7 @@
 typedef enum targ_e {
   ARG_NONE = 0,
   ARG_SILENT = 1,
-  ARG_DEBUG = 2,
+  ARG_VERBOSE = 2,
   ARG_RAW = 4,
   ARG_MASK = 8
 } targ_t;
@@ -23,7 +23,14 @@ typedef enum targ_e {
 static int
 print_help_(const char* cmdln)
 {
-  fprintf(stderr, "Usage: %s --[silent,debug,raw,mask] <string>\r\n", cmdln);
+  fprintf(stderr,
+    "Usage: %s [OPTIONS] <string>\r\n"
+    "OPTIONS:\r\n"
+    "\t--silent    force QR Code output only\r\n"
+    "\t--verbose   print runtime information for generated values\r\n"
+    "\t--raw       print generated matrix as 1's and 0's (no Unicode)\r\n"
+    "\t--mask <N>  force output of N mask, regardless of penalty\r\n",
+    cmdln);
   return EINVAL;
 }
 
@@ -35,26 +42,30 @@ main(int argc, char* argv[])
     return print_help_(argv[0]);
   }
   targ_t options = ARG_NONE;
-  int force_mask = -1;
-  int arg_count = 0;
+  int mask = -1;
+  int argcount = 0;
   int i = 1;
   for (; i < argc; i++)
   {
     if (argv[i][0] == '-')
     {
-      const char* args[NUM_ARGS] = {"--silent", "--debug", "--raw", "--mask"};
-      const targ_t arge[NUM_ARGS] = {ARG_SILENT, ARG_DEBUG, ARG_RAW, ARG_MASK};
+      const char* args[NUM_ARGS] = {
+        "--silent", "--verbose", "--raw", "--mask"
+      };
+      const targ_t arge[NUM_ARGS] = {
+        ARG_SILENT, ARG_VERBOSE, ARG_RAW, ARG_MASK
+      };
       size_t j = 0;
       for (; j < NUM_ARGS; j++)
       {
         if (!strcmp(argv[i], args[j]))
         {
           options |= arge[j];
-          arg_count++;
+          argcount++;
           if (arge[j] == ARG_MASK)
           {
-            force_mask = (uint8_t)atoi(argv[i + 1]);
-            arg_count++;
+            mask = (uint8_t)atoi(argv[i + 1]);
+            argcount++;
             i++;
           }
           break;
@@ -62,7 +73,7 @@ main(int argc, char* argv[])
       }
     }
   }
-  if (argc - arg_count < NUM_MANDATORY + 1)
+  if (argc - argcount < NUM_MANDATORY + 1)
   {
     return print_help_(argv[0]);
   }
@@ -79,18 +90,18 @@ main(int argc, char* argv[])
   }
 
   qrcode_t* qr = NULL;
-  int err = create_qrcode(&qr, argv[argc - 1], options & ARG_DEBUG);
+  int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE);
   if (err)
   {
     errno = err;
     perror("\t[^] runtime error");
     return err;
   }
-  if (options & ARG_DEBUG && options & ARG_MASK)
+  if (options & ARG_VERBOSE && options & ARG_MASK)
   {
-    printf("(INFO) Forced mask: %d\r\n", force_mask);
+    printf("(INFO) Forced mask: %d\r\n", mask);
   }
-  qrcode_print(qr, options & ARG_RAW, force_mask);
+  qrcode_print(qr, options & ARG_RAW, mask);
   delete_qrcode(&qr);
   return 0;
 }
