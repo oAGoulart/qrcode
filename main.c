@@ -9,16 +9,17 @@
 #include "quickresponse.h"
 #include "shared.h"
 
-#define NUM_ARGS 4
 #define NUM_MANDATORY 1
 
 typedef enum targ_e {
   ARG_NONE = 0,
-  ARG_SILENT = 1,
-  ARG_VERBOSE = 2,
-  ARG_RAW = 4,
-  ARG_MASK = 8
+  ARG_NOCOPY = 1 << __COUNTER__,
+  ARG_VERBOSE = 1 << __COUNTER__,
+  ARG_RAW = 1 << __COUNTER__,
+  ARG_MASK = 1 << __COUNTER__,
+  ARG_VNUM = 1 << __COUNTER__
 } targ_t;
+static const uint16_t numargs_ = __COUNTER__;
 
 static int
 print_help_(const char* cmdln)
