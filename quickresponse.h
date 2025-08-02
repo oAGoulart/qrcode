@@ -1,7 +1,7 @@
 #ifndef QUICKRESPONSE_H
 #define QUICKRESPONSE_H 1
 
-#define GF_MAX 255
+#include <stdint.h>
 
 typedef struct qrcode_s qrcode_t;
 

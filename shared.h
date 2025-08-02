@@ -16,6 +16,5 @@
 #define FALSE 0
 
 #define MAX_VERSION 5
-#define NUM_MASKS 8
 
 #endif

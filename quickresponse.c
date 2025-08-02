@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,14 +31,14 @@ struct qrcode_s
   uint8_t* stream_;
   uint8_t slen_;
   uint8_t chosen_;
-  qrmask_t* masks_[NUM_MASKS];
+  qrmask_t* masks_[CHAR_BIT];
   uint8_t version_;
 };
 
 int
 create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
 {
-  const uint8_t bitmask[8] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
+  const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
   const uint8_t strmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
   const uint8_t ecclen[MAX_VERSION] = {7u, 10u, 15u, 20u, 26u};
   const uint8_t numbytes[MAX_VERSION] = {26u, 44u, 70u, 100u, 134u};
@@ -104,7 +105,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
     uint8_t uj8 = 0;
     for (; uj8 < ecclen[version] + 1; uj8++)
     {
-      ecc[uj8] ^= alogt[(gen[uj8] + logt[lead]) % GF_MAX];
+      ecc[uj8] ^= alogt[(gen[uj8] + logt[lead]) % UINT8_MAX];
     }
     vshift_(&ecc[0], datalen);
   }
@@ -130,7 +131,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
     puts(" ]");
   }
 
-  for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
+  for (ui8 = 0; ui8 < CHAR_BIT; ui8++)
   {
     (*self)->masks_[ui8] = NULL;
     if (create_qrmask(&(*self)->masks_[ui8], version, ui8) != 0)
@@ -148,7 +149,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
     {
       uint8_t module = ((*self)->stream_[ui8] & bitmask[bit]) >> bit & 1;
       uint8_t uj8 = 0;
-      for (; uj8 < NUM_MASKS; uj8++)
+      for (; uj8 < CHAR_BIT; uj8++)
       {
         uint16_t index = (uint16_t)(offset + (7 - bit));
         qrmask_set((*self)->masks_[uj8], index, module);
@@ -161,7 +162,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
     for (ui8 = 0; ui8 < NUM_PADBITS; ui8++)
     {
       uint8_t uj8 = 0;
-      for (; uj8 < NUM_MASKS; uj8++)
+      for (; uj8 < CHAR_BIT; uj8++)
       {
         uint16_t index = (uint16_t)(byteslen * 8) + ui8;
         qrmask_set((*self)->masks_[uj8], index, MASK_LIGHT);
@@ -171,7 +172,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
   uint16_t score = 0;
   uint16_t minscore = UINT16_MAX;
   uint8_t chosen = 0;
-  for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
+  for (ui8 = 0; ui8 < CHAR_BIT; ui8++)
   {
     score = qrmask_penalty((*self)->masks_[ui8]);
     qrmask_apply((*self)->masks_[ui8]);
@@ -203,7 +204,7 @@ delete_qrcode(qrcode_t** self)
       free((*self)->stream_);
     }
     uint8_t ui8 = 0;
-    for (; ui8 < NUM_MASKS; ui8++)
+    for (; ui8 < CHAR_BIT; ui8++)
     {
       if ((*self)->masks_[ui8] != NULL)
       {

@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <limits.h>
 #include <string.h>
 #include <math.h>
 #include <errno.h>
 #include "shared.h"
 #include "mask.h"
 
-#define UNICODE_LEN 4
 #define MASKINFO_LEN 15
 
 extern const uint16_t qrindex[];
@@ -70,7 +70,7 @@ colcmp_(const uint8_t* v, uint16_t order, const uint8_t* arr, uint16_t n)
 static void
 mask_double_(const uint8_t* v, uint16_t order)
 {
-  char str[(order * UNICODE_LEN) + 1];
+  char str[(order * sizeof(uint32_t)) + 1];
   uint16_t top = 0;
   uint16_t bottom = 0;
   uint16_t strindex = 0;
@@ -107,7 +107,7 @@ mask_double_(const uint8_t* v, uint16_t order)
 static void
 mask_single_(const uint8_t* v, uint16_t order)
 {
-  char str[(order * UNICODE_LEN) + 1];
+  char str[(order * sizeof(uint32_t)) + 1];
   uint16_t top = 0;
   uint16_t strindex = 0;
   for (; top < order; top++)
@@ -377,7 +377,7 @@ qrmask_penalty(qrmask_t *self)
 void
 qrmask_apply(qrmask_t *self)
 {
-  const uint16_t maskinfo[NUM_MASKS] = {
+  const uint16_t maskinfo[CHAR_BIT] = {
     30660u, 29427u, 32170u, 30877u, 26159u, 25368u, 27713u, 26998u
   };
   uint8_t i = 0;

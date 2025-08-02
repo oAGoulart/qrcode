@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - Added option description to help text
 - Changed `--debug` option name to `--verbose`
+- Removed unnecessary literal macros
 
 ## [1.2.1] - 2025-07-31
 
