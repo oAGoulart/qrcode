@@ -27,7 +27,7 @@ print_help_(const char* cmdln)
   fprintf(stderr,
     "Usage: %s [OPTIONS] <string>\r\n"
     "OPTIONS:\r\n"
-    "\t--silent    force QR Code output only\r\n"
+    "\t--nocopy    do not print copyright header\r\n"
     "\t--verbose   print runtime information for generated values\r\n"
     "\t--raw       print generated matrix as 1's and 0's (no Unicode)\r\n"
     "\t--mask <N>  force output of N mask, regardless of penalty\r\n",
