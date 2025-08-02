@@ -2,8 +2,8 @@
 #define SHARED_H 1
 
 #define PROJECT_TITLE "Command-line QR Code generator"
-#define PROJECT_VERSION "(v1.2.1)"
-#define PROJECT_COPYRIGHT "Copyright © 2025 Augusto Goulart."
+#define PROJECT_VERSION "(v1.2.2)"
+#define PROJECT_COPYRIGHT "Copyright (C) 2025 Augusto Goulart."
 #define PROJECT_LICENSE \
   "Licensed under Microsoft Reciprocal License (Ms-RL).\r\n" \
   "QR Code is a registered trademark of DENSO WAVE\r\n" \

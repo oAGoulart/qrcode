@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.2] - 2025-08-02
+
+Add option to force specific Version
+
 - Added option description to help text
 - Added `--vnum` option to try to force use of specific code version
 - Added trademark disclaimer to runtime copyright header
@@ -54,7 +58,8 @@ Initial release.
 - Added Version 1 and 2 QR Codes
 
 
-[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.2.1..HEAD
+[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.2.2..HEAD
+[1.2.2]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.1
 [1.2.1]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.1
 [1.2.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.0
 [1.1.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.1.0

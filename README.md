@@ -4,7 +4,7 @@
 [![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** Model 2, byte mode, from version 1 to 5, with EC level L, as specified on ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on Windows and Linux.
+**Objective:** Model 2, byte mode, from version 1 to 5, with EC level L, as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on Windows and Linux.
 
 **Available generation:**
 - Version 1 (up to 17 characters)
@@ -13,7 +13,7 @@
 - Version 4 (up to 78 characters)
 - Version 5 (up to 106 characters)
 
-*NOTE:* generator will auto-select smallest Version possible.
+_NOTE:_ generator will auto-select smallest Version possible. Unless option `--vnum` used.
 
 **Pre-generated lookup tables:**
 1. Reed-Solomon EC generator polynomials.
@@ -27,7 +27,7 @@
 
 **Command-line:** 
 ```bash
-qrcode --silent oagoulart.github.io/rambles/keep-thyself-credible
+qrcode oagoulart.github.io/rambles/keep-thyself-credible
 ```
 
 **Output:**
