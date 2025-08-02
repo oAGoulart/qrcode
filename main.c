@@ -30,45 +30,61 @@ print_help_(const char* cmdln)
     "\t--nocopy    do not print copyright header\r\n"
     "\t--verbose   print runtime information for generated values\r\n"
     "\t--raw       print generated matrix as 1's and 0's (no Unicode)\r\n"
-    "\t--mask <N>  force output of N mask, regardless of penalty\r\n",
-    cmdln);
+    "\t--mask <N>  force output of N mask, regardless of penalty; N:(0-7)\r\n"
+    "\t--vnum <N>  tries to force use of N version QR Codes; N:(1-%d)\r\n",
+    cmdln, MAX_VERSION);
   return EINVAL;
 }
 
 int
 main(int argc, char* argv[])
 {
+#ifdef _WIN32
+  // NOTE: to allow box-drawing characters
+  system("chcp 65001>nul");
+#endif
+
   if (argc < NUM_MANDATORY + 1)
   {
     return print_help_(argv[0]);
   }
   targ_t options = ARG_NONE;
   int mask = -1;
+  int vnum = -1;
   int argcount = 0;
   int i = 1;
   for (; i < argc; i++)
   {
     if (argv[i][0] == '-')
     {
-      const char* args[NUM_ARGS] = {
-        "--silent", "--verbose", "--raw", "--mask"
+      const char* args[] = {
+        "--nocopy", "--verbose", "--raw", "--mask", "--vnum"
       };
-      const targ_t arge[NUM_ARGS] = {
-        ARG_SILENT, ARG_VERBOSE, ARG_RAW, ARG_MASK
+      const targ_t arge[] = {
+        ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_MASK, ARG_VNUM
       };
       size_t j = 0;
-      for (; j < NUM_ARGS; j++)
+      for (; j < numargs_; j++)
       {
         if (!strcmp(argv[i], args[j]))
         {
           options |= arge[j];
           argcount++;
+          if (arge[j] < ARG_MASK)
+          {
+            break;
+          }
+          uint8_t in8 = (uint8_t)atoi(argv[i + 1]);
           if (arge[j] == ARG_MASK)
           {
-            mask = (uint8_t)atoi(argv[i + 1]);
-            argcount++;
-            i++;
+            mask = in8;
           }
+          else
+          {
+            vnum = in8 - 1;
+          }
+          argcount++;
+          i++;
           break;
         }
       }
@@ -78,20 +94,13 @@ main(int argc, char* argv[])
   {
     return print_help_(argv[0]);
   }
-
-#ifdef _WIN32
-  // NOTE: to allow box-drawing characters
-  system("chcp 65001>nul");
-#endif
-
-  if (!(options & ARG_SILENT))
+  if (!(options & ARG_NOCOPY))
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION "\r\n"
          PROJECT_COPYRIGHT "\r\n" PROJECT_LICENSE "\r\n");
   }
-
   qrcode_t* qr = NULL;
-  int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE);
+  int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE, vnum);
   if (err)
   {
     errno = err;

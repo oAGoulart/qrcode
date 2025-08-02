@@ -36,7 +36,7 @@ struct qrcode_s
 };
 
 int
-create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
+create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
 {
   const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
   const uint8_t strmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
@@ -47,11 +47,12 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
   {
     return EINVAL;
   }
+  uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ? vnum : MAX_VERSION - 1;
   size_t strcount = strlen(str);
-  if (strcount > strmax[MAX_VERSION - 1])
+  if (strcount > strmax[version])
   {
     fprintf(stderr, "\tstring must be less than %u characters long\r\n",
-            strmax[MAX_VERSION - 1]);
+            strmax[version]);
     return EINVAL;
   }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
@@ -60,14 +61,15 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
     return ENOMEM;
   }
   uint16_t offset = 0;
-  uint8_t version = 0;
-  for (; version < MAX_VERSION; version++)
+  uint8_t ui8 = 0;
+  for (; ui8 <= version; ui8++)
   {
-    if (strcount <= strmax[version])
+    if (vnum != version && strcount <= strmax[ui8])
     {
+      version = ui8;
       break;
     }
-    offset += ecclen[version] + 1;
+    offset += ecclen[ui8] + 1;
   }
   const uint8_t* gen = rsgen + offset;
   if (verbose)
@@ -89,8 +91,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose)
   memset((*self)->stream_, 0, datalen);
   (*self)->stream_[0] = (GEN_MODE << 4) | (uint8_t)(strcount >> 4);
   (*self)->stream_[1] = (uint8_t)(strcount << 4);
-  uint8_t ui8 = 0;
-  for (; ui8 < strcount; ui8++)
+  for (ui8 = 0; ui8 < strcount; ui8++)
   {
     (*self)->stream_[ui8 + 1] |= (uint8_t)(str[ui8] >> 4);
     (*self)->stream_[ui8 + 2] = (uint8_t)(str[ui8] << 4);
