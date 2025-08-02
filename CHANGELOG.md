@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 - Added option description to help text
+- Added `--vnum` option to try to force use of specific code version
+- Added trademark disclaimer to runtime copyright header
 - Changed `--debug` option name to `--verbose`
+- Changed `--silent` option name to `--nocopy`
+- Changed argument enum to generate bit flag with `__COUNTER__` macro
 - Removed unnecessary literal macros
 
 ## [1.2.1] - 2025-07-31
