@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.2.2] - 2025-08-02
+## [1.2.2] - 2025-08-03
 
 Add option to force specific Version
 
@@ -59,7 +59,7 @@ Initial release.
 
 
 [Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.2.2..HEAD
-[1.2.2]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.1
+[1.2.2]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.2
 [1.2.1]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.1
 [1.2.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.0
 [1.1.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.1.0
