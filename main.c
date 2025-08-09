@@ -17,21 +17,23 @@ typedef enum targ_e {
   ARG_VERBOSE = 1 << __COUNTER__,
   ARG_RAW = 1 << __COUNTER__,
   ARG_MASK = 1 << __COUNTER__,
-  ARG_VNUM = 1 << __COUNTER__
+  ARG_VNUM = 1 << __COUNTER__,
+  ARG_BMP = 1 << __COUNTER__
 } targ_t;
 static const uint16_t numargs_ = __COUNTER__;
 
-static int
+static __inline__ int
 print_help_(const char* cmdln)
 {
   fprintf(stderr,
-    "Usage: %s [OPTIONS] <string>" __nl
+    "Usage: %s [OPTIONS] <data to encode>" __nl
     "OPTIONS:" __nl
-    "\t--nocopy    do not print copyright header" __nl
-    "\t--verbose   print runtime information for generated values" __nl
-    "\t--raw       print generated matrix as 1's and 0's (no Unicode)" __nl
-    "\t--mask <N>  force output of N mask, regardless of penalty; N:(0-7)" __nl
-    "\t--vnum <N>  tries to force use of N version QR Codes; N:(1-%d)" __nl,
+    "\t--nocopy     do not print copyright header" __nl
+    "\t--verbose    print runtime information for generated values" __nl
+    "\t--raw        print generated matrix as 1's and 0's (no Unicode)" __nl
+    "\t--mask <N>   force N mask output, regardless of penalty; N:(0-7)" __nl
+    "\t--vnum <N>   tries to force use of N version QR Codes; N:(1-%d)" __nl
+    "\t--bmp <STR>  create STR bitmap file with generated code" __nl,
     cmdln, MAX_VERSION);
   return EINVAL;
 }
@@ -52,16 +54,19 @@ main(int argc, char* argv[])
   int mask = -1;
   int vnum = -1;
   int argcount = 0;
+  imgfmt_t imgfmt = FMT_BMP;
+  char* imgout = NULL;
+  pdebug("started parsing cmdln arguments");
   int i = 1;
   for (; i < argc; i++)
   {
     if (argv[i][0] == '-')
     {
       const char* args[] = {
-        "--nocopy", "--verbose", "--raw", "--mask", "--vnum"
+        "--nocopy", "--verbose", "--raw", "--mask", "--vnum", "--bmp"
       };
       const targ_t arge[] = {
-        ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_MASK, ARG_VNUM
+        ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_MASK, ARG_VNUM, ARG_BMP
       };
       size_t j = 0;
       for (; j < numargs_; j++)
@@ -74,14 +79,18 @@ main(int argc, char* argv[])
           {
             break;
           }
-          uint8_t in8 = (uint8_t)atoi(argv[i + 1]);
           if (arge[j] == ARG_MASK)
           {
-            mask = in8;
+            mask = (uint8_t)atoi(argv[i + 1]);
           }
-          else
+          else if (arge[j] == ARG_VNUM)
           {
-            vnum = in8 - 1;
+            vnum = (uint8_t)atoi(argv[i + 1]) - 1;
+          }
+          else // NOTE: ARG_BMP
+          {
+            imgout = argv[i + 1];
+            // imgfmt = FMT_BMP;
           }
           argcount++;
           i++;
@@ -90,6 +99,7 @@ main(int argc, char* argv[])
       }
     }
   }
+  pdebug("finished parsing cmdln arguments");
   if (argc - argcount < NUM_MANDATORY + 1)
   {
     return print_help_(argv[0]);
@@ -101,17 +111,26 @@ main(int argc, char* argv[])
   }
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE, vnum);
-  if (err)
+  fatalif(err);
+  if (options & ARG_MASK)
   {
-    errno = err;
-    perror(__c(31, "\t\u25CF") " runtime error");
-    return err;
+    err = qrcode_forcemask(qr, mask);
+    fatalif(err);
+    if (options & ARG_VERBOSE)
+    {
+      printf(__c(36, "INFO") " Forced mask: %d" __nl, mask);
+    }
   }
-  if (options & ARG_VERBOSE && options & ARG_MASK)
+  qrcode_print(qr, options & ARG_RAW);
+  if (options & ARG_BMP)
   {
-    printf(__c(36, "INFO") " Forced mask: %d" __nl, mask);
+    err = qrcode_output(qr, imgfmt, imgout);
+    fatalif(err);
+    if (options & ARG_VERBOSE)
+    {
+      printf(__c(36, "INFO") " Image written to: %s" __nl, imgout);
+    }
   }
-  qrcode_print(qr, options & ARG_RAW, mask);
   delete_qrcode(&qr);
   return 0;
 }

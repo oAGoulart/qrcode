@@ -223,16 +223,48 @@ delete_qrcode(qrcode_t** self)
   }
 }
 
-void
-qrcode_print(qrcode_t* self, uint8_t useraw, int mask)
+int
+qrcode_forcemask(qrcode_t* self, int mask)
 {
-  uint8_t m = (mask >= 0 && mask < 8) ? (uint8_t)mask : self->chosen_;
+  if (mask >= 0 && mask < 8)
+  {
+    self->chosen_ = (uint8_t)mask;
+    return 0;
+  }
+  return EINVAL;
+}
+
+void
+qrcode_print(qrcode_t* self, uint8_t useraw)
+{
   if (useraw)
   {
-    qrmask_raw(self->masks_[m]);
+    qrmask_praw(self->masks_[self->chosen_]);
   }
   else
   {
-    qrmask_print(self->masks_[m]);
+    qrmask_pbox(self->masks_[self->chosen_]);
   }
+}
+
+int
+qrcode_output(qrcode_t* self, imgfmt_t fmt, const char* filename)
+{
+  FILE* f = fopen(filename, "wb+x");
+  if (f == NULL)
+  {
+    fprintf(stderr, __c(31, "\tcannot create file: %s"), filename);
+    return errno;
+  }
+  int err = 0;
+  if (fmt == FMT_BMP)
+  {
+    err = qrmask_outbmp(self->masks_[self->chosen_], f);
+  }
+  else
+  {
+    err = EINVAL;
+  }
+  fclose(f);
+  return err;
 }

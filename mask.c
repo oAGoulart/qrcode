@@ -367,7 +367,7 @@ qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
 }
 
 uint16_t
-qrmask_penalty(qrmask_t *self)
+qrmask_penalty(qrmask_t* self)
 {
   if (self->penalty_ == 0)
   {
@@ -378,7 +378,7 @@ qrmask_penalty(qrmask_t *self)
 }
 
 void
-qrmask_apply(qrmask_t *self)
+qrmask_apply(qrmask_t* self)
 {
   const uint16_t maskinfo[CHAR_BIT] = {
     30660u, 29427u, 32170u, 30877u, 26159u, 25368u, 27713u, 26998u
@@ -412,7 +412,7 @@ qrmask_apply(qrmask_t *self)
 }
 
 void
-qrmask_print(qrmask_t *self)
+qrmask_pbox(qrmask_t* self)
 {
   puts(__nl);
   uint16_t line = 0;
@@ -428,16 +428,23 @@ qrmask_print(qrmask_t *self)
 }
 
 void
-qrmask_raw(qrmask_t *self)
+qrmask_praw(qrmask_t* self)
 {
   size_t i = 0;
   for (; i < self->order_; i++)
   {
-    size_t j = 0;
+    printf("%u", self->v_[i * self->order_]);
+    size_t j = 1;
     for (; j < self->order_; j++)
     {
-      printf(" %u", self->v_[i * self->order_ + j]);
+      printf(", %u", self->v_[i * self->order_ + j]);
     }
     puts("");
   }
+}
+
+int
+qrmask_outbmp(qrmask_t* self, FILE* file)
+{
+  return 0;
 }
