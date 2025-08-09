@@ -45,19 +45,22 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
 
   if (*self != NULL)
   {
+    pdebug("trying to create qrcode object with garbage in *self pointer");
     return EINVAL;
   }
   uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ? vnum : MAX_VERSION - 1;
   size_t strcount = strlen(str);
   if (strcount > strmax[version])
   {
-    fprintf(stderr, "\tstring must be less than %u characters long\r\n",
+    fprintf(stderr,
+            __c(31, "\tstring must be less than %u characters long") __nl,
             strmax[version]);
     return EINVAL;
   }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
   if (*self == NULL)
   {
+    pdebug("cannot allocate sizeof(qrcode_t) bytes");
     return ENOMEM;
   }
   uint16_t offset = 0;
@@ -74,8 +77,8 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
   const uint8_t* gen = rsgen + offset;
   if (verbose)
   {
-    printf("(INFO) String length: %u\r\n"
-           "(INFO) Version selected: %u\r\n",
+    printf(__c(36, "INFO") " String length: %u" __nl
+           __c(36, "INFO") " Version selected: %u" __nl,
            (uint32_t)strcount, version + 1);
   }
   (*self)->version_ = version;
@@ -84,6 +87,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
   (*self)->stream_ = (uint8_t*)malloc(datalen);
   if ((*self)->stream_ == NULL)
   {
+    pdebug("cannot allocate datalen bytes");
     free(*self);
     *self = NULL;
     return ENOMEM;
@@ -114,6 +118,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
   uint8_t* tmpptr = (uint8_t*)realloc((*self)->stream_, byteslen);
   if (tmpptr == NULL)
   {
+    pdebug("cannot reallocate (*self)->stream_");
     free((*self)->stream_);
     free(*self);
     *self = NULL;
@@ -123,7 +128,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
   memcpy(&(*self)->stream_[datalen], &ecc[0], ecclen[version]);
   if (verbose)
   {
-    printf("(INFO) Calculated bytes (%u): [ 0x%x",
+    printf(__c(36, "INFO") " Calculated bytes (%u): [ 0x%x",
            byteslen, (*self)->stream_[0]);
     for (ui8 = 1; ui8 < byteslen; ui8++)
     {
@@ -137,6 +142,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
     (*self)->masks_[ui8] = NULL;
     if (create_qrmask(&(*self)->masks_[ui8], version, ui8) != 0)
     {
+      pdebug("cannot create qrmask object");
       delete_qrcode(self);
       return ENOMEM;
     }
@@ -184,13 +190,13 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
     }
     if (verbose)
     {
-      printf("(INFO) Mask [%u] penalty: %u\r\n", ui8, score);
+      printf(__c(36, "INFO") " Mask [%u] penalty: %u" __nl, ui8, score);
     }
   }
   (*self)->chosen_ = chosen;
   if (verbose)
   {
-    printf("(INFO) Mask chosen: %u\r\n", chosen);
+    printf(__c(36, "INFO") " Mask chosen: %u" __nl, chosen);
   }
   return 0;
 }

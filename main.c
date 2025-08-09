@@ -25,13 +25,13 @@ static int
 print_help_(const char* cmdln)
 {
   fprintf(stderr,
-    "Usage: %s [OPTIONS] <string>\r\n"
-    "OPTIONS:\r\n"
-    "\t--nocopy    do not print copyright header\r\n"
-    "\t--verbose   print runtime information for generated values\r\n"
-    "\t--raw       print generated matrix as 1's and 0's (no Unicode)\r\n"
-    "\t--mask <N>  force output of N mask, regardless of penalty; N:(0-7)\r\n"
-    "\t--vnum <N>  tries to force use of N version QR Codes; N:(1-%d)\r\n",
+    "Usage: %s [OPTIONS] <string>" __nl
+    "OPTIONS:" __nl
+    "\t--nocopy    do not print copyright header" __nl
+    "\t--verbose   print runtime information for generated values" __nl
+    "\t--raw       print generated matrix as 1's and 0's (no Unicode)" __nl
+    "\t--mask <N>  force output of N mask, regardless of penalty; N:(0-7)" __nl
+    "\t--vnum <N>  tries to force use of N version QR Codes; N:(1-%d)" __nl,
     cmdln, MAX_VERSION);
   return EINVAL;
 }
@@ -96,20 +96,20 @@ main(int argc, char* argv[])
   }
   if (!(options & ARG_NOCOPY))
   {
-    puts(PROJECT_TITLE " " PROJECT_VERSION "\r\n"
-         PROJECT_COPYRIGHT "\r\n" PROJECT_LICENSE "\r\n");
+    puts(PROJECT_TITLE " " PROJECT_VERSION __nl
+         PROJECT_COPYRIGHT __nl PROJECT_LICENSE __nl);
   }
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE, vnum);
   if (err)
   {
     errno = err;
-    perror("\t[^] runtime error");
+    perror(__c(31, "\t\u25CF") " runtime error");
     return err;
   }
   if (options & ARG_VERBOSE && options & ARG_MASK)
   {
-    printf("(INFO) Forced mask: %d\r\n", mask);
+    printf(__c(36, "INFO") " Forced mask: %d" __nl, mask);
   }
   qrcode_print(qr, options & ARG_RAW, mask);
   delete_qrcode(&qr);

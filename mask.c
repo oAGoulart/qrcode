@@ -24,7 +24,7 @@ struct qrmask_s {
   uint16_t penalty_;
 };
 
-static __inline__ uint8_t __attribute__ ((const))
+static __inline__ bool __attribute__ ((const))
 should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
 {
   const uint16_t row = (uint16_t)floor(index / order);
@@ -48,7 +48,7 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
   case 7:
     return (((row + col) % 2) + ((row * col) % 3)) % 2 == 0;
   default:
-    return FALSE;
+    return false;
   }
 }
 
@@ -100,7 +100,7 @@ mask_double_(const uint8_t* v, uint16_t order)
   if (strindex > 0)
   {
     str[strindex + 1] = '\0';
-    printf("    %s    \r\n", str);
+    printf("    %s    " __nl, str);
   }
 }
 
@@ -126,7 +126,7 @@ mask_single_(const uint8_t* v, uint16_t order)
   if (strindex > 0)
   {
     str[strindex + 1] = '\0';
-    printf("    %s    \r\n", &str[0]);
+    printf("    %s    " __nl, str);
   }
 }
 
@@ -145,10 +145,10 @@ place_finder_(qrmask_t* self)
   size_t i = 0;
   for (; i < 7; i++)
   {
-    memcpy(&self->v_[self->order_ * i], &finder[i], 7);
-    memcpy(&self->v_[(self->order_ - 7) + self->order_ * i], &finder[i], 7);
+    memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
+    memcpy(&self->v_[(self->order_ - 7u) + self->order_ * i], &finder[i], 7u);
     memcpy(&self->v_[(self->order_ - 7u) * self->order_ +
-                     self->order_ * i], &finder[i], 7);
+                     self->order_ * i], &finder[i], 7u);
   }
   // NOTE: separators not required (array is initialized to 0)
 }
@@ -163,19 +163,19 @@ place_align_(qrmask_t* self)
     {1, 0, 0, 0, 1},
     {1, 1, 1, 1, 1}
   };
-  size_t index = (self->order_ - 9u) * self->order_ + self->order_ - 9;
+  size_t index = (self->order_ - 9u) * self->order_ + self->order_ - 9u;
   size_t i = 0;
   for (; i < 5; i++)
   {
-    memcpy(&self->v_[index + i * self->order_], &align[i], 5);
+    memcpy(&self->v_[index + i * self->order_], &align[i], 5u);
   }
 }
 
 static void
 place_timing_(qrmask_t* self)
 {
-  size_t idx1 = self->order_ * 6u + 8;
-  size_t idx2 = self->order_ * 8u + 6;
+  size_t idx1 = self->order_ * 6u + 8u;
+  size_t idx2 = self->order_ * 8u + 6u;
   size_t i = 0;
   for (; i < self->order_ - 16u; i++)
   {
@@ -296,11 +296,13 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 
   if (*self != NULL || version >= MAX_VERSION)
   {
+    pdebug("trying to create qrmask object with invalid arguments");
     return EINVAL;
   }
   *self = (qrmask_t*)malloc(sizeof(qrmask_t));
   if (*self == NULL)
   {
+    pdebug("cannot allocate sizeof(qrmask_t) bytes");
     return ENOMEM;
   }
   (*self)->version_ = version;
@@ -311,6 +313,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   (*self)->v_ = (uint8_t*)malloc((*self)->count_);
   if ((*self)->v_ == NULL)
   {
+    pdebug("cannot allocate (*self)->count_ bytes");
     free(*self);
     *self = NULL;
     return ENOMEM;
@@ -411,7 +414,7 @@ qrmask_apply(qrmask_t *self)
 void
 qrmask_print(qrmask_t *self)
 {
-  puts("\r\n");
+  puts(__nl);
   uint16_t line = 0;
   for (; line < self->order_ - 1; line += 2)
   {
@@ -421,7 +424,7 @@ qrmask_print(qrmask_t *self)
   {
     mask_single_(&self->v_[(self->order_ - 1) * self->order_], self->order_);
   }
-  puts("\r\n");
+  puts(__nl);
 }
 
 void
