@@ -2,6 +2,7 @@
 #define MASK_H 1
 
 #include <stdint.h>
+#include <stdio.h>
 
 #define MASK_DARK 1
 #define MASK_LIGHT 0
@@ -20,8 +21,10 @@ qrmask_penalty(qrmask_t* self);
 __attribute__((__nonnull__)) void
 qrmask_apply(qrmask_t* self);
 __attribute__((__nonnull__)) void
-qrmask_print(qrmask_t* self);
+qrmask_pbox(qrmask_t* self);
 __attribute__((__nonnull__)) void
-qrmask_raw(qrmask_t* self);
+qrmask_praw(qrmask_t* self);
+__attribute__((__nonnull__)) int
+qrmask_outbmp(qrmask_t* self, FILE* restrict file);
 
 #endif

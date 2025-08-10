@@ -25,7 +25,7 @@ struct qrmask_s {
 };
 
 static __inline__ bool __attribute__ ((const))
-should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
+should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
 {
   const uint16_t row = (uint16_t)floor(index / order);
   const uint16_t col = index % order;
@@ -53,7 +53,8 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
 }
 
 static __inline__ int
-colcmp_(const uint8_t* v, uint16_t order, const uint8_t* arr, uint16_t n)
+colcmp_(const uint8_t* restrict v, const uint16_t order,
+        const uint16_t n, const uint8_t arr[n])
 {
   uint16_t ui16 = 0;
   for (; ui16 < n; ui16++)
@@ -68,7 +69,7 @@ colcmp_(const uint8_t* v, uint16_t order, const uint8_t* arr, uint16_t n)
 }
 
 static void
-mask_double_(const uint8_t* v, uint16_t order)
+mask_double_(const uint8_t* restrict v, uint16_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
   uint16_t top = 0;
@@ -105,7 +106,7 @@ mask_double_(const uint8_t* v, uint16_t order)
 }
 
 static void
-mask_single_(const uint8_t* v, uint16_t order)
+mask_single_(const uint8_t* restrict v, uint16_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
   uint16_t top = 0;
@@ -276,7 +277,7 @@ module_penalty_(qrmask_t* self)
       if (j < self->count_ - (10 * self->order_) && *next == MASK_LIGHT)
       {
         const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
-        if (!colcmp_(module + (2 * self->order_), self->order_, pattern, 9))
+        if (!colcmp_(module + (2 * self->order_), self->order_, 9, pattern))
         {
           self->penalty_ += 40;
         }
@@ -367,7 +368,7 @@ qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
 }
 
 uint16_t
-qrmask_penalty(qrmask_t *self)
+qrmask_penalty(qrmask_t* self)
 {
   if (self->penalty_ == 0)
   {
@@ -378,7 +379,7 @@ qrmask_penalty(qrmask_t *self)
 }
 
 void
-qrmask_apply(qrmask_t *self)
+qrmask_apply(qrmask_t* self)
 {
   const uint16_t maskinfo[CHAR_BIT] = {
     30660u, 29427u, 32170u, 30877u, 26159u, 25368u, 27713u, 26998u
@@ -412,7 +413,7 @@ qrmask_apply(qrmask_t *self)
 }
 
 void
-qrmask_print(qrmask_t *self)
+qrmask_pbox(qrmask_t* self)
 {
   puts(__nl);
   uint16_t line = 0;
@@ -428,16 +429,101 @@ qrmask_print(qrmask_t *self)
 }
 
 void
-qrmask_raw(qrmask_t *self)
+qrmask_praw(qrmask_t* self)
 {
   size_t i = 0;
   for (; i < self->order_; i++)
   {
-    size_t j = 0;
+    printf("%u", self->v_[i * self->order_]);
+    size_t j = 1;
     for (; j < self->order_; j++)
     {
-      printf(" %u", self->v_[i * self->order_ + j]);
+      printf(", %u", self->v_[i * self->order_ + j]);
     }
     puts("");
   }
+}
+
+int
+qrmask_outbmp(qrmask_t* self, FILE* restrict file)
+{
+  const uint32_t dataoffset = 62;
+  const uint32_t infohsz = 40;
+  const uint16_t mono = 1;
+  const uint32_t ppm = 4800;
+  const uint32_t colors = 2;
+  const char zeros[] = "\0\0\0\0\0\0\0\0";
+  uint32_t nbits = 8 + self->order_;
+  uint8_t nlongs = (uint8_t)ceil((double)nbits / 32);
+  uint32_t nbytes = nlongs * nbits;
+  uint32_t filesize = dataoffset + nbytes;
+  pdebug("writing bitmap Header");
+  uint32_t bytecount = fwrite("BM", 1, 2, file);
+  bytecount += fwrite(&filesize, 1, 4, file);
+  bytecount += fwrite(zeros, 1, 4, file);
+  bytecount += fwrite(&dataoffset, 1, 4, file);
+  pdebug("writing bitmap InfoHeader");
+  bytecount += fwrite(&infohsz, 1, 4, file);
+  bytecount += fwrite(&nbits, 1, 4, file);
+  bytecount += fwrite(&nbits, 1, 4, file);
+  bytecount += fwrite(&mono, 1, 2, file);
+  bytecount += fwrite(&mono, 1, 2, file);
+  bytecount += fwrite(zeros, 1, 4, file);
+  bytecount += fwrite(&nbytes, 1, 4, file);
+  bytecount += fwrite(&ppm, 1, 4, file);
+  bytecount += fwrite(&ppm, 1, 4, file);
+  bytecount += fwrite(&colors, 1, 4, file);
+  bytecount += fwrite(zeros, 1, 4, file);
+  bytecount += fwrite("\xff\xff\xff", 1, 3, file);
+  bytecount += fwrite(zeros, 1, 5, file);
+  if (bytecount < dataoffset)
+  {
+    pdebug("corrupted bitmap format");
+    return EIO;
+  }
+  pdebug("writing bitmap raster data");
+  int16_t i = 0;
+  for (; i < nlongs * 16; i++)
+  {
+    fputc('\0', file);
+  }
+  for (i = self->order_ - 1; i >= 0; i--)
+  {
+    uint8_t* module = self->v_ + i * self->order_;
+    uint8_t byte = 0;
+    uint16_t j = 0;
+    for (; j < 4; j++) // NOTE: left padding
+    {
+      byte |= *module;
+      module++;
+      if (j < 3)
+      {
+        byte <<= 1;
+      }
+    }
+    fwrite(&byte, 1, 1, file);
+    for (j = 1; j < nlongs * 4; j++)
+    {
+      byte = 0;
+      uint8_t k = 0;
+      for (; k < 8; k++)
+      {
+        if (j * 8 + k - 4 < (uint16_t)self->order_)
+        {
+          byte |= *module;
+          module++;
+        }
+        if (k < 7)
+        {
+          byte <<= 1;
+        }
+      }
+      fwrite(&byte, 1, 1, file);
+    }
+  }
+  for (i = 0; i < nlongs * 16; i++)
+  {
+    fputc('\0', file);
+  }
+  return 0;
 }

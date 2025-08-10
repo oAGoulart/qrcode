@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Added option `--bmp` to write generated code to bitmap image
+- Changed output messages to use ANSI escape color formatting
+
 ## [1.2.2] - 2025-08-03
 
 Add option to force specific Version
