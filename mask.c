@@ -444,41 +444,42 @@ qrmask_praw(qrmask_t* self)
   }
 }
 
+typedef struct __attribute__((packed))
+bitmap_s {
+  char signature[2];
+  uint32_t filesize;
+  uint32_t reserved;
+  uint32_t dataoffset;
+  uint32_t infosize;
+  uint32_t width;
+  uint32_t height;
+  uint16_t planes;
+  uint16_t bitcount;
+  uint32_t compression;
+  uint32_t imagesize;
+  uint32_t xppm;
+  uint32_t yppm;
+  uint32_t colorsused;
+  uint32_t colorsimportant;
+  char colortable[2][4];
+} bitmap_t;
+
 int
 qrmask_outbmp(qrmask_t* self, FILE* restrict file)
 {
-  const uint32_t dataoffset = 62;
-  const uint32_t infohsz = 40;
-  const uint16_t mono = 1;
-  const uint32_t ppm = 4800;
-  const uint32_t colors = 2;
-  const char zeros[] = "\0\0\0\0\0\0\0\0";
   uint32_t nbits = 8 + self->order_;
   uint8_t nlongs = (uint8_t)ceil((double)nbits / 32);
   uint32_t nbytes = nlongs * nbits;
-  uint32_t filesize = dataoffset + nbytes;
-  pdebug("writing bitmap Header");
-  uint32_t bytecount = fwrite("BM", 1, 2, file);
-  bytecount += fwrite(&filesize, 1, 4, file);
-  bytecount += fwrite(zeros, 1, 4, file);
-  bytecount += fwrite(&dataoffset, 1, 4, file);
-  pdebug("writing bitmap InfoHeader");
-  bytecount += fwrite(&infohsz, 1, 4, file);
-  bytecount += fwrite(&nbits, 1, 4, file);
-  bytecount += fwrite(&nbits, 1, 4, file);
-  bytecount += fwrite(&mono, 1, 2, file);
-  bytecount += fwrite(&mono, 1, 2, file);
-  bytecount += fwrite(zeros, 1, 4, file);
-  bytecount += fwrite(&nbytes, 1, 4, file);
-  bytecount += fwrite(&ppm, 1, 4, file);
-  bytecount += fwrite(&ppm, 1, 4, file);
-  bytecount += fwrite(&colors, 1, 4, file);
-  bytecount += fwrite(zeros, 1, 4, file);
-  bytecount += fwrite("\xff\xff\xff", 1, 3, file);
-  bytecount += fwrite(zeros, 1, 5, file);
-  if (bytecount < dataoffset)
+  const uint32_t offset = (uint32_t)sizeof(bitmap_t);
+  bitmap_t bm = {
+    { 'B', 'M' }, offset + nbytes, 0, offset, 40, nbits, nbits, 1, 1, 0,
+    nbytes, 4800, 4800, 2, 0, { { -1, -1, -1, 0 }, { 0, 0, 0, 0 } }
+  };
+  pdebug("writing bitmap header");
+  if (!fwrite(&bm, sizeof(bitmap_t), 1, file))
   {
-    pdebug("corrupted bitmap format");
+    fprintf(stderr, 
+            __c(31, "\tcorrupted bitmap format, cannot write header" __nl));
     return EIO;
   }
   pdebug("writing bitmap raster data");
