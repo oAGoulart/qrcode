@@ -25,6 +25,8 @@ _NOTE:_ generator will auto-select smallest Version possible. Unless option `--v
 
 ## Usage example
 
+### 1. Inline printing
+
 **Command-line:** 
 ```bash
 qrcode oagoulart.github.io/rambles/keep-thyself-credible
@@ -51,9 +53,17 @@ qrcode oagoulart.github.io/rambles/keep-thyself-credible
 
 ```
 
-_As a screenshot:_
 
-![qrcode](./assets/screenshot.png)
+### 2. Bitmap generation
+
+**Command-line:** 
+```bash
+qrcode --bmp gen.bmp oagoulart.github.io/rambles/keep-thyself-credible
+```
+
+**Output:**
+
+![QR Code](assets/gen.bmp)
 
 ## Contributing
 
@@ -74,3 +84,7 @@ How to contribute with **code**:
 QR Code, iQR Code SQRC and FrameQR are registered trademarks of DENSO WAVE INCORPORATED in Japan and in other countries.
 
 ISO/IEC 18004:2024 - Information technology — Automatic identification and data capture techniques — QR Code bar code symbology specification is &copy; ISO/IEC 2024 – All rights reserved.
+
+## Further reading
+
+1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
