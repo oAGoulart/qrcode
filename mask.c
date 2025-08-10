@@ -447,7 +447,6 @@ qrmask_praw(qrmask_t* self)
 int
 qrmask_outbmp(qrmask_t* self, FILE* restrict file)
 {
-  /* FIXME: flip vector vertically */
   const uint32_t dataoffset = 62;
   const uint32_t infohsz = 40;
   const uint16_t mono = 1;
@@ -483,25 +482,26 @@ qrmask_outbmp(qrmask_t* self, FILE* restrict file)
     return EIO;
   }
   pdebug("writing bitmap raster data");
-  uint16_t ui16 = 0;
-  for (; ui16 < nlongs * 16; ui16++)
+  int16_t i16 = 0;
+  for (; i16 < nlongs * 16; i16++)
   {
     fputc('\0', file);
   }
-  size_t count = 0;
-  for (ui16 = 0; ui16 < self->order_; ui16++)
+  for (i16 = self->order_ - 1; i16 >= 0; i16--)
   {
+    uint8_t* module = self->v_ + i16 * self->order_;
     uint32_t ui32 = 0;
     uint16_t j = 0;
     for (; j < 27; j++)
     {
       if (j < self->order_)
       {
-        ui32 |= self->v_[count];
-        count++;
+        ui32 |= *module;
+        module++;
       }
       ui32 <<= 1;
     }
+    // NOTE: bytes are ordered right-to-left
     fwrite(((char*)&ui32) + 3, 1, 1, file);
     fwrite(((char*)&ui32) + 2, 1, 1, file);
     fwrite(((char*)&ui32) + 1, 1, 1, file);
@@ -515,11 +515,11 @@ qrmask_outbmp(qrmask_t* self, FILE* restrict file)
       {
         if (self->order_ - j > 0)
         {
-          ui32 |= self->v_[count];
+          ui32 |= *module;
           ui32 <<= l;
           j++;
           l--;
-          count++;
+          module++;
         }
         else
         {
@@ -532,7 +532,7 @@ qrmask_outbmp(qrmask_t* self, FILE* restrict file)
       fwrite(&ui32, 1, 1, file);
     }
   }
-  for (ui16 = 0; ui16 < nlongs * 16; ui16++)
+  for (i16 = 0; i16 < nlongs * 16; i16++)
   {
     fputc('\0', file);
   }
