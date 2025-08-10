@@ -7,11 +7,10 @@
 **Objective:** Model 2, byte mode, from version 1 to 5, with EC level L, as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on Windows and Linux. Output inline, bitmap, or vectors.
 
 **Available generation:**
-- Version 1 (up to 17 characters)
-- Version 2 (up to 32 characters)
-- Version 3 (up to 53 characters)
-- Version 4 (up to 78 characters)
-- Version 5 (up to 106 characters)
+
+| **Version**            | 1    | 2    | 3    | 4    | 5    |
+| ---------------------- | ---- | ---- | ---- | ---- | ---- |
+| **Capacity (chars)**   | 17   | 32   | 53   | 78   | 106  |
 
 _NOTE:_ generator will auto-select smallest Version possible. Unless option `--vnum` used.
 
@@ -20,8 +19,19 @@ _NOTE:_ generator will auto-select smallest Version possible. Unless option `--v
 1. Galois field of 256 (285 primitive) log and anti-log table.
 1. Placement index of each data and error correction bit on the encoding region.
 
-**Scan tests performed:**
-- Version 1 through 5 on iOS 18.5 with all modules visible.
+**Options available:**
+
+```text
+Usage: qrcode [OPTIONS] <data to encode>
+OPTIONS:
+        --nocopy     do not print copyright header
+        --verbose    print runtime information for generated values
+        --raw        print generated matrix as 1's and 0's (no Unicode)
+        --noinline   do not print any inline code, disregards --raw
+        --mask <N>   force N mask output, regardless of penalty; N:(0-7)
+        --vnum <N>   tries to force use of N version QR Codes; N:(1-5)
+        --bmp <STR>  create STR bitmap file with generated code
+```
 
 ## Usage examples
 
