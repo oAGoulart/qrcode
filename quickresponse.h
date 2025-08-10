@@ -20,6 +20,6 @@ qrcode_forcemask(qrcode_t* self, int mask);
 __attribute__((__nonnull__)) void
 qrcode_print(qrcode_t* self, uint8_t useraw);
 __attribute__((__nonnull__)) int
-qrcode_output(qrcode_t* self, imgfmt_t fmt, const char* filename);
+qrcode_output(qrcode_t* self, imgfmt_t fmt, const char* restrict filename);
 
 #endif
