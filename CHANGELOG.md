@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 - Added option `--bmp` to write generated code to bitmap image
+- Added `pdebug` macro, which is empty if built with `NDEBUG`
+- Added option `--noinline` to suppress all inline code printing
+- Changed printing methods to `pbox` and `praw`
 - Changed output messages to use ANSI escape color formatting
 
 ## [1.2.2] - 2025-08-03

@@ -13,17 +13,19 @@
 
 typedef enum targ_e {
   ARG_NONE = 0,
-  ARG_NOCOPY = 1 << __COUNTER__,
-  ARG_VERBOSE = 1 << __COUNTER__,
-  ARG_RAW = 1 << __COUNTER__,
-  ARG_MASK = 1 << __COUNTER__,
-  ARG_VNUM = 1 << __COUNTER__,
-  ARG_BMP = 1 << __COUNTER__
+  ARG_NOCOPY = 1,
+  ARG_VERBOSE = 2,
+  ARG_RAW = 4,
+  ARG_NOINLINE = 8,
+  ARG_RESERVED = 0x8000, // NOTE: exclusive options below
+  ARG_MASK,
+  ARG_VNUM,
+  ARG_BMP
 } targ_t;
-static const uint16_t numargs_ = __COUNTER__;
+#define NUM_ARGS 7
 
 static __inline__ int
-print_help_(const char* cmdln)
+print_help_(const char* restrict cmdln)
 {
   fprintf(stderr,
     "Usage: %s [OPTIONS] <data to encode>" __nl
@@ -31,6 +33,7 @@ print_help_(const char* cmdln)
     "\t--nocopy     do not print copyright header" __nl
     "\t--verbose    print runtime information for generated values" __nl
     "\t--raw        print generated matrix as 1's and 0's (no Unicode)" __nl
+    "\t--noinline   do not print any inline code, disregards --raw" __nl
     "\t--mask <N>   force N mask output, regardless of penalty; N:(0-7)" __nl
     "\t--vnum <N>   tries to force use of N version QR Codes; N:(1-%d)" __nl
     "\t--bmp <STR>  create STR bitmap file with generated code" __nl,
@@ -62,21 +65,23 @@ main(int argc, char* argv[])
   {
     if (argv[i][0] == '-')
     {
-      const char* args[] = {
-        "--nocopy", "--verbose", "--raw", "--mask", "--vnum", "--bmp"
+      const char* args[NUM_ARGS] = {
+        "--nocopy", "--verbose", "--raw", "--noinline",
+        "--mask", "--vnum", "--bmp"
       };
-      const targ_t arge[] = {
-        ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_MASK, ARG_VNUM, ARG_BMP
+      const targ_t arge[NUM_ARGS] = {
+        ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE,
+        ARG_MASK, ARG_VNUM, ARG_BMP
       };
       size_t j = 0;
-      for (; j < numargs_; j++)
+      for (; j < NUM_ARGS; j++)
       {
         if (!strcmp(argv[i], args[j]))
         {
-          options |= arge[j];
           argcount++;
-          if (arge[j] < ARG_MASK)
+          if (arge[j] < ARG_RESERVED)
           {
+            options |= arge[j];
             break;
           }
           if (arge[j] == ARG_MASK)
@@ -112,7 +117,7 @@ main(int argc, char* argv[])
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE, vnum);
   fatalif(err);
-  if (options & ARG_MASK)
+  if (mask != -1)
   {
     err = qrcode_forcemask(qr, mask);
     fatalif(err);
@@ -121,8 +126,11 @@ main(int argc, char* argv[])
       printf(__c(36, "INFO") " Forced mask: %d" __nl, mask);
     }
   }
-  qrcode_print(qr, options & ARG_RAW);
-  if (options & ARG_BMP)
+  if (!(options & ARG_NOINLINE))
+  {
+    qrcode_print(qr, options & ARG_RAW);
+  }
+  if (imgout != NULL)
   {
     err = qrcode_output(qr, imgfmt, imgout);
     fatalif(err);
