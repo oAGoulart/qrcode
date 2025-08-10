@@ -482,57 +482,46 @@ qrmask_outbmp(qrmask_t* self, FILE* restrict file)
     return EIO;
   }
   pdebug("writing bitmap raster data");
-  int16_t i16 = 0;
-  for (; i16 < nlongs * 16; i16++)
+  int16_t i = 0;
+  for (; i < nlongs * 16; i++)
   {
     fputc('\0', file);
   }
-  for (i16 = self->order_ - 1; i16 >= 0; i16--)
+  for (i = self->order_ - 1; i >= 0; i--)
   {
-    uint8_t* module = self->v_ + i16 * self->order_;
-    uint32_t ui32 = 0;
+    uint8_t* module = self->v_ + i * self->order_;
+    uint8_t byte = 0;
     uint16_t j = 0;
-    for (; j < 27; j++)
+    for (; j < 4; j++) // NOTE: left padding
     {
-      if (j < self->order_)
+      byte |= *module;
+      module++;
+      if (j < 3)
       {
-        ui32 |= *module;
-        module++;
+        byte <<= 1;
       }
-      ui32 <<= 1;
     }
-    // NOTE: bytes are ordered right-to-left
-    fwrite(((char*)&ui32) + 3, 1, 1, file);
-    fwrite(((char*)&ui32) + 2, 1, 1, file);
-    fwrite(((char*)&ui32) + 1, 1, 1, file);
-    fwrite(&ui32, 1, 1, file);
-    uint8_t k = 0;
-    for (; k < nlongs - 1; k++)
+    fwrite(&byte, 1, 1, file);
+    for (j = 1; j < nlongs * 4; j++)
     {
-      ui32 = 0;
-      int16_t l = 31;
-      for (; l >= 0; l--)
+      byte = 0;
+      uint8_t k = 0;
+      for (; k < 8; k++)
       {
-        if (self->order_ - j > 0)
+        if (j * 8 + k - 4 < (uint16_t)self->order_)
         {
-          ui32 |= *module;
-          ui32 <<= l;
-          j++;
-          l--;
+          byte |= *module;
           module++;
         }
-        else
+        if (k < 7)
         {
-          break;
+          byte <<= 1;
         }
       }
-      fwrite(((char*)&ui32) + 3, 1, 1, file);
-      fwrite(((char*)&ui32) + 2, 1, 1, file);
-      fwrite(((char*)&ui32) + 1, 1, 1, file);
-      fwrite(&ui32, 1, 1, file);
+      fwrite(&byte, 1, 1, file);
     }
   }
-  for (i16 = 0; i16 < nlongs * 16; i16++)
+  for (i = 0; i < nlongs * 16; i++)
   {
     fputc('\0', file);
   }
