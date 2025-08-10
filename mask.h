@@ -25,6 +25,6 @@ qrmask_pbox(qrmask_t* self);
 __attribute__((__nonnull__)) void
 qrmask_praw(qrmask_t* self);
 __attribute__((__nonnull__)) int
-qrmask_outbmp(qrmask_t* self, FILE* file);
+qrmask_outbmp(qrmask_t* self, FILE* restrict file);
 
 #endif

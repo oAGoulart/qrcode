@@ -12,7 +12,7 @@
 #define __c(c, str) "\033[" __str(c) "m" str "\033[m"
 
 #if !defined(NDEBUG)
-#define pdebug(str) puts(__FILE__ ":" __xstr(__LINE__) " " str)
+#define pdebug(str) puts(__FILE__ ":" __xstr(__LINE__) ": " str)
 #else
 #define pdebug(str)
 #endif

@@ -25,7 +25,7 @@ struct qrmask_s {
 };
 
 static __inline__ bool __attribute__ ((const))
-should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
+should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
 {
   const uint16_t row = (uint16_t)floor(index / order);
   const uint16_t col = index % order;
@@ -53,7 +53,8 @@ should_xor_(uint8_t order, uint16_t index, uint8_t pattern)
 }
 
 static __inline__ int
-colcmp_(const uint8_t* v, uint16_t order, const uint8_t* arr, uint16_t n)
+colcmp_(const uint8_t* restrict v, const uint16_t order,
+        const uint16_t n, const uint8_t arr[n])
 {
   uint16_t ui16 = 0;
   for (; ui16 < n; ui16++)
@@ -68,7 +69,7 @@ colcmp_(const uint8_t* v, uint16_t order, const uint8_t* arr, uint16_t n)
 }
 
 static void
-mask_double_(const uint8_t* v, uint16_t order)
+mask_double_(const uint8_t* restrict v, uint16_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
   uint16_t top = 0;
@@ -105,7 +106,7 @@ mask_double_(const uint8_t* v, uint16_t order)
 }
 
 static void
-mask_single_(const uint8_t* v, uint16_t order)
+mask_single_(const uint8_t* restrict v, uint16_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
   uint16_t top = 0;
@@ -276,7 +277,7 @@ module_penalty_(qrmask_t* self)
       if (j < self->count_ - (10 * self->order_) && *next == MASK_LIGHT)
       {
         const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
-        if (!colcmp_(module + (2 * self->order_), self->order_, pattern, 9))
+        if (!colcmp_(module + (2 * self->order_), self->order_, 9, pattern))
         {
           self->penalty_ += 40;
         }
@@ -444,7 +445,96 @@ qrmask_praw(qrmask_t* self)
 }
 
 int
-qrmask_outbmp(qrmask_t* self, FILE* file)
+qrmask_outbmp(qrmask_t* self, FILE* restrict file)
 {
+  /* FIXME: flip vector vertically */
+  const uint32_t dataoffset = 62;
+  const uint32_t infohsz = 40;
+  const uint16_t mono = 1;
+  const uint32_t ppm = 4800;
+  const uint32_t colors = 2;
+  const char zeros[] = "\0\0\0\0\0\0\0\0";
+  uint32_t nbits = 8 + self->order_;
+  uint8_t nlongs = (uint8_t)ceil((double)nbits / 32);
+  uint32_t nbytes = nlongs * nbits;
+  uint32_t filesize = dataoffset + nbytes;
+  pdebug("writing bitmap Header");
+  uint32_t bytecount = fwrite("BM", 1, 2, file);
+  bytecount += fwrite(&filesize, 1, 4, file);
+  bytecount += fwrite(zeros, 1, 4, file);
+  bytecount += fwrite(&dataoffset, 1, 4, file);
+  pdebug("writing bitmap InfoHeader");
+  bytecount += fwrite(&infohsz, 1, 4, file);
+  bytecount += fwrite(&nbits, 1, 4, file);
+  bytecount += fwrite(&nbits, 1, 4, file);
+  bytecount += fwrite(&mono, 1, 2, file);
+  bytecount += fwrite(&mono, 1, 2, file);
+  bytecount += fwrite(zeros, 1, 4, file);
+  bytecount += fwrite(&nbytes, 1, 4, file);
+  bytecount += fwrite(&ppm, 1, 4, file);
+  bytecount += fwrite(&ppm, 1, 4, file);
+  bytecount += fwrite(&colors, 1, 4, file);
+  bytecount += fwrite(zeros, 1, 4, file);
+  bytecount += fwrite("\xff\xff\xff", 1, 3, file);
+  bytecount += fwrite(zeros, 1, 5, file);
+  if (bytecount < dataoffset)
+  {
+    pdebug("corrupted bitmap format");
+    return EIO;
+  }
+  pdebug("writing bitmap raster data");
+  uint16_t ui16 = 0;
+  for (; ui16 < nlongs * 16; ui16++)
+  {
+    fputc('\0', file);
+  }
+  size_t count = 0;
+  for (ui16 = 0; ui16 < self->order_; ui16++)
+  {
+    uint32_t ui32 = 0;
+    uint16_t j = 0;
+    for (; j < 27; j++)
+    {
+      if (j < self->order_)
+      {
+        ui32 |= self->v_[count];
+        count++;
+      }
+      ui32 <<= 1;
+    }
+    fwrite(((char*)&ui32) + 3, 1, 1, file);
+    fwrite(((char*)&ui32) + 2, 1, 1, file);
+    fwrite(((char*)&ui32) + 1, 1, 1, file);
+    fwrite(&ui32, 1, 1, file);
+    uint8_t k = 0;
+    for (; k < nlongs - 1; k++)
+    {
+      ui32 = 0;
+      int16_t l = 31;
+      for (; l >= 0; l--)
+      {
+        if (self->order_ - j > 0)
+        {
+          ui32 |= self->v_[count];
+          ui32 <<= l;
+          j++;
+          l--;
+          count++;
+        }
+        else
+        {
+          break;
+        }
+      }
+      fwrite(((char*)&ui32) + 3, 1, 1, file);
+      fwrite(((char*)&ui32) + 2, 1, 1, file);
+      fwrite(((char*)&ui32) + 1, 1, 1, file);
+      fwrite(&ui32, 1, 1, file);
+    }
+  }
+  for (ui16 = 0; ui16 < nlongs * 16; ui16++)
+  {
+    fputc('\0', file);
+  }
   return 0;
 }

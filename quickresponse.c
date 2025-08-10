@@ -250,10 +250,10 @@ qrcode_print(qrcode_t* self, uint8_t useraw)
 int
 qrcode_output(qrcode_t* self, imgfmt_t fmt, const char* filename)
 {
-  FILE* f = fopen(filename, "wb+x");
+  FILE* f = fopen(filename, "wb+");
   if (f == NULL)
   {
-    fprintf(stderr, __c(31, "\tcannot create file: %s"), filename);
+    fprintf(stderr, __c(31, "\tcannot create file: %s" __nl), filename);
     return errno;
   }
   int err = 0;
