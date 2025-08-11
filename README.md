@@ -13,7 +13,7 @@
  **Capacity (chars)**   | 17   | 32   | 53   | 78   | 106 
 
 > [!NOTE]
-> Generator will auto-select smallest Version possible. Unless option `--vnum` used.
+> Generator will auto-select smallest Version possible. Unless option `-v` specified.
 
 **Pre-generated lookup tables:**
 1. Reed-Solomon EC generator polynomials.
@@ -100,4 +100,5 @@ ISO/IEC 18004:2024 - Information technology — Automatic identification and dat
 ## Further reading
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
+
 
