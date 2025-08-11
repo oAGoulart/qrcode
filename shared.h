@@ -26,6 +26,7 @@
   "INCORPORATED in Japan and in other countries."
 
 #define MAX_VERSION 5
+#define MAX_SCALE 30
 
 #define fatalif(err)\
   if (err)\

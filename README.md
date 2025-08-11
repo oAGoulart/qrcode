@@ -29,9 +29,10 @@ OPTIONS:
         --verbose    print runtime information for generated values
         --raw        print generated matrix as 1's and 0's (no Unicode)
         --noinline   do not print any inline code, disregards --raw
-        --mask <N>   force N mask output, regardless of penalty; N:(0-7)
-        --vnum <N>   tries to force use of N version QR Codes; N:(1-5)
-        --bmp <STR>  create STR bitmap file with generated code
+        -m <N>       force N mask output, regardless of penalty; N:(0-7)
+        -v <N>       tries to force use of N version QR Codes; N:(1-5)
+        -s <N>       scale image output by N times; N:(1-30)
+        -B <STR>     create STR bitmap file with generated code
 ```
 
 ## Usage examples
@@ -69,7 +70,7 @@ qrcode oagoulart.github.io/rambles/keep-thyself-credible
 
 **Command-line:** 
 ```bash
-qrcode --bmp gen.bmp oagoulart.github.io/rambles/keep-thyself-credible
+qrcode -s 6 -B gen.bmp oagoulart.github.io/rambles/keep-thyself-credible
 ```
 
 **Output:**

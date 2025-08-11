@@ -465,15 +465,16 @@ bitmap_s {
 } bitmap_t;
 
 int
-qrmask_outbmp(qrmask_t* self, FILE* restrict file)
+qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* restrict file)
 {
-  uint32_t nbits = 8 + self->order_;
-  uint8_t nlongs = (uint8_t)ceil((double)nbits / 32);
-  uint32_t nbytes = nlongs * nbits;
+  const uint32_t nbits = (8 + self->order_) * scale;
+  const uint8_t nlongs = (uint8_t)ceil((double)nbits / 32);
+  const uint8_t nbytes = nlongs * 4;
+  const uint32_t datalen = nlongs * nbits;
   const uint32_t offset = (uint32_t)sizeof(bitmap_t);
   bitmap_t bm = {
-    { 'B', 'M' }, offset + nbytes, 0, offset, 40, nbits, nbits, 1, 1, 0,
-    nbytes, 4800, 4800, 2, 0, { { -1, -1, -1, 0 }, { 0, 0, 0, 0 } }
+    { 'B', 'M' }, offset + datalen, 0, offset, 40, nbits, nbits, 1, 1, 0,
+    datalen, 4800, 4800, 2, 0, { { -1, -1, -1, 0 }, { 0, 0, 0, 0 } }
   };
   pdebug("writing bitmap header");
   if (!fwrite(&bm, sizeof(bitmap_t), 1, file))
@@ -484,45 +485,73 @@ qrmask_outbmp(qrmask_t* self, FILE* restrict file)
   }
   pdebug("writing bitmap raster data");
   int16_t i = 0;
-  for (; i < nlongs * 16; i++)
+  for (; i < nbytes * 4 * scale; i++)
   {
     fputc('\0', file);
   }
   for (i = self->order_ - 1; i >= 0; i--)
   {
     uint8_t* module = self->v_ + i * self->order_;
-    uint8_t byte = 0;
+    uint8_t bytes[nbytes];
+    uint16_t mcount = 0;
+    int16_t scount = scale;
+    uint8_t rest = (4 * scale) % 8;
+    uint16_t index = (uint16_t)(4 * scale - rest) / 8;
     uint16_t j = 0;
-    for (; j < 4; j++) // NOTE: left padding
+    for (; j <= index; j++)
     {
-      byte |= *module;
-      module++;
-      if (j < 3)
+      bytes[j] = 0;
+    }
+    for (j = 0; j < 8 - rest; j++) // NOTE: left padding
+    {
+      if (scount == 0)
       {
-        byte <<= 1;
+        module++;
+        mcount++;
+        scount = scale;
+      }
+      bytes[index] |= *module;
+      scount--;
+      if (j < 7 - rest)
+      {
+        bytes[index] <<= 1;
       }
     }
-    fwrite(&byte, 1, 1, file);
-    for (j = 1; j < nlongs * 4; j++)
+    uint16_t diff = (uint16_t)ceil((self->order_ * scale) / 8) + index;
+    index++;
+    for (j = index; j < nbytes; j++)
     {
-      byte = 0;
-      uint8_t k = 0;
-      for (; k < 8; k++)
+      bytes[index] = 0;
+      if (j <= diff)
       {
-        if (j * 8 + k - 4 < (uint16_t)self->order_)
+        uint8_t k = 0;
+        for (; k < 8; k++)
         {
-          byte |= *module;
-          module++;
-        }
-        if (k < 7)
-        {
-          byte <<= 1;
+          if (scount == 0)
+          {
+            module++;
+            mcount++;
+            scount = scale;
+          }
+          if (mcount < self->order_)
+          {
+            bytes[index] |= *module;
+            scount--;
+          }
+          if (k < 7)
+          {
+            bytes[index] <<= 1;
+          }
         }
       }
-      fwrite(&byte, 1, 1, file);
+      index++;
+    }
+    for (j = 0; j < scale; j++)
+    {
+      fwrite(bytes, 1, nbytes, file);
     }
   }
-  for (i = 0; i < nlongs * 16; i++)
+  for (i = 0; i < nbytes * 4 * scale; i++)
   {
     fputc('\0', file);
   }

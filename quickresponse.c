@@ -248,8 +248,15 @@ qrcode_print(qrcode_t* self, uint8_t useraw)
 }
 
 int
-qrcode_output(qrcode_t* self, imgfmt_t fmt, const char* restrict filename)
+qrcode_output(qrcode_t* self, imgfmt_t fmt, int scale,
+              const char* restrict filename)
 {
+  scale = (scale == -1) ? 1 : scale;
+  if (scale < 1 || scale > MAX_SCALE)
+  {
+    fprintf(stderr, __c(31, "\tinvalid image scale: %d" __nl), scale);
+    return EINVAL;
+  }
   FILE* f = fopen(filename, "wb+");
   if (f == NULL)
   {
@@ -260,7 +267,7 @@ qrcode_output(qrcode_t* self, imgfmt_t fmt, const char* restrict filename)
   if (fmt == FMT_BMP)
   {
     pdebug("bitmap image output selected");
-    err = qrmask_outbmp(self->masks_[self->chosen_], f);
+    err = qrmask_outbmp(self->masks_[self->chosen_], scale, f);
   }
   else
   {
