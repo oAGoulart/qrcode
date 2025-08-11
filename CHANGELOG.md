@@ -4,10 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Added option `--bmp` to write generated code to bitmap image
+## [1.3.0] - 2025-08-11
+
+Add bitmap output option
+
+- Added option `-B` to write generated code to bitmap image
 - Added `pdebug` macro, which is empty if built with `NDEBUG`
 - Added option `--noinline` to suppress all inline code printing
 - Added option `-s` to scale output image resolution
+- Added debug target to Makefile (`make debug`)
 - Changed exclusive options to single `-` and single letter
 - Changed printing methods to `pbox` and `praw`
 - Changed output messages to use ANSI escape color formatting

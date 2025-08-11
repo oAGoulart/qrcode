@@ -38,31 +38,34 @@ struct qrcode_s
 int
 create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
 {
+  if (*self != NULL)
+  {
+    pdebug(__c(31, "error:") " garbage in *self pointer");
+    return EINVAL;
+  }
+
   const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
   const uint8_t strmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
   const uint8_t ecclen[MAX_VERSION] = {7u, 10u, 15u, 20u, 26u};
   const uint8_t numbytes[MAX_VERSION] = {26u, 44u, 70u, 100u, 134u};
-
-  if (*self != NULL)
-  {
-    pdebug("trying to create qrcode object with garbage in *self pointer");
-    return EINVAL;
-  }
   uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ? vnum : MAX_VERSION - 1;
+
   size_t strcount = strlen(str);
   if (strcount > strmax[version])
   {
     fprintf(stderr,
-            __c(31, "\tstring must be less than %u characters long") __nl,
+            __c(31, "\tdata must be less than %u characters long") __nl,
             strmax[version]);
     return EINVAL;
   }
+
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
   if (*self == NULL)
   {
-    pdebug("cannot allocate sizeof(qrcode_t) bytes");
+    pdebug(__c(31, "error:") "cannot allocate (qrcode_t) bytes");
     return ENOMEM;
   }
+
   uint16_t offset = 0;
   uint8_t ui8 = 0;
   for (; ui8 <= version; ui8++)
@@ -81,18 +84,21 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
            __c(36, "INFO") " Version selected: %u" __nl,
            (uint32_t)strcount, version + 1);
   }
+
   (*self)->version_ = version;
   const uint8_t datalen = strmax[version] + 2;
   (*self)->slen_ = datalen;
   (*self)->stream_ = (uint8_t*)malloc(datalen);
   if ((*self)->stream_ == NULL)
   {
-    pdebug("cannot allocate datalen bytes");
+    pdebug(__c(31, "error:") "cannot allocate datalen bytes");
     free(*self);
     *self = NULL;
     return ENOMEM;
   }
   memset((*self)->stream_, 0, datalen);
+
+  pdebug("encoding data bits");
   (*self)->stream_[0] = (GEN_MODE << 4) | (uint8_t)(strcount >> 4);
   (*self)->stream_[1] = (uint8_t)(strcount << 4);
   for (ui8 = 0; ui8 < strcount; ui8++)
@@ -103,7 +109,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
 
   uint8_t ecc[datalen];
   memcpy(&ecc[0], (*self)->stream_, datalen);
-  // NOTE: polynomial division (long division)
+  pdebug("starting polynomial division (long division)");
   for (ui8 = 0; ui8 < datalen; ui8++)
   {
     uint8_t lead = ecc[0];
@@ -118,7 +124,7 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
   uint8_t* tmpptr = (uint8_t*)realloc((*self)->stream_, byteslen);
   if (tmpptr == NULL)
   {
-    pdebug("cannot reallocate (*self)->stream_");
+    pdebug(__c(31, "error:") "cannot reallocate (*self)->stream_");
     free((*self)->stream_);
     free(*self);
     *self = NULL;
@@ -142,11 +148,11 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
     (*self)->masks_[ui8] = NULL;
     if (create_qrmask(&(*self)->masks_[ui8], version, ui8) != 0)
     {
-      pdebug("cannot create qrmask object");
       delete_qrcode(self);
       return ENOMEM;
     }
   }
+  pdebug("applying XOR masks");
   for (ui8 = 0; ui8 < byteslen; ui8++)
   {
     offset = ui8 * 8;
@@ -176,6 +182,8 @@ create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
       }
     }
   }
+  
+  pdebug("calculating masks penalty");
   uint16_t score = 0;
   uint16_t minscore = UINT16_MAX;
   uint8_t chosen = 0;

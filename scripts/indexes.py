@@ -69,5 +69,5 @@ def generate_indexes(version: int) -> None:
 
 if __name__ == "__main__":
   if len(sys.argv) < 2:
-    raise ValueError("not enough arguments.")
+    raise ValueError("not enough arguments")
   generate_indexes(int(sys.argv[1]))

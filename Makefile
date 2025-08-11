@@ -1,7 +1,10 @@
+.PHONY: default
+default: build
+
 TARGET_EXEC := qrcode
 
 CC := gcc
-CFLAGS := -DNDEBUG -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 --std=c11 -g0 -O3
+CCFLAGS := -DNDEBUG -g0 -O3
 LDFLAGS := -lm
 
 BUILD_DIR := ./bin
@@ -9,11 +12,16 @@ SRCS := mask.c quickresponse.c main.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
-$(BUILD_DIR)/$(TARGET_EXEC): lookup.o $(OBJS)
-	$(CC) $(BUILD_DIR)/lookup.o $(OBJS) -o $@ $(LDFLAGS)
+debug: debug_build
+
+debug_build: CCFLAGS ::= -g3 -O0
+debug_build: build
+
+build: lookup.o $(OBJS)
+	$(CC) $(BUILD_DIR)/lookup.o $(OBJS) -o $(BUILD_DIR)/$(TARGET_EXEC) $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 --std=c11 $(CCFLAGS) -c $< -o $@
 
 lookup.o:
 	mkdir -p $(BUILD_DIR)

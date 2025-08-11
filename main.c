@@ -9,8 +9,6 @@
 #include "quickresponse.h"
 #include "shared.h"
 
-#define NUM_MANDATORY 1
-
 typedef enum targ_e {
   ARG_NONE = 0,
   ARG_NOCOPY = 1,
@@ -24,10 +22,13 @@ typedef enum targ_e {
   ARG_BMP
 } targ_t;
 #define NUM_ARGS 8
+#define NUM_MANDATORY 1
+
 static const char* args_[NUM_ARGS] = {
   "--nocopy", "--verbose", "--raw", "--noinline",
   "-m", "-v", "-s", "-B"
 };
+
 static const targ_t arge_[NUM_ARGS] = {
   ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE,
   ARG_MASK, ARG_VNUM, ARG_SCALE, ARG_BMP
@@ -60,11 +61,12 @@ main(int argc, char* argv[])
   // NOTE: to allow box-drawing characters
   system("chcp 65001");
 #endif
-
   if (argc < NUM_MANDATORY + 1)
   {
+    pdebug(__c(31, "error:") " not enough arguments");
     return phelp_(argv[0]);
   }
+
   targ_t options = ARG_NONE;
   int mask = -1;
   int vnum = -1;
@@ -72,6 +74,7 @@ main(int argc, char* argv[])
   int argcount = 0;
   imgfmt_t imgfmt = FMT_BMP;
   char* imgout = NULL;
+
   pdebug("started parsing cmdln arguments");
   int i = 1;
   for (; i < argc; i++)
@@ -84,30 +87,32 @@ main(int argc, char* argv[])
         if (!strcmp(argv[i], args_[j]))
         {
           argcount++;
-          if (arge_[j] < ARG_RESERVED)
+          bool xarg = true;
+          switch (arge_[j])
           {
-            options |= arge_[j];
-            break;
-          }
-          if (arge_[j] == ARG_MASK)
-          {
+          case ARG_MASK:
             mask = (uint8_t)atoi(argv[i + 1]);
-          }
-          else if (arge_[j] == ARG_VNUM)
-          {
+            break;
+          case ARG_VNUM:
             vnum = (uint8_t)atoi(argv[i + 1]) - 1;
-          }
-          else if (arge_[j] == ARG_SCALE)
-          {
+            break;
+          case ARG_SCALE:
             scale = (uint8_t)atoi(argv[i + 1]);
-          }
-          else // NOTE: ARG_BMP
-          {
+            break;
+          case ARG_BMP:
             imgout = argv[i + 1];
             // imgfmt = FMT_BMP;
+            break;
+          default:
+            options |= arge_[j];
+            xarg = false;
+            break;
           }
-          argcount++;
-          i++;
+          if (xarg)
+          {
+            argcount++;
+            i++;
+          }
           break;
         }
       }
@@ -116,16 +121,21 @@ main(int argc, char* argv[])
   pdebug("finished parsing cmdln arguments");
   if (argc - argcount < NUM_MANDATORY + 1)
   {
+    pdebug(__c(31, "error:") " did not provide mandatory arguments");
     return phelp_(argv[0]);
   }
+
   if (!(options & ARG_NOCOPY))
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION __nl
          PROJECT_COPYRIGHT __nl PROJECT_LICENSE __nl);
   }
+
+  pdebug("creating qrcode object");
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE, vnum);
   fatalif(err);
+
   if (mask != -1)
   {
     err = qrcode_forcemask(qr, mask);
@@ -137,6 +147,7 @@ main(int argc, char* argv[])
   }
   if (!(options & ARG_NOINLINE))
   {
+    pdebug("printing inline qrcode");
     qrcode_print(qr, options & ARG_RAW);
   }
   if (imgout != NULL)
@@ -148,6 +159,8 @@ main(int argc, char* argv[])
       printf(__c(36, "INFO") " Image written to: %s" __nl, imgout);
     }
   }
+
+  pdebug("deleting qrcode object");
   delete_qrcode(&qr);
   return 0;
 }
