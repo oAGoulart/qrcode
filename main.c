@@ -27,7 +27,7 @@ typedef enum targ_e {
 
 static const char* args_[NUM_ARGS] = {
   "--nocopy", "--verbose", "--raw", "--noinline",
-  "-m", "-v", "-s", "-B", "-V"
+  "-m", "-u", "-s", "-B", "-G"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
@@ -46,12 +46,12 @@ phelp_(const char* restrict cmdln)
     "\t--raw       print generated matrix as 1's and 0's (no Unicode)" __nl
     "\t--noinline  do not print any inline code, disregards --raw" __nl
     "\t-m <N>      force N mask output, regardless of penalty; N:(0-7)" __nl
-    "\t-v <N>      tries to force use of N version QR Codes; N:(1-"
+    "\t-u <N>      tries to force use of N version QR Codes; N:(1-"
     __xstr(MAX_VERSION) ")" __nl
     "\t-s <N>      scale image output by N times; N:(1-"
     __xstr(MAX_SCALE) ")" __nl
     "\t-B <STR>    create STR bitmap file with generated code" __nl
-    "\t-V <STR>    create STR scalable vector image, disregards -s" __nl,
+    "\t-G <STR>    create STR scalable vector image, disregards -s" __nl,
     cmdln);
   return EINVAL;
 }
@@ -166,5 +166,5 @@ main(int argc, char* argv[])
 
   pdebug("deleting qrcode object");
   delete_qrcode(&qr);
-  return 0;
+  return EXIT_SUCCESS;
 }

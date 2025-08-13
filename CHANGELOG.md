@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Added scalable vector graphics output option `-V`, disregards scaling option
+- Added scalable vector graphics output option `-G`, disregards scaling option
+- Changed option `-v` name to `-u`
 
 ## [1.3.0] - 2025-08-11
 

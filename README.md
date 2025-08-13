@@ -30,10 +30,10 @@ OPTIONS:
         --raw        print generated matrix as 1's and 0's (no Unicode)
         --noinline   do not print any inline code, disregards --raw
         -m <N>       force N mask output, regardless of penalty; N:(0-7)
-        -v <N>       tries to force use of N version QR Codes; N:(1-5)
+        -u <N>       tries to force use of N version QR Codes; N:(1-5)
         -s <N>       scale image output by N times; N:(1-30)
         -B <STR>     create STR bitmap file with generated code
-        -V <STR>     create STR scalable vector image, disregards -s
+        -G <STR>     create STR scalable vector image, disregards -s
 ```
 
 ## Usage examples
