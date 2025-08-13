@@ -13,7 +13,7 @@
  **Capacity (chars)**   | 17   | 32   | 53   | 78   | 106 
 
 > [!NOTE]
-> Generator will auto-select smallest Version possible. Unless option `-v` specified.
+> Generator will auto-select smallest Version possible. Unless option `-u` specified.
 
 **Pre-generated lookup tables:**
 1. Reed-Solomon EC generator polynomials.
