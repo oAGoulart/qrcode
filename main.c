@@ -15,6 +15,7 @@ typedef enum targ_e {
   ARG_VERBOSE = 2,
   ARG_RAW = 4,
   ARG_NOINLINE = 8,
+  ARG_VERSION = 0x10,
   ARG_RESERVED = 0x8000, // NOTE: exclusive options below
   ARG_MASK,
   ARG_VNUM,
@@ -22,21 +23,21 @@ typedef enum targ_e {
   ARG_BMP,
   ARG_SVG
 } targ_t;
-#define NUM_ARGS 9
+#define NUM_ARGS 10
 #define NUM_MANDATORY 1
 
 static const char* args_[NUM_ARGS] = {
-  "--nocopy", "--verbose", "--raw", "--noinline",
+  "--nocopy", "--verbose", "--raw", "--noinline", "--version",
   "-m", "-u", "-s", "-B", "-G"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
-  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE,
+  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE, ARG_VERSION,
   ARG_MASK, ARG_VNUM, ARG_SCALE, ARG_BMP, ARG_SVG
 };
 
 static __inline__ int
-phelp_(const char* restrict cmdln)
+phelp_(const char* __restrict__ cmdln)
 {
   fprintf(stderr,
     "Usage: %s [OPTIONS] <data to encode>" __nl
@@ -45,6 +46,7 @@ phelp_(const char* restrict cmdln)
     "\t--verbose   print runtime information for generated values" __nl
     "\t--raw       print generated matrix as 1's and 0's (no Unicode)" __nl
     "\t--noinline  do not print any inline code, disregards --raw" __nl
+    "\t--version   show generator's version information" __nl
     "\t-m <N>      force N mask output, regardless of penalty; N:(0-7)" __nl
     "\t-u <N>      tries to force use of N version QR Codes; N:(1-"
     __xstr(MAX_VERSION) ")" __nl
@@ -123,12 +125,18 @@ main(int argc, char* argv[])
     }
   }
   pdebug("finished parsing cmdln arguments");
+  if (options & ARG_VERSION)
+  {
+    puts(PROJECT_TITLE " " PROJECT_VERSION __nl
+      "Built with GCC " __xstr(__GNUC__) "." __xstr(__GNUC_MINOR__) "."
+      __xstr(__GNUC_PATCHLEVEL__) " @ " __DATE__ " " __TIME__);
+    return EXIT_SUCCESS;
+  }
   if (argc - argcount < NUM_MANDATORY + 1)
   {
     pdebug(__c(31, "error:") " did not provide mandatory arguments");
     return phelp_(argv[0]);
   }
-
   if (!(options & ARG_NOCOPY))
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION __nl
