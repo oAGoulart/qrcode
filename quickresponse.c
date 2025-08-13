@@ -16,7 +16,7 @@ extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
 
 static __inline__ void
-vshift_(uint8_t* v, uint8_t length)
+vshift_(uint8_t* __restrict__ v, const uint8_t length)
 {
   uint8_t ui8 = 0;
   for (; ui8 < length - 1; ui8++)
@@ -36,7 +36,7 @@ struct qrcode_s
 };
 
 int
-create_qrcode(qrcode_t** self, const char* restrict str, 
+create_qrcode(qrcode_t** self, const char* __restrict__ str, 
               uint8_t verbose, int vnum)
 {
   if (*self != NULL)
@@ -258,7 +258,7 @@ qrcode_print(qrcode_t* self, uint8_t useraw)
 
 int
 qrcode_output(qrcode_t* self, imgfmt_t fmt, int scale,
-              const char* restrict filename)
+              const char* __restrict__ filename)
 {
   scale = (scale == -1) ? 1 : scale;
   if (scale < 1 || scale > MAX_SCALE)

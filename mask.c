@@ -53,7 +53,7 @@ should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
 }
 
 static __inline__ int
-colcmp_(const uint8_t* restrict v, const uint16_t order,
+colcmp_(const uint8_t* __restrict__ v, const uint16_t order,
         const uint16_t n, const uint8_t arr[n])
 {
   uint16_t ui16 = 0;
@@ -69,7 +69,7 @@ colcmp_(const uint8_t* restrict v, const uint16_t order,
 }
 
 static void
-mask_double_(const uint8_t* restrict v, uint16_t order)
+mask_double_(const uint8_t* __restrict__ v, uint16_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
   uint16_t top = 0;
@@ -106,7 +106,7 @@ mask_double_(const uint8_t* restrict v, uint16_t order)
 }
 
 static void
-mask_single_(const uint8_t* restrict v, uint16_t order)
+mask_single_(const uint8_t* __restrict__ v, uint16_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
   uint16_t top = 0;
@@ -465,7 +465,7 @@ bitmap_s {
 } bitmap_t;
 
 int
-qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* restrict file)
+qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
 {
   const uint32_t nbits = (8 + self->order_) * scale;
   const uint8_t nlongs = (uint8_t)ceil((double)nbits / 32);
@@ -558,7 +558,7 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* restrict file)
 }
 
 void
-qrmask_outsvg(qrmask_t* self, FILE* restrict file)
+qrmask_outsvg(qrmask_t* self, FILE* __restrict__ file)
 {
   const uint32_t nmods = 8 + self->order_;
   fprintf(file,
