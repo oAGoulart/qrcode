@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Added scalable vector graphics output option `-V`, disregards scaling option
+
 ## [1.3.0] - 2025-08-11
 
 Add bitmap output option

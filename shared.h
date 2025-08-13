@@ -28,6 +28,7 @@
 #define MAX_VERSION 5
 #define MAX_SCALE 30
 
+// WARNING: ONLY USE WITH ASSIGNED VARIABLES
 #define fatalif(err)\
   if (err)\
   {\

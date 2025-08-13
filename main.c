@@ -19,19 +19,20 @@ typedef enum targ_e {
   ARG_MASK,
   ARG_VNUM,
   ARG_SCALE,
-  ARG_BMP
+  ARG_BMP,
+  ARG_SVG
 } targ_t;
-#define NUM_ARGS 8
+#define NUM_ARGS 9
 #define NUM_MANDATORY 1
 
 static const char* args_[NUM_ARGS] = {
   "--nocopy", "--verbose", "--raw", "--noinline",
-  "-m", "-v", "-s", "-B"
+  "-m", "-v", "-s", "-B", "-V"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
   ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE,
-  ARG_MASK, ARG_VNUM, ARG_SCALE, ARG_BMP
+  ARG_MASK, ARG_VNUM, ARG_SCALE, ARG_BMP, ARG_SVG
 };
 
 static __inline__ int
@@ -49,7 +50,8 @@ phelp_(const char* restrict cmdln)
     __xstr(MAX_VERSION) ")" __nl
     "\t-s <N>      scale image output by N times; N:(1-"
     __xstr(MAX_SCALE) ")" __nl
-    "\t-B <STR>    create STR bitmap file with generated code" __nl,
+    "\t-B <STR>    create STR bitmap file with generated code" __nl
+    "\t-V <STR>    create STR scalable vector image, disregards -s" __nl,
     cmdln);
   return EINVAL;
 }
@@ -72,7 +74,7 @@ main(int argc, char* argv[])
   int vnum = -1;
   int scale = -1;
   int argcount = 0;
-  imgfmt_t imgfmt = FMT_BMP;
+  imgfmt_t imgfmt = FMT_SVG;
   char* imgout = NULL;
 
   pdebug("started parsing cmdln arguments");
@@ -100,8 +102,10 @@ main(int argc, char* argv[])
             scale = (uint8_t)atoi(argv[i + 1]);
             break;
           case ARG_BMP:
+            imgfmt = FMT_BMP;
+            __attribute__ ((fallthrough));
+          case ARG_SVG:
             imgout = argv[i + 1];
-            // imgfmt = FMT_BMP;
             break;
           default:
             options |= arge_[j];

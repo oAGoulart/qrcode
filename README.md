@@ -33,6 +33,7 @@ OPTIONS:
         -v <N>       tries to force use of N version QR Codes; N:(1-5)
         -s <N>       scale image output by N times; N:(1-30)
         -B <STR>     create STR bitmap file with generated code
+        -V <STR>     create STR scalable vector image, disregards -s
 ```
 
 ## Usage examples
@@ -65,7 +66,6 @@ qrcode oagoulart.github.io/rambles/keep-thyself-credible
 
 ```
 
-
 ### 2. Bitmap generation
 
 **Command-line:** 
@@ -76,6 +76,18 @@ qrcode -s 6 -B gen.bmp oagoulart.github.io/rambles/keep-thyself-credible
 **Output:**
 
 ![QR Code](assets/gen.bmp)
+
+### 3. Vector graphics generation
+
+**Command-line:** 
+```bash
+qrcode -V gen.svg oagoulart.github.io/rambles/keep-thyself-credible
+```
+
+**Output:**
+
+![QR Code](assets/gen.svg)
+
 
 ## Contributing
 

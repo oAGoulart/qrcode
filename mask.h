@@ -20,11 +20,15 @@ __attribute__((__nonnull__)) uint16_t
 qrmask_penalty(qrmask_t* self);
 __attribute__((__nonnull__)) void
 qrmask_apply(qrmask_t* self);
+
 __attribute__((__nonnull__)) void
 qrmask_pbox(qrmask_t* self);
 __attribute__((__nonnull__)) void
 qrmask_praw(qrmask_t* self);
+
 __attribute__((__nonnull__)) int
 qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* restrict file);
+__attribute__((__nonnull__)) void
+qrmask_outsvg(qrmask_t* self, FILE* restrict file);
 
 #endif

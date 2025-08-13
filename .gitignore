@@ -3,3 +3,4 @@ nul
 bin/
 build/
 /*.bmp
+/*.svg

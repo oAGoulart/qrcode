@@ -11,7 +11,8 @@ typedef enum imgfmt_e {
 typedef struct qrcode_s qrcode_t;
 
 __attribute__((__nonnull__)) int
-create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum);
+create_qrcode(qrcode_t** self, const char* restrict str,
+              uint8_t verbose, int vnum);
 __attribute__((__nonnull__)) void
 delete_qrcode(qrcode_t** self);
 

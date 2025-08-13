@@ -36,7 +36,8 @@ struct qrcode_s
 };
 
 int
-create_qrcode(qrcode_t** self, char* str, uint8_t verbose, int vnum)
+create_qrcode(qrcode_t** self, const char* restrict str, 
+              uint8_t verbose, int vnum)
 {
   if (*self != NULL)
   {
@@ -277,8 +278,14 @@ qrcode_output(qrcode_t* self, imgfmt_t fmt, int scale,
     pdebug("bitmap image output selected");
     err = qrmask_outbmp(self->masks_[self->chosen_], scale, f);
   }
+  else if (fmt == FMT_SVG)
+  {
+    pdebug("vector image output selected");
+    qrmask_outsvg(self->masks_[self->chosen_], f);
+  }
   else
   {
+    pdebug(__c(31, "error:") "invalid image format selected");
     err = EINVAL;
   }
   fclose(f);
