@@ -28,13 +28,4 @@
 #define MAX_VERSION 5
 #define MAX_SCALE 30
 
-// WARNING: ONLY USE WITH ASSIGNED VARIABLES
-#define fatalif(err)\
-  if (err)\
-  {\
-    errno = err;\
-    perror(__c(31, "\t\u25CF") " runtime error");\
-    return err;\
-  }
-
 #endif

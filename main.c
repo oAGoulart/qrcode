@@ -146,33 +146,46 @@ main(int argc, char* argv[])
   pdebug("creating qrcode object");
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE, vnum);
-  fatalif(err);
-
-  if (mask != -1)
+  if (err != 0)
   {
-    err = qrcode_forcemask(qr, mask);
-    fatalif(err);
-    if (options & ARG_VERBOSE)
+    errno = err;
+    perror(__c(31, "\t\u25CF") " create_qrcode error");
+  }
+  else
+  {
+    if (mask != -1)
     {
-      printf(__c(36, "INFO") " Forced mask: %d" __nl, mask);
+      err = qrcode_forcemask(qr, mask);
+      if (err != 0)
+      {
+        errno = err;
+        perror(__c(31, "\t\u25CF") " qrcode_forcemask error");
+      }
+      else if (options & ARG_VERBOSE)
+      {
+        printf(__c(36, "INFO") " Forced mask: %d" __nl, mask);
+      }
+    }
+    if (!(options & ARG_NOINLINE))
+    {
+      pdebug("printing inline qrcode");
+      qrcode_print(qr, options & ARG_RAW);
+    }
+    if (imgout != NULL)
+    {
+      err = qrcode_output(qr, imgfmt, scale, imgout);
+      if (err != 0)
+      {
+        errno = err;
+        perror(__c(31, "\t\u25CF") " qrcode_output error");
+      }
+      else if (options & ARG_VERBOSE)
+      {
+        printf(__c(36, "INFO") " Image written to: %s" __nl, imgout);
+      }
     }
   }
-  if (!(options & ARG_NOINLINE))
-  {
-    pdebug("printing inline qrcode");
-    qrcode_print(qr, options & ARG_RAW);
-  }
-  if (imgout != NULL)
-  {
-    err = qrcode_output(qr, imgfmt, scale, imgout);
-    fatalif(err);
-    if (options & ARG_VERBOSE)
-    {
-      printf(__c(36, "INFO") " Image written to: %s" __nl, imgout);
-    }
-  }
-
-  pdebug("deleting qrcode object");
+  pdebug("resources clean-up");
   delete_qrcode(&qr);
-  return EXIT_SUCCESS;
+  return err;
 }
