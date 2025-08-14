@@ -567,6 +567,9 @@ qrmask_outsvg(qrmask_t* self, FILE* __restrict__ file)
     "<svg width=\"%umm\" height=\"%umm\" viewBox=\"0 0 %u %u\" version=\"1.1\" "
       "id=\"svg1\" xmlns=\"http://www.w3.org/2000/svg\" "
       "xmlns:svg=\"http://www.w3.org/2000/svg\">" __nl
+    "<defs>"
+      "<rect id=\"m\" fill=\"black\" width=\"1\" height=\"1\"/>"
+    "</defs>" __nl
     "<g id=\"background\">"
       "<rect fill=\"white\" width=\"%u\" height=\"%u\" x=\"0\" y=\"0\"/>"
     "</g>" __nl
@@ -582,9 +585,7 @@ qrmask_outsvg(qrmask_t* self, FILE* __restrict__ file)
       size_t index = row * self->order_ + col;
       if (self->v_[index] == MASK_DARK)
       {
-        fprintf(file,
-          "<rect fill=\"black\" width=\"1\" height=\"1\" x=\"%u\" y=\"%u\"/>"
-          __nl, col, row);
+        fprintf(file, "<use href=\"#m\" x=\"%u\" y=\"%u\"/>" __nl, col, row);
       }
     }
   }

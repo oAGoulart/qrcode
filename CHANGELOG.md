@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Added version information option `--version`
 - Changed option `-v` name to `-u`
 - Fixed memory leak on fatal exit
+- Optimize generated SVG output
 
 ## [1.3.0] - 2025-08-11
 
