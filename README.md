@@ -117,6 +117,4 @@ ISO/IEC 18004:2024 - Information technology — Automatic identification and dat
 ## Further reading
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
-
-
-
+1. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
