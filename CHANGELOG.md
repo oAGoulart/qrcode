@@ -80,7 +80,8 @@ Initial release.
 - Added Version 1 and 2 QR Codes
 
 
-[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.3.0..HEAD
+[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.4.0..HEAD
+[1.4.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.4.0
 [1.3.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.3.0
 [1.2.2]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.2
 [1.2.1]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.1
