@@ -16,6 +16,7 @@ typedef enum targ_e {
   ARG_RAW = 4,
   ARG_NOINLINE = 8,
   ARG_VERSION = 0x10,
+  ARG_OPTIMIZE = 0x20,
   ARG_RESERVED = 0x8000, // NOTE: exclusive options below
   ARG_MASK,
   ARG_VNUM,
@@ -27,12 +28,12 @@ typedef enum targ_e {
 #define NUM_MANDATORY 1
 
 static const char* args_[NUM_ARGS] = {
-  "--nocopy", "--verbose", "--raw", "--noinline", "--version",
+  "--nocopy", "--verbose", "--raw", "--noinline", "--version", "--optimize",
   "-m", "-u", "-s", "-B", "-G"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
-  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE, ARG_VERSION,
+  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE, ARG_VERSION, ARG_OPTIMIZE,
   ARG_MASK, ARG_VNUM, ARG_SCALE, ARG_BMP, ARG_SVG
 };
 
@@ -42,16 +43,18 @@ phelp_(const char* __restrict__ cmdln)
   fprintf(stderr,
     "Usage: %s [OPTIONS] <data to encode>" __nl
     "OPTIONS:" __nl
-    "\t--nocopy    do not print copyright header" __nl
-    "\t--verbose   print runtime information for generated values" __nl
-    "\t--raw       print generated matrix as 1's and 0's (no Unicode)" __nl
+    "\t--nocopy    omit copyright header from inline printing" __nl
     "\t--noinline  do not print any inline code, disregards --raw" __nl
-    "\t--version   show generator's version information" __nl
-    "\t-m <N>      force N mask output, regardless of penalty; N:(0-7)" __nl
-    "\t-u <N>      tries to force use of N version QR Codes; N:(1-"
-    __xstr(MAX_VERSION) ")" __nl
+    "\t--optimize  reduce data size, encode numeric, alphanumeric, byte" __nl
+    "\t            segments separately (if any)" __nl
+    "\t--raw       print generated code with chars 1, 0 (no box-chars)" __nl
+    "\t--verbose   print runtime information for generated values" __nl
+    "\t--version   show generator's version and build information" __nl
+    "\t-m <N>      force choice of N mask, regardless of penalty; N:(0-7)" __nl
     "\t-s <N>      scale image output by N times; N:(1-"
-    __xstr(MAX_SCALE) ")" __nl
+                   __xstr(MAX_SCALE) ")" __nl
+    "\t-u <N>      tries to force use of N version code; N:(1-"
+                   __xstr(MAX_VERSION) ")" __nl
     "\t-B <STR>    create STR bitmap file with generated code" __nl
     "\t-G <STR>    create STR scalable vector image, disregards -s" __nl,
     cmdln);
@@ -145,7 +148,9 @@ main(int argc, char* argv[])
 
   pdebug("creating qrcode object");
   qrcode_t* qr = NULL;
-  int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE, vnum);
+  int err = create_qrcode(&qr, argv[argc - 1], vnum,
+                          options & ARG_OPTIMIZE,
+                          options & ARG_VERBOSE);
   if (err != 0)
   {
     errno = err;

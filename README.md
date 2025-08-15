@@ -8,9 +8,9 @@
 
 **Available generation:**
 
- **Version**            | 1    | 2    | 3    | 4    | 5    
-----------------------: | ---- | ---- | ---- | ---- | ----
- **Capacity (chars)**   | 17   | 32   | 53   | 78   | 106 
+ **Version**                | 1    | 2    | 3    | 4    | 5    
+--------------------------: | ---- | ---- | ---- | ---- | ----
+ **Capacity (codewords)**   | 17   | 32   | 53   | 78   | 106 
 
 > [!NOTE]
 > Generator will auto-select smallest Version possible. Unless option `-u` specified.
