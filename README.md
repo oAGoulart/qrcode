@@ -69,6 +69,7 @@ qrcode oagoulart.github.io/rambles/keep-thyself-credible
 
 > [!TIP]
 > Using a `line-height` of `1em` (i.e. line height is equal to font size) will remove the unintended vertical spacing seen in the output above.
+> Some fonts may require a slight different value between `1 +/- .25`. You can also try value `normal`.
 
 ### 2. Bitmap generation
 
@@ -121,4 +122,5 @@ ISO/IEC 18004:2024 - Information technology — Automatic identification and dat
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 1. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
