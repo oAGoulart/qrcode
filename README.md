@@ -82,7 +82,7 @@ qrcode -s 6 -B gen.bmp oagoulart.github.io/rambles/keep-thyself-credible
 
 **Command-line:** 
 ```bash
-qrcode -V gen.svg oagoulart.github.io/rambles/keep-thyself-credible
+qrcode -G gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 ```
 
 **Output:**
