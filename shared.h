@@ -18,7 +18,7 @@
 #endif
 
 #define PROJECT_TITLE "Command-line QR Code generator"
-#define PROJECT_VERSION "(v1.3.0)"
+#define PROJECT_VERSION "(v1.4.0)"
 #define PROJECT_COPYRIGHT "Copyright (C) 2025 Augusto Goulart."
 #define PROJECT_LICENSE \
   "Licensed under Microsoft Reciprocal License (Ms-RL)." __nl \

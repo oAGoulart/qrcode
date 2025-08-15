@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.0] - 2025-08-15
+
+Add SVG output option
+
 - Added scalable vector graphics output option `-G`, disregards scaling option
 - Added version information option `--version`
 - Changed option `-v` name to `-u`
