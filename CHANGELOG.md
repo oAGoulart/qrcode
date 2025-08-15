@@ -8,7 +8,6 @@ All notable changes to this project will be documented in this file.
 - Added version information option `--version`
 - Changed option `-v` name to `-u`
 - Fixed memory leak on fatal exit
-- Optimize generated SVG output
 
 ## [1.3.0] - 2025-08-11
 
@@ -27,7 +26,7 @@ Add bitmap output option
 
 Add option to force specific Version
 
-- Added option description to help text
+- Add option description to help text
 - Added `--vnum` option to try to force use of specific code version
 - Added trademark disclaimer to runtime copyright header
 - Changed `--debug` option name to `--verbose`
@@ -37,7 +36,7 @@ Add option to force specific Version
 
 ## [1.2.1] - 2025-07-31
 
-Fixed mask penalty calculation
+Fix mask penalty calculation
 
 - Added `--mask` option to force program to print a specific mask (e.g.: `--mask 3`)
 - Added more debug information when `--debug` is selected
@@ -45,7 +44,7 @@ Fixed mask penalty calculation
 
 ## [1.2.0] - 2025-07-16
 
-Added Version 4 and Version 5 QR Codes
+Add Version 4 and Version 5 QR Codes
 
 - Added Version 4 and 5 codes
 - Added script to generate module indexes lookup table
@@ -54,7 +53,7 @@ Added Version 4 and Version 5 QR Codes
 
 ## [1.1.0] - 2025-07-13
 
-Added Version 3 QR Codes.
+Add Version 3 QR Codes.
 
 - Added Makefile
 - Added project information on execution
