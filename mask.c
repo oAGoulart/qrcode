@@ -53,13 +53,13 @@ should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
 }
 
 static __inline__ int
-colcmp_(const uint8_t* __restrict__ v, const uint16_t order,
+colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
         const uint16_t n, const uint8_t arr[n])
 {
-  uint16_t ui16 = 0;
-  for (; ui16 < n; ui16++)
+  uint16_t i = 0;
+  for (; i < n; i++)
   {
-    int diff = v[ui16 * order] - arr[ui16];
+    int diff = v[i * order] - arr[i];
     if (diff != 0)
     {
       return diff;
@@ -69,64 +69,64 @@ colcmp_(const uint8_t* __restrict__ v, const uint16_t order,
 }
 
 static void
-mask_double_(const uint8_t* __restrict__ v, uint16_t order)
+mask_double_(const uint8_t* __restrict__ v, uint8_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
-  uint16_t top = 0;
-  uint16_t bottom = 0;
-  uint16_t strindex = 0;
+  uint8_t top = 0;
+  uint8_t bottom = 0;
+  uint16_t i = 0;
   for (bottom = order; top < order; top++, bottom++)
   {
     uint8_t ch_case = (uint8_t)(v[top] << 1) + v[bottom];
     switch (ch_case)
     {
     case 0:
-      strcpy(&str[strindex], " ");
-      strindex += 3;
+      strcpy(&str[i], " ");
+      i += 3;
       break;
     case 1:
-      strcpy(&str[strindex], "▄");
-      strindex += 3;
+      strcpy(&str[i], "▄");
+      i += 3;
       break;
     case 2:
-      strcpy(&str[strindex], "▀");
-      strindex += 3;
+      strcpy(&str[i], "▀");
+      i += 3;
       break;
     default:
-      strcpy(&str[strindex], "█");
-      strindex += 3;
+      strcpy(&str[i], "█");
+      i += 3;
       break;
     }
   }
-  if (strindex > 0)
+  if (i > 0)
   {
-    str[strindex + 1] = '\0';
+    str[i + 1] = '\0';
     printf("    %s    " __nl, str);
   }
 }
 
 static void
-mask_single_(const uint8_t* __restrict__ v, uint16_t order)
+mask_single_(const uint8_t* __restrict__ v, uint8_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
-  uint16_t top = 0;
-  uint16_t strindex = 0;
+  uint8_t top = 0;
+  uint16_t i = 0;
   for (; top < order; top++)
   {
     if (v[top] == 0)
     {
-      strcpy(&str[strindex], " ");
-      strindex += 3;
+      strcpy(&str[i], " ");
+      i += 3;
     }
     else
     {
-      strcpy(&str[strindex], "▀");
-      strindex += 3;
+      strcpy(&str[i], "▀");
+      i += 3;
     }
   }
-  if (strindex > 0)
+  if (i > 0)
   {
-    str[strindex + 1] = '\0';
+    str[i + 1] = '\0';
     printf("    %s    " __nl, str);
   }
 }
@@ -203,11 +203,11 @@ module_penalty_(qrmask_t* self)
 {
   const uint8_t patleft[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
   const uint8_t patright[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
-  uint16_t i = 0;
+  uint8_t i = 0;
   for (; i < self->order_; i++)
   {
     uint16_t row = i * self->order_;
-    uint16_t j = 0;
+    uint8_t j = 0;
     // Step 1: row direction >>>
     for (; j < self->order_ - 1; j++)
     {
@@ -226,7 +226,7 @@ module_penalty_(qrmask_t* self)
         // NOTE: sequential line penalty (row)
         if (j < self->order_ - 4)
         {
-          uint16_t count = j;
+          uint8_t count = j;
           for (; next + j + 1 < self->v_ + self->count_; j++)
           {
             if (*(next + j + 1) != *module)
@@ -237,7 +237,7 @@ module_penalty_(qrmask_t* self)
           count = j - count;
           if (count > 4)
           {
-            self->penalty_ += (uint16_t)(3 + (count - 5));
+            self->penalty_ += (count - 5) + 3;
           }
         }
       }
@@ -252,29 +252,30 @@ module_penalty_(qrmask_t* self)
       }
     }
     // Step 2: column direction vvv
-    for (j = 0; j < self->count_ - (4 * self->order_); j += self->order_)
+    uint16_t k = 0;
+    for (; k < self->count_ - (4 * self->order_); k += self->order_)
     {
-      uint8_t* module = &self->v_[i + j];
-      uint8_t* next = &self->v_[i + j + self->order_];
+      uint8_t* module = &self->v_[i + k];
+      uint8_t* next = &self->v_[i + k + self->order_];
       if (*module == *next)
       {
         // NOTE: sequential line penalty (column)
-        uint16_t count = j;
-        for (; next + j < self->v_ + self->count_; j += self->order_)
+        uint16_t count = k;
+        for (; next + k < self->v_ + self->count_; k += self->order_)
         {
-          if (*(next + j) != *module)
+          if (*(next + k) != *module)
           {
             break;
           }
         }
-        count = (uint16_t)floor((j - count) / self->order_);
+        count = (uint16_t)floor((k - count) / self->order_);
         if (count > 4)
         {
-          self->penalty_ += (uint16_t)(3 + (count - 5));
+          self->penalty_ += (count - 5) + 3;
         }
       }
       // NOTE: pattern penalty (column)
-      if (j < self->count_ - (10 * self->order_) && *next == MASK_LIGHT)
+      if (k < self->count_ - (10 * self->order_) && *next == MASK_LIGHT)
       {
         const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
         if (!colcmp_(module + (2 * self->order_), self->order_, 9, pattern))
@@ -431,14 +432,14 @@ qrmask_pbox(qrmask_t* self)
 void
 qrmask_praw(qrmask_t* self)
 {
-  size_t i = 0;
-  for (; i < self->order_; i++)
+  size_t row = 0;
+  for (; row < self->order_; row++)
   {
-    printf("%u", self->v_[i * self->order_]);
-    size_t j = 1;
-    for (; j < self->order_; j++)
+    printf("%u", self->v_[row * self->order_]);
+    size_t col = 1;
+    for (; col < self->order_; col++)
     {
-      printf(", %u", self->v_[i * self->order_ + j]);
+      printf(", %u", self->v_[row * self->order_ + col]);
     }
     puts("");
   }
