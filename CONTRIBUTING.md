@@ -10,8 +10,8 @@ How to contribute with **testing**:
 
 How to contribute with **code**:
 1. Before opening any PR, create an issue discussing your proposed changes and why they are necessary (e.g. better design pattern);
-1. Compile on Windows and Linux before pushing the code;
-1. If your code does anything with heap memory, make sure to run it through [Valgrind](https://valgrind.org).
+1. Before commiting code, make sure to run it through [Valgrind](https://valgrind.org) and [Cppcheck](https://cppcheck.sourceforge.io);
+1. Compile on Windows and Linux (must compile on `amd64`, others are optional) before pushing the code.
 
 ### Maintainer's notes
 

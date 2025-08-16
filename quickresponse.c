@@ -1,14 +1,14 @@
-#include <stdint.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <errno.h>
-#include "shared.h"
+#include <limits.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "mask.h"
 #include "quickresponse.h"
+#include "shared.h"
 
-#define GEN_MODE 4
+#define GEN_MODE    4
 #define NUM_PADBITS 7
 
 extern const uint8_t logt[];
@@ -26,14 +26,15 @@ vshift_(uint8_t* __restrict__ v, const uint8_t length)
   v[length - 1] = 0;
 }
 
-typedef enum csubset_e {
+typedef enum csubset_e
+{
   SUBSET_NUMERIC,
   SUBSET_ALPHA,
   SUBSET_BYTE
 } csubset_t;
 
 static csubset_t __attribute__ ((const))
-find_subset_(const uint8_t c)
+which_subset_(const uint8_t c)
 {
   if (c >= 0x30 && c <= 0x39)
   {
@@ -54,7 +55,7 @@ count_segment_(const char* __restrict__ str, csubset_t subset)
   size_t i = 0;
   for (; str[i] != '\0'; i++)
   {
-    if (find_subset_(str[i]) != subset)
+    if (which_subset_(str[i]) != subset)
     {
       break;
     }
@@ -62,11 +63,12 @@ count_segment_(const char* __restrict__ str, csubset_t subset)
   return count;
 }
 
-struct qrcode_s {
+struct qrcode_s
+{
+  qrmask_t* masks_[NUM_MASKS];
   uint8_t* stream_;
   uint8_t slen_;
   uint8_t chosen_;
-  qrmask_t* masks_[NUM_MASKS];
   uint8_t version_;
 };
 
@@ -82,21 +84,21 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   /* WARNING WORK IN PROGRESS BELOW */
   csubset_t encode = SUBSET_BYTE;
-  if (find_subset_(str[0]) != SUBSET_BYTE)
+  if (which_subset_(str[0]) != SUBSET_BYTE)
   {
     uint32_t next = count_segment_(str, SUBSET_ALPHA);
-    if (next >= 6 && find_subset_(str[next]) == SUBSET_BYTE)
+    if (next >= 6 && which_subset_(str[next]) == SUBSET_BYTE)
     {
       encode = SUBSET_ALPHA;
     }
     else
     {
       next = count_segment_(str, SUBSET_NUMERIC);
-      if (next < 4 && find_subset_(str[next]) == SUBSET_BYTE)
+      if (next < 4 && which_subset_(str[next]) == SUBSET_BYTE)
       {
         // encode = SUBSET_BYTE; // redundant;
       }
-      else if (next < 7 && find_subset_(str[next]) == SUBSET_ALPHA)
+      else if (next < 7 && which_subset_(str[next]) == SUBSET_ALPHA)
       {
         encode = SUBSET_ALPHA;
       }

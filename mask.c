@@ -1,24 +1,25 @@
+#include <errno.h>
+#include <limits.h>
+#include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <limits.h>
 #include <string.h>
-#include <math.h>
-#include <errno.h>
-#include "shared.h"
 #include "mask.h"
+#include "shared.h"
 
 #define MASKINFO_LEN 15
 
 extern const uint16_t qrindex[];
 
-struct qrmask_s {
-  uint8_t* v_;
+struct qrmask_s
+{
   const uint16_t* i_;
-  uint8_t version_;
-  uint8_t order_;
+  uint8_t* v_;
+  uint8_t  version_;
+  uint8_t  order_;
   uint16_t count_;
-  uint8_t masknum_;
+  uint8_t  masknum_;
   uint16_t dark_;
   uint16_t light_;
   uint16_t penalty_;
@@ -301,6 +302,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   const uint16_t qr_basedark[MAX_VERSION] = {91u, 112u, 114u, 118u, 122u};
   const uint16_t qr_baselight[MAX_VERSION] = {127u, 139u, 141u, 145u, 149u};
   const uint16_t qr_offset[MAX_VERSION] = {0, 208u, 567u, 1134u, 1941u};
+
   *self = (qrmask_t*)malloc(sizeof(qrmask_t));
   if (*self == NULL)
   {
@@ -445,8 +447,8 @@ qrmask_praw(qrmask_t* self)
   }
 }
 
-typedef struct __attribute__((packed))
-bitmap_s {
+typedef struct __attribute__((packed)) bitmap_s
+{
   char signature[2];
   uint32_t filesize;
   uint32_t reserved;

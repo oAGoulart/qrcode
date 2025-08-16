@@ -2,8 +2,10 @@
 #define QUICKRESPONSE_H 1
 
 #include <stdint.h>
+#include "shared.h"
 
-typedef enum imgfmt_e {
+typedef enum imgfmt_e
+{
   FMT_BMP,
   FMT_SVG
 } imgfmt_t;
