@@ -291,9 +291,14 @@ module_penalty_(qrmask_t* self)
 int
 create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 {
-  if (*self != NULL || version >= MAX_VERSION)
+  if (*self != NULL)
   {
-    pdebug(__c(31, "error:") "invalid arguments");
+    eprintf("pointer to garbage in *self");
+    return EINVAL;
+  }
+  if (version >= MAX_VERSION)
+  {
+    eprintf("invalid qrcode version: %u", version);
     return EINVAL;
   }
 
@@ -306,7 +311,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   *self = (qrmask_t*)malloc(sizeof(qrmask_t));
   if (*self == NULL)
   {
-    pdebug(__c(31, "error:") "cannot allocate (qrmask_t) bytes");
+    eprintf("cannot allocate %u bytes", (uint32_t)sizeof(qrmask_t));
     return ENOMEM;
   }
   (*self)->version_ = version;
@@ -317,7 +322,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   (*self)->v_ = (uint8_t*)malloc((*self)->count_);
   if ((*self)->v_ == NULL)
   {
-    pdebug(__c(31, "error:") "cannot allocate (*self)->count_ bytes");
+    eprintf("cannot allocate %u bytes", (*self)->count_);
     free(*self);
     *self = NULL;
     return ENOMEM;
@@ -482,7 +487,7 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
   pdebug("writing bitmap header");
   if (!fwrite(&bm, sizeof(bitmap_t), 1, file))
   {
-    fprintf(stderr, __c(31, "\tcorrupted bitmap format" __nl));
+    eprintf("corrupted bitmap format");
     return EIO;
   }
   pdebug("writing bitmap raster data");

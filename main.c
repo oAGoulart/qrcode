@@ -3,9 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
-#include <stdlib.h>
-#endif
 #include "quickresponse.h"
 #include "shared.h"
 
@@ -42,20 +39,20 @@ static __inline__ int
 phelp_(const char* __restrict__ cmdln)
 {
   fprintf(stderr,
-    "Usage: %s [OPTIONS] <data to encode>" __nl
+    "Usage: %s [OPTIONS] <string>" __nl
     "OPTIONS:" __nl
-    "\t--nocopy    omit copyright header from inline printing" __nl
-    "\t--noinline  do not print any inline code, disregards --raw" __nl
-    "\t--optimize  reduce data size, encode numeric, alphanumeric, byte" __nl
-    "\t            segments separately (if any)" __nl
-    "\t--raw       print generated code with chars 1, 0 (no box-chars)" __nl
-    "\t--verbose   print runtime information for generated values" __nl
-    "\t--version   show generator's version and build information" __nl
-    "\t-m <uint>   force choice of mask <0-7>, regardless of penalty" __nl
-    "\t-s <uint>   scale image output <1-" __xstr(MAX_SCALE) "> times" __nl
-    "\t-u <uint>   force use of version <1-" __xstr(MAX_VERSION) "> code" __nl
-    "\t-B <string> create bitmap file with generated code" __nl
-    "\t-G <string> create scalable vector image, disregards -s" __nl,
+    "  --nocopy     omit copyright header from inline printing" __nl
+    "  --noinline   do not print any inline code, disregards --raw" __nl
+    "  --optimize   reduce data size, encode numeric, alphanumeric, byte" __nl
+    "               segments separately (if any)" __nl
+    "  --raw        print generated code with chars 1, 0 (no box-chars)" __nl
+    "  --verbose    print runtime information for generated values" __nl
+    "  --version    show generator's version and build information" __nl
+    "  -m <uint>    force choice of mask <0-7>, regardless of penalty" __nl
+    "  -s <uint>    scale image output <1-" __xstr(MAX_SCALE) "> times" __nl
+    "  -u <uint>    force use of version <1-" __xstr(MAX_VERSION) "> code" __nl
+    "  -B <string>  create bitmap file with generated code" __nl
+    "  -G <string>  create scalable vector image, disregards -s" __nl,
     cmdln);
   return EINVAL;
 }
@@ -63,13 +60,13 @@ phelp_(const char* __restrict__ cmdln)
 int
 main(int argc, char* argv[])
 {
-#ifdef _WIN32
+#if defined(_WIN32)
   // NOTE: to allow box-drawing characters
   system("chcp 65001>nul");
 #endif
   if (argc < NUM_MANDATORY + 1)
   {
-    pdebug(__c(31, "error:") " not enough arguments");
+    eprintf("not enough arguments, provided %d", argc);
     return phelp_(argv[0]);
   }
 
@@ -136,7 +133,7 @@ main(int argc, char* argv[])
   }
   if (argc - argcount < NUM_MANDATORY + 1)
   {
-    pdebug(__c(31, "error:") " did not provide mandatory arguments");
+    eprintf("must provide " __xstr(NUM_MANDATORY) " mandatory argument(s)");
     return phelp_(argv[0]);
   }
   if (!(options & ARG_NOCOPY))
@@ -151,8 +148,7 @@ main(int argc, char* argv[])
     argv[argc - 1], vnum, options & ARG_OPTIMIZE, options & ARG_VERBOSE);
   if (err != 0)
   {
-    errno = err;
-    perror(__c(31, "\t\u25CF") " create_qrcode error");
+    perrno(err);
   }
   else
   {
@@ -161,12 +157,11 @@ main(int argc, char* argv[])
       err = qrcode_forcemask(qr, mask);
       if (err != 0)
       {
-        errno = err;
-        perror(__c(31, "\t\u25CF") " qrcode_forcemask error");
+        eprintf("could not force qrcode mask choise");
       }
       else if (options & ARG_VERBOSE)
       {
-        printf(__c(36, "INFO") " Forced mask: %d" __nl, mask);
+        pinfo("Forced mask: %d", mask);
       }
     }
     if (!(options & ARG_NOINLINE))
@@ -179,12 +174,11 @@ main(int argc, char* argv[])
       err = qrcode_output(qr, imgfmt, scale, imgout);
       if (err != 0)
       {
-        errno = err;
-        perror(__c(31, "\t\u25CF") " qrcode_output error");
+        eprintf("could not output qrcode image");
       }
       else if (options & ARG_VERBOSE)
       {
-        printf(__c(36, "INFO") " Image written to: %s" __nl, imgout);
+        pinfo("Image written to: %s", imgout);
       }
     }
   }

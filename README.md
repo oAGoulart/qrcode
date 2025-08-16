@@ -25,16 +25,16 @@
 ```text
 Usage: qrcode [OPTIONS] <data to encode>
 OPTIONS:
-        --nocopy    do not print copyright header
-        --verbose   print runtime information for generated values
-        --raw       print generated matrix as 1's and 0's (no Unicode)
-        --noinline  do not print any inline code, disregards --raw
-        --version   show generator's version information
-        -m <uint>   force choice of mask <0-7>, regardless of penalty
-        -u <uint>   scale image output <1-30> times
-        -s <uint>   force use of version <1-5> code
-        -B <string> create bitmap file with generated code
-        -G <string> create scalable vector image, disregards -s
+  --nocopy     do not print copyright header
+  --verbose    print runtime information for generated values
+  --raw        print generated matrix as 1's and 0's (no Unicode)
+  --noinline   do not print any inline code, disregards --raw
+  --version    show generator's version information
+  -m <uint>    force choice of mask <0-7>, regardless of penalty
+  -u <uint>    scale image output <1-30> times
+  -s <uint>    force use of version <1-5> code
+  -B <string>  create bitmap file with generated code
+  -G <string>  create scalable vector image, disregards -s
 ```
 
 ## Usage examples
