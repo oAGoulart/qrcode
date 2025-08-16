@@ -39,7 +39,7 @@ find_subset_(const uint8_t c)
   {
     return SUBSET_NUMERIC;
   }
-  const char alphaset = " $%*+-./:";
+  const char* alphaset = " $%*+-./:";
   if ((c >= 0x41 && c <= 0x5A) || strchr(alphaset, c) != NULL)
   {
     return SUBSET_ALPHA;
