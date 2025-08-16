@@ -382,7 +382,7 @@ qrmask_penalty(qrmask_t* self)
 void
 qrmask_apply(qrmask_t* self)
 {
-  const uint16_t maskinfo[CHAR_BIT] = {
+  const uint16_t maskinfo[NUM_MASKS] = {
     30660u, 29427u, 32170u, 30877u, 26159u, 25368u, 27713u, 26998u
   };
   uint8_t i = 0;
