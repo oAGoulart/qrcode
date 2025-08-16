@@ -39,7 +39,7 @@ find_subset_(const uint8_t c)
   {
     return SUBSET_NUMERIC;
   }
-  const char alphaset = " $%*+-./?";
+  const char alphaset = " $%*+-./:";
   if ((c >= 0x41 && c <= 0x5A) || strchr(alphaset, c) != NULL)
   {
     return SUBSET_ALPHA;
@@ -47,7 +47,7 @@ find_subset_(const uint8_t c)
   return SUBSET_BYTE;
 }
 
-static uint32_t __attribute__ ((const))
+static __inline__ uint32_t
 count_segment_(const char* __restrict__ str, csubset_t subset)
 {
   uint32_t count = 0;
@@ -105,7 +105,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
     }
   }
-  // TODO: while (encoding) -> change `encode` based on next segments
+  // TODO: while (encoding) -> switch (encode) -> do encoding and
+  //       modify `encode` based on next segments
   /* WARNING WORK IN PROGRESS ABOVE */
 
   const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
