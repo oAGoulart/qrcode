@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Add `--optimize` option to reduce data size with encoding switching
+- Change error messages to comply with GNU style guide
+
 ## [1.4.0] - 2025-08-15
 
 Add SVG output option
