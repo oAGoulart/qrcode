@@ -16,7 +16,7 @@ struct qrmask_s
 {
   const uint16_t* i_;
   uint16_t count_;
-  uint8_t* v_ __attribute__((nonstring, counted_by(count_)));
+  uint8_t* v_ __attribute__((nonstring));
   uint8_t  version_;
   uint8_t  order_;
   uint8_t  masknum_;

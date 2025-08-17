@@ -15,7 +15,7 @@ typedef enum targ_e
   ARG_NOINLINE = 8,
   ARG_VERSION  = 0x10,
   ARG_OPTIMIZE = 0x20,
-  ARG_RESERVED __attribute__((unavailable)) = 0x8000,
+  ARG_RESERVED __attribute__((deprecated)) = 0x8000,
   ARG_MASK,
   ARG_VNUM,
   ARG_SCALE,

@@ -26,7 +26,7 @@ build: lookup.o $(OBJS)
 	$(CC) $(BUILD_DIR)/lookup.o $(OBJS) -o $(BUILD_DIR)/$(TARGET_EXEC) $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: %.c
-	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 --std=c11 $(CCFLAGS) -c $< -o $@
+	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 --std=gnu11 $(CCFLAGS) -c $< -o $@
 
 lookup.o:
 	mkdir -p $(BUILD_DIR)

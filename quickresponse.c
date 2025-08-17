@@ -86,7 +86,7 @@ struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
   uint8_t slen_;
-  uint8_t* stream_ __attribute__((nonstring, counted_by(slen_)));
+  uint8_t* stream_ __attribute__((nonstring));
   uint8_t chosen_;
   uint8_t version_;
 };
