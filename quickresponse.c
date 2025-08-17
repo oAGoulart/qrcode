@@ -16,14 +16,15 @@ extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
 
 static __inline__ void __attribute__((__nonnull__))
-array_pop_(uint8_t* __restrict__ v, const uint8_t length)
+array_pop_(uint8_t* __restrict__ arr, const uint8_t n)
 {
+  // TODO: move up to 64-bits at once
   uint8_t ui8 = 0;
-  for (; ui8 < length - 1; ui8++)
+  for (; ui8 < n - 1; ui8++)
   {
-    v[ui8] = v[ui8 + 1];
+    arr[ui8] = arr[ui8 + 1];
   }
-  v[length - 1] = 0;
+  arr[n - 1] = 0;
 }
 
 typedef enum csubset_e
@@ -65,21 +66,19 @@ count_segment_(const char* __restrict__ str, const csubset_t subset)
 static __inline__ uint8_t __attribute__((const))
 minimum_segment(const uint8_t version, const uint8_t iteration)
 {
+  const uint8_t lengths[7][3] = {
+    { 6, 7, 8 }, { 4, 4, 5 }, { 7, 8, 9 },
+    { 13, 15, 17 }, { 6, 8, 9 }, { 6, 7, 8 }, { 11, 15, 16 }
+  };
   if (version < 10)
   {
-    const uint8_t lengths[7] = { 6, 4, 7, 13, 6, 6, 11 };
-    return lengths[iteration];
+    return lengths[iteration][0];
   }
   else if (version < 27)
   {
-    const uint8_t lengths[7] = { 7, 4, 8, 15, 8, 7, 15 };
-    return lengths[iteration];
+    return lengths[iteration][1];
   }
-  else
-  {
-    const uint8_t lengths[7] = { 8, 5, 9, 17, 9, 8, 16 };
-    return lengths[iteration];
-  }
+  return lengths[iteration][2];
 }
 
 struct qrcode_s
@@ -95,6 +94,11 @@ int
 create_qrcode(qrcode_t** self, const char* __restrict__ str, 
               int vnum, bool optimize, bool verbose)
 {
+  const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
+  const uint8_t strmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
+  const uint8_t ecclen[MAX_VERSION] = {7u, 10u, 15u, 20u, 26u};
+  const uint8_t numbytes[MAX_VERSION] = {26u, 44u, 70u, 100u, 134u};
+
   if (*self != NULL)
   {
     eprintf("pointer to garbage in *self");
@@ -102,55 +106,10 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
 
   /* WARNING WORK IN PROGRESS BELOW */
-  csubset_t encode = SUBSET_BYTE;
-  if (which_subset_(str[0]) != SUBSET_BYTE)
-  {
-    uint32_t next = count_segment_(str, SUBSET_ALPHA);
-    if (next >= 6 && which_subset_(str[next]) == SUBSET_BYTE)
-    {
-      encode = SUBSET_ALPHA;
-    }
-    else
-    {
-      next = count_segment_(str, SUBSET_NUMERIC);
-      if (next < 4 && which_subset_(str[next]) == SUBSET_BYTE)
-      {
-        // encode = SUBSET_BYTE; // redundant;
-      }
-      else if (next < 7 && which_subset_(str[next]) == SUBSET_ALPHA)
-      {
-        encode = SUBSET_ALPHA;
-      }
-      else {
-        encode = SUBSET_NUMERIC;
-      }
-    }
-  }
-  // TODO: while (encoding) -> switch (encode) -> do encoding and
-  //       modify `encode` based on next segments
-  /* WARNING WORK IN PROGRESS ABOVE */
-
-  const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
-  const uint8_t strmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
-  const uint8_t ecclen[MAX_VERSION] = {7u, 10u, 15u, 20u, 26u};
-  const uint8_t numbytes[MAX_VERSION] = {26u, 44u, 70u, 100u, 134u};
-  uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ? vnum : MAX_VERSION - 1;
-
+  uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ?
+    vnum - 1 : MAX_VERSION - 1;
   size_t strcount = strlen(str);
-  if (strcount > strmax[version])
-  {
-    eprintf("data must be less than %u characters long", strmax[version]);
-    return EINVAL;
-  }
-
-  *self = (qrcode_t*)malloc(sizeof(qrcode_t));
-  if (*self == NULL)
-  {
-    eprintf("cannot allocate %u bytes", (uint32_t)sizeof(qrcode_t));
-    return ENOMEM;
-  }
-
-  uint16_t offset = 0;
+  // NOTE: initial version selection
   uint8_t ui8 = 0;
   for (; ui8 <= version; ui8++)
   {
@@ -159,6 +118,58 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       version = ui8;
       break;
     }
+  }
+
+  csubset_t __attribute__((unused)) encode = SUBSET_BYTE;
+  if (optimize)
+  {
+    if (which_subset_(str[0]) != SUBSET_BYTE)
+    {
+      uint32_t next = count_segment_(str, SUBSET_ALPHA);
+      if (which_subset_(str[next]) == SUBSET_BYTE &&
+          minimum_segment(version, 0))
+      {
+        encode = SUBSET_ALPHA;
+      }
+      else
+      {
+        next = count_segment_(str, SUBSET_NUMERIC);
+        if (which_subset_(str[next]) == SUBSET_BYTE &&
+            minimum_segment(version, 1))
+        {
+          // encode = SUBSET_BYTE; // redundant;
+        }
+        else if (which_subset_(str[next]) == SUBSET_ALPHA &&
+                 minimum_segment(version, 2))
+        {
+          encode = SUBSET_ALPHA;
+        }
+        else
+        {
+          encode = SUBSET_NUMERIC;
+        }
+      }
+    }
+    // TODO: while (encoding) -> switch (encode) -> do encoding and
+    //       modify `encode` based on next segments
+    // TODO: select min version, with new compact size
+  }
+  /* WARNING WORK IN PROGRESS ABOVE */
+
+  if (strcount > strmax[version])
+  {
+    eprintf("data must be less than %u characters long", strmax[version]);
+    return EINVAL;
+  }
+  *self = (qrcode_t*)malloc(sizeof(qrcode_t));
+  if (*self == NULL)
+  {
+    eprintf("cannot allocate %u bytes", (uint32_t)sizeof(qrcode_t));
+    return ENOMEM;
+  }
+  uint16_t offset = 0;
+  for (ui8 = 0; ui8 < version; ui8++)
+  {
     offset += ecclen[ui8] + 1;
   }
   const uint8_t* gen = rsgen + offset;
