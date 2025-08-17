@@ -1,14 +1,14 @@
-#include <stdint.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <errno.h>
-#include "shared.h"
+#include <limits.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "mask.h"
 #include "quickresponse.h"
+#include "shared.h"
 
-#define GEN_MODE 4
+#define GEN_MODE    4
 #define NUM_PADBITS 7
 
 extern const uint8_t logt[];
@@ -26,24 +26,90 @@ vshift_(uint8_t* __restrict__ v, const uint8_t length)
   v[length - 1] = 0;
 }
 
+typedef enum csubset_e
+{
+  SUBSET_NUMERIC,
+  SUBSET_ALPHA,
+  SUBSET_BYTE
+} csubset_t;
+
+static csubset_t __attribute__ ((const))
+which_subset_(const uint8_t c)
+{
+  if (c >= 0x30 && c <= 0x39)
+  {
+    return SUBSET_NUMERIC;
+  }
+  const char* alphaset = " $%*+-./:";
+  if ((c >= 0x41 && c <= 0x5A) || strchr(alphaset, c) != NULL)
+  {
+    return SUBSET_ALPHA;
+  }
+  return SUBSET_BYTE;
+}
+
+static __inline__ uint32_t
+count_segment_(const char* __restrict__ str, csubset_t subset)
+{
+  uint32_t count = 0;
+  size_t i = 0;
+  for (; str[i] != '\0'; i++)
+  {
+    if (which_subset_(str[i]) != subset)
+    {
+      break;
+    }
+  }
+  return count;
+}
+
 struct qrcode_s
 {
+  qrmask_t* masks_[NUM_MASKS];
   uint8_t* stream_;
   uint8_t slen_;
   uint8_t chosen_;
-  qrmask_t* masks_[CHAR_BIT];
   uint8_t version_;
 };
 
 int
 create_qrcode(qrcode_t** self, const char* __restrict__ str, 
-              uint8_t verbose, int vnum)
+              int vnum, bool optimize, bool verbose)
 {
   if (*self != NULL)
   {
-    pdebug(__c(31, "error:") " garbage in *self pointer");
+    eprintf("pointer to garbage in *self");
     return EINVAL;
   }
+
+  /* WARNING WORK IN PROGRESS BELOW */
+  csubset_t encode = SUBSET_BYTE;
+  if (which_subset_(str[0]) != SUBSET_BYTE)
+  {
+    uint32_t next = count_segment_(str, SUBSET_ALPHA);
+    if (next >= 6 && which_subset_(str[next]) == SUBSET_BYTE)
+    {
+      encode = SUBSET_ALPHA;
+    }
+    else
+    {
+      next = count_segment_(str, SUBSET_NUMERIC);
+      if (next < 4 && which_subset_(str[next]) == SUBSET_BYTE)
+      {
+        // encode = SUBSET_BYTE; // redundant;
+      }
+      else if (next < 7 && which_subset_(str[next]) == SUBSET_ALPHA)
+      {
+        encode = SUBSET_ALPHA;
+      }
+      else {
+        encode = SUBSET_NUMERIC;
+      }
+    }
+  }
+  // TODO: while (encoding) -> switch (encode) -> do encoding and
+  //       modify `encode` based on next segments
+  /* WARNING WORK IN PROGRESS ABOVE */
 
   const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
   const uint8_t strmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
@@ -54,16 +120,14 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t strcount = strlen(str);
   if (strcount > strmax[version])
   {
-    fprintf(stderr,
-            __c(31, "\tdata must be less than %u characters long") __nl,
-            strmax[version]);
+    eprintf("data must be less than %u characters long", strmax[version]);
     return EINVAL;
   }
 
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
   if (*self == NULL)
   {
-    pdebug(__c(31, "error:") "cannot allocate (qrcode_t) bytes");
+    eprintf("cannot allocate %u bytes", (uint32_t)sizeof(qrcode_t));
     return ENOMEM;
   }
 
@@ -81,9 +145,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   const uint8_t* gen = rsgen + offset;
   if (verbose)
   {
-    printf(__c(36, "INFO") " String length: %u" __nl
-           __c(36, "INFO") " Version selected: %u" __nl,
-           (uint32_t)strcount, version + 1);
+    pinfo("String length: %u", (uint32_t)strcount);
+    pinfo("Version selected: %u", version + 1u);
   }
 
   (*self)->version_ = version;
@@ -92,7 +155,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   (*self)->stream_ = (uint8_t*)malloc(datalen);
   if ((*self)->stream_ == NULL)
   {
-    pdebug(__c(31, "error:") "cannot allocate datalen bytes");
+    eprintf("cannot allocate %u bytes", datalen);
     free(*self);
     *self = NULL;
     return ENOMEM;
@@ -125,7 +188,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   uint8_t* tmpptr = (uint8_t*)realloc((*self)->stream_, byteslen);
   if (tmpptr == NULL)
   {
-    pdebug(__c(31, "error:") "cannot reallocate (*self)->stream_");
+    eprintf("cannot allocate %u bytes", byteslen);
     free((*self)->stream_);
     free(*self);
     *self = NULL;
@@ -135,16 +198,16 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   memcpy(&(*self)->stream_[datalen], &ecc[0], ecclen[version]);
   if (verbose)
   {
-    printf(__c(36, "INFO") " Calculated bytes (%u): [ 0x%x",
-           byteslen, (*self)->stream_[0]);
+    pinfo("Calculated bytes (%u):", byteslen);
+    printf("0x%x", (*self)->stream_[0]);
     for (ui8 = 1; ui8 < byteslen; ui8++)
     {
       printf(", 0x%x", (*self)->stream_[ui8]);
     }
-    puts(" ]");
+    puts("");
   }
 
-  for (ui8 = 0; ui8 < CHAR_BIT; ui8++)
+  for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
   {
     (*self)->masks_[ui8] = NULL;
     if (create_qrmask(&(*self)->masks_[ui8], version, ui8) != 0)
@@ -163,7 +226,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     {
       uint8_t module = ((*self)->stream_[ui8] & bitmask[bit]) >> bit & 1;
       uint8_t uj8 = 0;
-      for (; uj8 < CHAR_BIT; uj8++)
+      for (; uj8 < NUM_MASKS; uj8++)
       {
         uint16_t index = (uint16_t)(offset + (7 - bit));
         qrmask_set((*self)->masks_[uj8], index, module);
@@ -176,7 +239,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     for (ui8 = 0; ui8 < NUM_PADBITS; ui8++)
     {
       uint8_t uj8 = 0;
-      for (; uj8 < CHAR_BIT; uj8++)
+      for (; uj8 < NUM_MASKS; uj8++)
       {
         uint16_t index = (uint16_t)(byteslen * 8) + ui8;
         qrmask_set((*self)->masks_[uj8], index, MASK_LIGHT);
@@ -185,12 +248,11 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
   
   pdebug("calculating masks penalty");
-  uint16_t score = 0;
   uint16_t minscore = UINT16_MAX;
   uint8_t chosen = 0;
-  for (ui8 = 0; ui8 < CHAR_BIT; ui8++)
+  for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
   {
-    score = qrmask_penalty((*self)->masks_[ui8]);
+    uint16_t score = qrmask_penalty((*self)->masks_[ui8]);
     qrmask_apply((*self)->masks_[ui8]);
     if (score < minscore)
     {
@@ -199,13 +261,13 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
     if (verbose)
     {
-      printf(__c(36, "INFO") " Mask [%u] penalty: %u" __nl, ui8, score);
+      pinfo("Mask [%u] penalty: %u", ui8, score);
     }
   }
   (*self)->chosen_ = chosen;
   if (verbose)
   {
-    printf(__c(36, "INFO") " Mask chosen: %u" __nl, chosen);
+    pinfo("Mask chosen: %u", chosen);
   }
   return 0;
 }
@@ -220,7 +282,7 @@ delete_qrcode(qrcode_t** self)
       free((*self)->stream_);
     }
     uint8_t ui8 = 0;
-    for (; ui8 < CHAR_BIT; ui8++)
+    for (; ui8 < NUM_MASKS; ui8++)
     {
       if ((*self)->masks_[ui8] != NULL)
       {
@@ -244,7 +306,7 @@ qrcode_forcemask(qrcode_t* self, int mask)
 }
 
 void
-qrcode_print(qrcode_t* self, uint8_t useraw)
+qrcode_print(qrcode_t* self, bool useraw)
 {
   if (useraw)
   {
@@ -263,30 +325,30 @@ qrcode_output(qrcode_t* self, imgfmt_t fmt, int scale,
   scale = (scale == -1) ? 1 : scale;
   if (scale < 1 || scale > MAX_SCALE)
   {
-    fprintf(stderr, __c(31, "\tinvalid image scale: %d" __nl), scale);
+    eprintf("invalid image scale: %d", scale);
     return EINVAL;
   }
   FILE* f = fopen(filename, "wb+");
   if (f == NULL)
   {
-    fprintf(stderr, __c(31, "\tcannot create file: %s" __nl), filename);
+    eprintf("cannot create file: %s", filename);
     return errno;
   }
   int err = 0;
-  if (fmt == FMT_BMP)
+  switch (fmt)
   {
+  case FMT_BMP:
     pdebug("bitmap image output selected");
     err = qrmask_outbmp(self->masks_[self->chosen_], scale, f);
-  }
-  else if (fmt == FMT_SVG)
-  {
+    break;
+  case FMT_SVG:
     pdebug("vector image output selected");
     qrmask_outsvg(self->masks_[self->chosen_], f);
-  }
-  else
-  {
-    pdebug(__c(31, "error:") "invalid image format selected");
+    break;
+  default:
+    eprintf("invalid image format selected: %d", fmt);
     err = EINVAL;
+    break;
   }
   fclose(f);
   return err;

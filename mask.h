@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define MASK_DARK 1
+#define MASK_DARK  1
 #define MASK_LIGHT 0
 
 typedef struct qrmask_s qrmask_t;

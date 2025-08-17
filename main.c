@@ -1,21 +1,20 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include <errno.h>
-#ifdef _WIN32
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
-#endif
+#include <string.h>
 #include "quickresponse.h"
 #include "shared.h"
 
-typedef enum targ_e {
-  ARG_NONE = 0,
-  ARG_NOCOPY = 1,
-  ARG_VERBOSE = 2,
-  ARG_RAW = 4,
+typedef enum targ_e
+{
+  ARG_NONE     = 0,
+  ARG_NOCOPY   = 1,
+  ARG_VERBOSE  = 2,
+  ARG_RAW      = 4,
   ARG_NOINLINE = 8,
-  ARG_VERSION = 0x10,
+  ARG_VERSION  = 0x10,
+  ARG_OPTIMIZE = 0x20,
   ARG_RESERVED = 0x8000, // NOTE: exclusive options below
   ARG_MASK,
   ARG_VNUM,
@@ -23,16 +22,16 @@ typedef enum targ_e {
   ARG_BMP,
   ARG_SVG
 } targ_t;
-#define NUM_ARGS 10
+#define NUM_ARGS      11
 #define NUM_MANDATORY 1
 
 static const char* args_[NUM_ARGS] = {
-  "--nocopy", "--verbose", "--raw", "--noinline", "--version",
+  "--nocopy", "--verbose", "--raw", "--noinline", "--version", "--optimize",
   "-m", "-u", "-s", "-B", "-G"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
-  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE, ARG_VERSION,
+  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE, ARG_VERSION, ARG_OPTIMIZE,
   ARG_MASK, ARG_VNUM, ARG_SCALE, ARG_BMP, ARG_SVG
 };
 
@@ -40,20 +39,20 @@ static __inline__ int
 phelp_(const char* __restrict__ cmdln)
 {
   fprintf(stderr,
-    "Usage: %s [OPTIONS] <data to encode>" __nl
+    "Usage: %s [OPTIONS] <string>" __nl
     "OPTIONS:" __nl
-    "\t--nocopy    do not print copyright header" __nl
-    "\t--verbose   print runtime information for generated values" __nl
-    "\t--raw       print generated matrix as 1's and 0's (no Unicode)" __nl
-    "\t--noinline  do not print any inline code, disregards --raw" __nl
-    "\t--version   show generator's version information" __nl
-    "\t-m <N>      force N mask output, regardless of penalty; N:(0-7)" __nl
-    "\t-u <N>      tries to force use of N version QR Codes; N:(1-"
-    __xstr(MAX_VERSION) ")" __nl
-    "\t-s <N>      scale image output by N times; N:(1-"
-    __xstr(MAX_SCALE) ")" __nl
-    "\t-B <STR>    create STR bitmap file with generated code" __nl
-    "\t-G <STR>    create STR scalable vector image, disregards -s" __nl,
+    "  --nocopy     omit copyright header from inline printing" __nl
+    "  --noinline   do not print any inline code, disregards --raw" __nl
+    "  --optimize   reduce data size, encode numeric, alphanumeric, byte" __nl
+    "               segments separately (if any)" __nl
+    "  --raw        print generated code with chars 1, 0 (no box-chars)" __nl
+    "  --verbose    print runtime information for generated values" __nl
+    "  --version    show generator's version and build information" __nl
+    "  -m <uint>    force choice of mask <0-7>, regardless of penalty" __nl
+    "  -s <uint>    scale image output <1-" __xstr(MAX_SCALE) "> times" __nl
+    "  -u <uint>    force use of version <1-" __xstr(MAX_VERSION) "> code" __nl
+    "  -B <string>  create bitmap file with generated code" __nl
+    "  -G <string>  create scalable vector image, disregards -s" __nl,
     cmdln);
   return EINVAL;
 }
@@ -61,22 +60,22 @@ phelp_(const char* __restrict__ cmdln)
 int
 main(int argc, char* argv[])
 {
-#ifdef _WIN32
+#if defined(_WIN32)
   // NOTE: to allow box-drawing characters
-  system("chcp 65001");
+  system("chcp 65001>nul");
 #endif
   if (argc < NUM_MANDATORY + 1)
   {
-    pdebug(__c(31, "error:") " not enough arguments");
+    eprintf("not enough arguments, provided %d", argc);
     return phelp_(argv[0]);
   }
 
-  targ_t options = ARG_NONE;
-  int mask = -1;
-  int vnum = -1;
-  int scale = -1;
-  int argcount = 0;
-  imgfmt_t imgfmt = FMT_SVG;
+  targ_t   options = ARG_NONE;
+  imgfmt_t imgfmt  = FMT_SVG;
+  int mask     = -1;
+  int vnum     = -1;
+  int scale    = -1;
+  int argcount =  0;
   char* imgout = NULL;
 
   pdebug("started parsing cmdln arguments");
@@ -134,7 +133,7 @@ main(int argc, char* argv[])
   }
   if (argc - argcount < NUM_MANDATORY + 1)
   {
-    pdebug(__c(31, "error:") " did not provide mandatory arguments");
+    eprintf("must provide " __xstr(NUM_MANDATORY) " mandatory argument(s)");
     return phelp_(argv[0]);
   }
   if (!(options & ARG_NOCOPY))
@@ -145,11 +144,11 @@ main(int argc, char* argv[])
 
   pdebug("creating qrcode object");
   qrcode_t* qr = NULL;
-  int err = create_qrcode(&qr, argv[argc - 1], options & ARG_VERBOSE, vnum);
+  int err = create_qrcode(&qr,
+    argv[argc - 1], vnum, options & ARG_OPTIMIZE, options & ARG_VERBOSE);
   if (err != 0)
   {
-    errno = err;
-    perror(__c(31, "\t\u25CF") " create_qrcode error");
+    perrno(err);
   }
   else
   {
@@ -158,12 +157,11 @@ main(int argc, char* argv[])
       err = qrcode_forcemask(qr, mask);
       if (err != 0)
       {
-        errno = err;
-        perror(__c(31, "\t\u25CF") " qrcode_forcemask error");
+        eprintf("could not force qrcode mask choise");
       }
       else if (options & ARG_VERBOSE)
       {
-        printf(__c(36, "INFO") " Forced mask: %d" __nl, mask);
+        pinfo("Forced mask: %d", mask);
       }
     }
     if (!(options & ARG_NOINLINE))
@@ -176,12 +174,11 @@ main(int argc, char* argv[])
       err = qrcode_output(qr, imgfmt, scale, imgout);
       if (err != 0)
       {
-        errno = err;
-        perror(__c(31, "\t\u25CF") " qrcode_output error");
+        eprintf("could not output qrcode image");
       }
       else if (options & ARG_VERBOSE)
       {
-        printf(__c(36, "INFO") " Image written to: %s" __nl, imgout);
+        pinfo("Image written to: %s", imgout);
       }
     }
   }

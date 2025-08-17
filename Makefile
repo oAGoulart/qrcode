@@ -12,8 +12,13 @@ SRCS := mask.c quickresponse.c main.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
-debug: debug_build
+lint: lint_clang lint_cppcheck
+lint_clang:
+	clang-tidy main.c
+lint_cppcheck:
+	cppcheck main.c
 
+debug: debug_build
 debug_build: CCFLAGS ::= -g3 -O0
 debug_build: build
 
