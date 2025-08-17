@@ -15,7 +15,7 @@ extern const uint8_t logt[];
 extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
 
-static __inline__ void
+static __inline__ void __attribute__((__nonnull__))
 vshift_(uint8_t* __restrict__ v, const uint8_t length)
 {
   uint8_t ui8 = 0;
@@ -33,23 +33,22 @@ typedef enum csubset_e
   SUBSET_BYTE
 } csubset_t;
 
-static csubset_t __attribute__ ((const))
+static __inline__ csubset_t __attribute__((const))
 which_subset_(const uint8_t c)
 {
   if (c >= 0x30 && c <= 0x39)
   {
     return SUBSET_NUMERIC;
   }
-  const char* alphaset = " $%*+-./:";
-  if ((c >= 0x41 && c <= 0x5A) || strchr(alphaset, c) != NULL)
+  if ((c >= 0x41 && c <= 0x5A) || strchr(" $%*+-./:", c) != NULL)
   {
     return SUBSET_ALPHA;
   }
   return SUBSET_BYTE;
 }
 
-static __inline__ uint32_t
-count_segment_(const char* __restrict__ str, csubset_t subset)
+static __inline__ uint32_t __attribute__((__nonnull__))
+count_segment_(const char* __restrict__ str, const csubset_t subset)
 {
   uint32_t count = 0;
   size_t i = 0;
@@ -63,11 +62,31 @@ count_segment_(const char* __restrict__ str, csubset_t subset)
   return count;
 }
 
+static __inline__ uint8_t __attribute__((const))
+segment_length(const uint8_t version, const uint8_t iteration)
+{
+  if (version < 10)
+  {
+    const uint8_t lengths[7] = { 6, 4, 7, 13, 6, 6, 11 };
+    return lengths[iteration];
+  }
+  else if (version < 27)
+  {
+    const uint8_t lengths[7] = { 7, 4, 8, 15, 8, 7, 15 };
+    return lengths[iteration];
+  }
+  else
+  {
+    const uint8_t lengths[7] = { 8, 5, 9, 17, 9, 8, 16 };
+    return lengths[iteration];
+  }
+}
+
 struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
-  uint8_t* stream_;
   uint8_t slen_;
+  uint8_t* stream_ __attribute__((nonstring, counted_by(slen_)));
   uint8_t chosen_;
   uint8_t version_;
 };

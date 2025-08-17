@@ -14,17 +14,28 @@ def xsegment(v: list, subset: str) -> int:
     count += 1
   return count
 
+def xseglen(version: int, it: int) -> int:
+  ver = 0
+  if version > 0: pass
+  elif version > 9: ver = 1
+  elif version > 26: ver = 2
+  seg = [
+    (6, 7, 8), (4, 4, 5), (7, 8, 9),
+    (13, 15, 17), (6, 8, 9), (6, 7, 8), (11, 15, 16)
+  ]
+  return seg[it][ver]
+
 v = [0x30, 0x31, 0x32, 0x33, 0x34, 0x41, 0x42, 0x65, 0x66]
 initial = "byte"
 if xsubset(v[0]) != "byte":
   seg = xsegment(v, "alpha")
-  if seg >= 6 and xsubset(v[seg]) == "byte":
+  if xsubset(v[seg]) == "byte" and seg >= xseglen(1, 0):
     initial = "alpha"
   else:
     seg = xsegment(v, "num")
-    if seg < 4 and xsubset(v[seg]) == "byte":
+    if xsubset(v[seg]) == "byte" and seg < xseglen(1, 1):
       pass
-    elif seg < 7 and xsubset(v[seg]) == "alpha":
+    elif xsubset(v[seg]) == "alpha" and seg < xseglen(1, 2):
       initial = "alpha"
     else:
       initial = "num"
@@ -49,18 +60,20 @@ for i in range(len(v)):
       mode = subset
       continue
     seg = xsegment(v[i:], "num")
-    if seg - i >= 13 and xsubset(v[seg]) == "alpha":
+    if xsubset(v[seg]) == "alpha" and seg - i >= xseglen(1, 3):
       mode = "num"
   else:
     #encode
     print(mode)
     #then ->
     seg = xsegment(v[i:], "num")
-    if seg - i >= 6:
-      subset = xsubset(v[seg])
-      if subset == "byte" or subset == "alpha":
-        mode = "num"
+    subset = xsubset(v[seg])
+    if subset == "byte" and seg - i >= xseglen(1, 4):
+      mode = "num"
+      continue
+    if subset == "alpha" and seg - i >= xseglen(1, 5):
+      mode = "num"
       continue
     seg = xsegment(v[i:], "alpha")
-    if seg - i >= 11 and xsubset(v[seg]) == "byte":
+    if xsubset(v[seg]) == "byte" and seg - i >= xseglen(1, 6):
       mode = "alpha"

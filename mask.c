@@ -15,17 +15,17 @@ extern const uint16_t qrindex[];
 struct qrmask_s
 {
   const uint16_t* i_;
-  uint8_t* v_;
+  uint16_t count_;
+  uint8_t* v_ __attribute__((nonstring, counted_by(count_)));
   uint8_t  version_;
   uint8_t  order_;
-  uint16_t count_;
   uint8_t  masknum_;
   uint16_t dark_;
   uint16_t light_;
   uint16_t penalty_;
 };
 
-static __inline__ bool __attribute__ ((const))
+static __inline__ bool __attribute__((const))
 should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
 {
   const uint16_t row = (uint16_t)floor(index / order);
@@ -53,7 +53,7 @@ should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
   }
 }
 
-static __inline__ int
+static __inline__ int __attribute__((__nonnull__))
 colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
         const uint16_t n, const uint8_t arr[n])
 {
@@ -69,7 +69,7 @@ colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
   return 0;
 }
 
-static void
+static void __attribute__((__nonnull__))
 mask_double_(const uint8_t* __restrict__ v, uint8_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
@@ -106,7 +106,7 @@ mask_double_(const uint8_t* __restrict__ v, uint8_t order)
   }
 }
 
-static void
+static void __attribute__((__nonnull__))
 mask_single_(const uint8_t* __restrict__ v, uint8_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
@@ -132,7 +132,7 @@ mask_single_(const uint8_t* __restrict__ v, uint8_t order)
   }
 }
 
-static void
+static void __attribute__((__nonnull__))
 place_finder_(qrmask_t* self)
 {
   const uint8_t finder[7][7] = {
@@ -155,7 +155,7 @@ place_finder_(qrmask_t* self)
   // NOTE: separators not required (array is initialized to 0)
 }
 
-static void
+static void __attribute__((__nonnull__))
 place_align_(qrmask_t* self)
 {
   const uint8_t align[5][5] = {
@@ -173,7 +173,7 @@ place_align_(qrmask_t* self)
   }
 }
 
-static void
+static void __attribute__((__nonnull__))
 place_timing_(qrmask_t* self)
 {
   size_t idx1 = self->order_ * 6u + 8u;
@@ -188,7 +188,7 @@ place_timing_(qrmask_t* self)
   }
 }
 
-static void
+static void __attribute__((__nonnull__))
 percentage_penalty_(qrmask_t* self)
 {
   double percentage = (self->dark_ / self->count_) * 10;
@@ -199,7 +199,7 @@ percentage_penalty_(qrmask_t* self)
   self->penalty_ += (uint16_t)(fmin(prev, next) * 10);
 }
 
-static void
+static void __attribute__((__nonnull__))
 module_penalty_(qrmask_t* self)
 {
   const uint8_t patleft[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
