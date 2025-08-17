@@ -16,7 +16,7 @@ extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
 
 static __inline__ void __attribute__((__nonnull__))
-vshift_(uint8_t* __restrict__ v, const uint8_t length)
+array_pop_(uint8_t* __restrict__ v, const uint8_t length)
 {
   uint8_t ui8 = 0;
   for (; ui8 < length - 1; ui8++)
@@ -63,7 +63,7 @@ count_segment_(const char* __restrict__ str, const csubset_t subset)
 }
 
 static __inline__ uint8_t __attribute__((const))
-segment_length(const uint8_t version, const uint8_t iteration)
+minimum_segment(const uint8_t version, const uint8_t iteration)
 {
   if (version < 10)
   {
@@ -201,7 +201,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     {
       ecc[uj8] ^= alogt[(gen[uj8] + logt[lead]) % UINT8_MAX];
     }
-    vshift_(&ecc[0], datalen);
+    array_pop_(&ecc[0], datalen);
   }
   const uint8_t byteslen = numbytes[version];
   uint8_t* tmpptr = (uint8_t*)realloc((*self)->stream_, byteslen);
