@@ -48,7 +48,7 @@ Latest (stable) releases can be found at this repo's [Releases](https://github.c
 
 > [!WARNING]
 > This repo's `master` branch may or may not contain non-compilable, unstable code.
-> It's recommended that you select the latest tag release, unless you wish to colaborate with code.
+> It's recommended that you select the latest tag release, unless you wish to collaborate with code.
 
 **Build tools used for binaries:**
 1. GNU Make **4.3**
