@@ -25,16 +25,19 @@
 ```text
 Usage: qrcode [OPTIONS] <data to encode>
 OPTIONS:
-  --nocopy     do not print copyright header
-  --verbose    print runtime information for generated values
-  --raw        print generated matrix as 1's and 0's (no Unicode)
+  --nocopy     omit copyright header from inline printing
   --noinline   do not print any inline code, disregards --raw
-  --version    show generator's version information
+  --optimize   reduce data size, encode numeric, alphanumeric, byte
+                 segments separately (if any)
+  --raw        print generated code with chars 1, 0 (no box-chars)
+  --verbose    print runtime information for generated values
+  --version    show generator's version and build information
   -m <uint>    force choice of mask <0-7>, regardless of penalty
   -u <uint>    scale image output <1-30> times
-  -s <uint>    force use of version <1-5> code
+  -s <uint>    force use of version <1-5> code or lower (if
+                 used with --optimize)
   -B <string>  create bitmap file with generated code
-  -G <string>  create scalable vector image, disregards -s
+  -K <string>  create scalable vector image, disregards -s
 ```
 
 ## Usage examples
@@ -86,13 +89,19 @@ qrcode -s 6 -B gen.bmp oagoulart.github.io/rambles/keep-thyself-credible
 
 **Command-line:** 
 ```bash
-qrcode -G gen.svg oagoulart.github.io/rambles/keep-thyself-credible
+qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 ```
 
 **Output:**
 
 ![QR Code](assets/gen.svg)
 
+## Roadmap
+
+Planned features:
+1. encoding swithing (~50%)
+1. higher EC levels (TBD)
+1. higher Version codes (TBD)
 
 ## Disclaimer
 QR Code, iQR Code SQRC and FrameQR are registered trademarks of DENSO WAVE INCORPORATED in Japan and in other countries.
@@ -103,5 +112,3 @@ ISO/IEC 18004:2024 - Information technology — Automatic identification and dat
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 1. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
-
-

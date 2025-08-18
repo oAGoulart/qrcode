@@ -18,8 +18,3 @@ How to contribute with **code**:
 - Bitmap and SVG will be the only output formats supported. Monochrome bitmaps are packed (not compressed) into bits, but rows are padded to 32-bit longs, still it keeps the raster data quite small while avoiding compression. SVGs can be modified to change background/foreground color (and scaling beyond `-s` option for bitmaps).
 - Higher Versions and EC levels are planned in the near future. Those require (a) codewords to be weaved; and (b) additional version information to be placed on code.
 - Kanji encoding is not likely to be supported in the future, even though it is part of the ISO standard.
-- Roadmap:
-    - [x] v1.4.0 -- vector output
-    - [ ] v1.5.0 -- encoding swithing
-    - [ ] v1.6.0 -- higher EC levels
-    - [ ] v1.7+  -- higher Version codes
