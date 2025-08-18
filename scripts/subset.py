@@ -75,5 +75,5 @@ for i in range(len(v)):
       mode = "num"
       continue
     seg = xsegment(v[i:], "alpha")
-    if xsubset(v[seg]) == "byte" and seg - i >= xseglen(1, 6):
+    if subset == "byte" and seg - i >= xseglen(1, 6):
       mode = "alpha"
