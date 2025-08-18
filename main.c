@@ -150,6 +150,7 @@ main(int argc, char* argv[])
     argv[argc - 1], vnum, options & ARG_OPTIMIZE, options & ARG_VERBOSE);
   if (err != 0)
   {
+    eprintf("could not create qrcode");
     perrno(err);
   }
   else

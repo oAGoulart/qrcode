@@ -20,6 +20,8 @@
 1. Galois field of 256 (285 primitive) log and anti-log table.
 1. Placement index of each data and error correction bit on the encoding region.
 
+## Usage
+
 **Options available:**
 
 ```text
@@ -40,9 +42,22 @@ OPTIONS:
   -K <string>  create scalable vector image, disregards -s
 ```
 
-## Usage examples
+### Building and binaries
 
-### 1. Inline printing
+Latest (stable) releases can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases). To compile this project, use `make`.
+
+> [!WARNING]
+> This repo's `master` branch may or may not contain non-compilable, unstable code.
+> It's recommended that you select the latest tag release, unless you wish to colaborate with code.
+
+**Build tools used for binaries:**
+1. GNU Make **4.3**
+1. GNU Compiler Collection (GCC) **11.4.0**
+1. Python **3.10.12** (for scripts)
+
+### Examples
+
+#### 1. Inline printing
 
 **Command-line:** 
 ```bash
@@ -74,7 +89,7 @@ qrcode oagoulart.github.io/rambles/keep-thyself-credible
 > Using a `line-height` of `1em` (i.e. line height is equal to font size) will remove the unintended vertical spacing seen in the output above.
 > Some fonts may require a slight different value between `1 +/- .25`. You can also try value `normal`.
 
-### 2. Bitmap generation
+#### 2. Bitmap generation
 
 **Command-line:** 
 ```bash
@@ -85,7 +100,7 @@ qrcode -s 6 -B gen.bmp oagoulart.github.io/rambles/keep-thyself-credible
 
 ![QR Code](assets/gen.bmp)
 
-### 3. Vector graphics generation
+#### 3. Vector graphics generation
 
 **Command-line:** 
 ```bash
