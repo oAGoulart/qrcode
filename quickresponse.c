@@ -95,7 +95,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
               int vnum, bool optimize, bool verbose)
 {
   const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
-  const uint8_t strmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
+  const uint8_t cwmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
   const uint8_t ecclen[MAX_VERSION] = {7u, 10u, 15u, 20u, 26u};
   const uint8_t numbytes[MAX_VERSION] = {26u, 44u, 70u, 100u, 134u};
 
@@ -111,15 +111,19 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t strcount = strlen(str);
   // NOTE: initial version selection
   uint8_t ui8 = 0;
-  for (; ui8 <= version; ui8++)
+  if (vnum != version)
   {
-    if (vnum != version && strcount <= strmax[ui8])
+    for (; ui8 <= version; ui8++)
     {
-      version = ui8;
-      break;
+      if (strcount <= cwmax[ui8])
+      {
+        version = ui8;
+        break;
+      }
     }
   }
 
+  size_t __attribute__((unused)) strcountmin = 0;
   csubset_t __attribute__((unused)) encode = SUBSET_BYTE;
   if (optimize)
   {
@@ -202,12 +206,29 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
     }
     // TODO: select min version, with new compact size
+    for (ui8 = version; ui8 > 0; ui8--)
+    {
+      if (strcountmin <= cwmax[ui8 - 1])
+      {
+        continue;
+      }
+      else
+      {
+        break;
+      }
+    }
+    if (version == 0)
+    {
+      eprintf("optimized data length is larger than non-optimized, somehow");
+      return ENOTRECOVERABLE;
+    }
+    version = ui8;
   }
   /* WARNING WORK IN PROGRESS ABOVE */
 
-  if (strcount > strmax[version])
+  if (strcount > cwmax[version])
   {
-    eprintf("data must be less than %u characters long", strmax[version]);
+    eprintf("data must be less than %u characters long", cwmax[version]);
     return EINVAL;
   }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
@@ -229,7 +250,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
 
   (*self)->version_ = version;
-  const uint8_t datalen = strmax[version] + 2;
+  const uint8_t datalen = cwmax[version] + 2;
   (*self)->slen_ = datalen;
   (*self)->stream_ = (uint8_t*)malloc(datalen);
   if ((*self)->stream_ == NULL)

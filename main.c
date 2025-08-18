@@ -51,7 +51,7 @@ phelp_(const char* __restrict__ cmdln)
     "  -m <uint>    force choice of mask <0-7>, regardless of penalty" __nl
     "  -s <uint>    scale image output <1-" __xstr(MAX_SCALE) "> times" __nl
     "  -u <uint>    force use of version <1-" __xstr(MAX_VERSION) "> code"
-                      "or lower (if" __nl
+                      "(or lower, if" __nl
     "                 used with --optimize)" __nl
     "  -B <string>  create bitmap file with generated code" __nl
     "  -K <string>  create scalable vector image, disregards -s" __nl,

@@ -34,7 +34,7 @@ OPTIONS:
   --version    show generator's version and build information
   -m <uint>    force choice of mask <0-7>, regardless of penalty
   -u <uint>    scale image output <1-30> times
-  -s <uint>    force use of version <1-5> code or lower (if
+  -s <uint>    force use of version <1-5> code (or lower, if
                  used with --optimize)
   -B <string>  create bitmap file with generated code
   -K <string>  create scalable vector image, disregards -s
@@ -99,7 +99,7 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 ## Roadmap
 
 Planned features:
-1. encoding swithing (~50%)
+1. encoding swithing (~60%)
 1. higher EC levels (TBD)
 1. higher Version codes (TBD)
 
