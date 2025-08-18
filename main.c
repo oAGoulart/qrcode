@@ -27,7 +27,7 @@ typedef enum targ_e
 
 static const char* args_[NUM_ARGS] = {
   "--nocopy", "--verbose", "--raw", "--noinline", "--version", "--optimize",
-  "-m", "-u", "-s", "-B", "-G"
+  "-m", "-u", "-s", "-B", "-K"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
@@ -44,15 +44,17 @@ phelp_(const char* __restrict__ cmdln)
     "  --nocopy     omit copyright header from inline printing" __nl
     "  --noinline   do not print any inline code, disregards --raw" __nl
     "  --optimize   reduce data size, encode numeric, alphanumeric, byte" __nl
-    "               segments separately (if any)" __nl
+    "                 segments separately (if any)" __nl
     "  --raw        print generated code with chars 1, 0 (no box-chars)" __nl
     "  --verbose    print runtime information for generated values" __nl
     "  --version    show generator's version and build information" __nl
     "  -m <uint>    force choice of mask <0-7>, regardless of penalty" __nl
     "  -s <uint>    scale image output <1-" __xstr(MAX_SCALE) "> times" __nl
-    "  -u <uint>    force use of version <1-" __xstr(MAX_VERSION) "> code" __nl
+    "  -u <uint>    force use of version <1-" __xstr(MAX_VERSION) "> code"
+                      "or lower (if" __nl
+    "                 used with --optimize)" __nl
     "  -B <string>  create bitmap file with generated code" __nl
-    "  -G <string>  create scalable vector image, disregards -s" __nl,
+    "  -K <string>  create scalable vector image, disregards -s" __nl,
     cmdln);
   return EINVAL;
 }
