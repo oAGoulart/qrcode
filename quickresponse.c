@@ -160,6 +160,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       switch (encode)
       {
       case SUBSET_NUMERIC:
+      {
         /* TODO: encode numeric */
         csubset_t subset = which_subset_(str[len + 1]);
         if (subset != SUBSET_NUMERIC)
@@ -167,7 +168,9 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           encode = subset;
         }
         break;
+      }
       case SUBSET_ALPHA:
+      {
         /* TODO: encode alpha */
         csubset_t subset = which_subset_(str[len + 1]);
         if (subset == SUBSET_BYTE)
@@ -181,7 +184,9 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           encode = SUBSET_NUMERIC;
         }
         break;
+      }
       default:
+      {
         /* TODO: encode byte */
         uint32_t seg = count_segment_(&str[len], SUBSET_NUMERIC);
         csubset_t subset = which_subset_(str[len]);
@@ -203,6 +208,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           encode = SUBSET_ALPHA;
         }
         break;
+      }
       }
     }
     // TODO: select min version, with new compact size
@@ -438,17 +444,23 @@ qrcode_output(qrcode_t* self, imgfmt_t fmt, int scale,
   switch (fmt)
   {
   case FMT_BMP:
+  {
     pdebug("bitmap image output selected");
     err = qrmask_outbmp(self->masks_[self->chosen_], scale, f);
     break;
+  }
   case FMT_SVG:
+  {
     pdebug("vector image output selected");
     qrmask_outsvg(self->masks_[self->chosen_], f);
     break;
+  }
   default:
+  {
     eprintf("invalid image format selected: %d", fmt);
     err = EINVAL;
     break;
+  }
   }
   fclose(f);
   return err;

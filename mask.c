@@ -82,21 +82,29 @@ mask_double_(const uint8_t* __restrict__ v, uint8_t order)
     switch (ch_case)
     {
     case 0:
+    {
       strcpy(&str[i], " ");
       i += 3;
       break;
+    }
     case 1:
+    {
       strcpy(&str[i], "▄");
       i += 3;
       break;
+    }
     case 2:
+    {
       strcpy(&str[i], "▀");
       i += 3;
       break;
+    }
     default:
+    {
       strcpy(&str[i], "█");
       i += 3;
       break;
+    }
     }
   }
   if (i > 0)
