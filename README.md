@@ -47,7 +47,7 @@ OPTIONS:
 Latest (stable) releases can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases). To compile this project, use `make`.
 
 > [!WARNING]
-> This repo's `master` branch may or may not contain non-compilable, unstable code.
+> This repo's `master` branch may or may not contain uncompilable, unstable code.
 > It's recommended that you select the latest tag release, unless you wish to collaborate with code.
 
 **Build tools used for binaries:**

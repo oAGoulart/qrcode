@@ -160,7 +160,7 @@ main(int argc, char* argv[])
       err = qrcode_forcemask(qr, mask);
       if (err != 0)
       {
-        eprintf("could not force qrcode mask choise");
+        eprintf("could not force qrcode mask choice");
       }
       else if (options & ARG_VERBOSE)
       {
@@ -181,7 +181,7 @@ main(int argc, char* argv[])
       }
       else if (options & ARG_VERBOSE)
       {
-        pinfo("Image written to: %s", imgout);
+        pinfo("Image saved to: %s", imgout);
       }
     }
   }
