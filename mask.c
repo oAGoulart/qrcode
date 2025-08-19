@@ -136,13 +136,13 @@ static void __attribute__((__nonnull__))
 place_finder_(qrmask_t* self)
 {
   const uint8_t finder[7][7] = {
-    {1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 1, 1, 0, 1},
-    {1, 0, 1, 1, 1, 0, 1},
-    {1, 0, 1, 1, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1},
+    { 1, 1, 1, 1, 1, 1, 1 },
+    { 1, 0, 0, 0, 0, 0, 1 },
+    { 1, 0, 1, 1, 1, 0, 1 },
+    { 1, 0, 1, 1, 1, 0, 1 },
+    { 1, 0, 1, 1, 1, 0, 1 },
+    { 1, 0, 0, 0, 0, 0, 1 },
+    { 1, 1, 1, 1, 1, 1, 1 },
   };
   size_t i = 0;
   for (; i < 7; i++)
@@ -159,11 +159,11 @@ static void __attribute__((__nonnull__))
 place_align_(qrmask_t* self)
 {
   const uint8_t align[5][5] = {
-    {1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1}
+    { 1, 1, 1, 1, 1 },
+    { 1, 0, 0, 0, 1 },
+    { 1, 0, 1, 0, 1 },
+    { 1, 0, 0, 0, 1 },
+    { 1, 1, 1, 1, 1 }
   };
   size_t index = (self->order_ - 9u) * self->order_ + self->order_ - 9u;
   size_t i = 0;
@@ -202,8 +202,8 @@ percentage_penalty_(qrmask_t* self)
 static void __attribute__((__nonnull__))
 module_penalty_(qrmask_t* self)
 {
-  const uint8_t patleft[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
-  const uint8_t patright[9] = {1, 1, 1, 0, 1, 0, 0, 0, 0};
+  const uint8_t patleft[9] = { 1, 1, 1, 0, 1, 0, 0, 0, 0 };
+  const uint8_t patright[9] = { 1, 1, 1, 0, 1, 0, 0, 0, 0 };
   uint8_t i = 0;
   for (; i < self->order_; i++)
   {
@@ -291,11 +291,11 @@ module_penalty_(qrmask_t* self)
 int
 create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 {
-  const uint8_t qr_order[MAX_VERSION] = {21u, 25u, 29u, 33u, 37u};
-  const uint16_t qr_count[MAX_VERSION] = {441u, 625u, 841u, 1089u, 1369u};
-  const uint16_t qr_basedark[MAX_VERSION] = {91u, 112u, 114u, 118u, 122u};
-  const uint16_t qr_baselight[MAX_VERSION] = {127u, 139u, 141u, 145u, 149u};
-  const uint16_t qr_offset[MAX_VERSION] = {0, 208u, 567u, 1134u, 1941u};
+  const uint8_t qr_order[MAX_VERSION] = { 21u, 25u, 29u, 33u, 37u };
+  const uint16_t qr_count[MAX_VERSION] = { 441u, 625u, 841u, 1089u, 1369u };
+  const uint16_t qr_basedark[MAX_VERSION] = { 91u, 112u, 114u, 118u, 122u };
+  const uint16_t qr_baselight[MAX_VERSION] = { 127u, 139u, 141u, 145u, 149u };
+  const uint16_t qr_offset[MAX_VERSION] = { 0, 208u, 567u, 1134u, 1941u };
 
   if (*self != NULL)
   {
@@ -389,7 +389,8 @@ void
 qrmask_apply(qrmask_t* self)
 {
   const uint16_t maskinfo[NUM_MASKS] = {
-    30660u, 29427u, 32170u, 30877u, 26159u, 25368u, 27713u, 26998u
+    30660u, 29427u, 32170u, 30877u,
+    26159u, 25368u, 27713u, 26998u
   };
   uint8_t i = 0;
   for (; i < MASKINFO_LEN; i++)

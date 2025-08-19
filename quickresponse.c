@@ -94,10 +94,10 @@ int
 create_qrcode(qrcode_t** self, const char* __restrict__ str, 
               int vnum, bool optimize, bool verbose)
 {
-  const uint8_t bitmask[CHAR_BIT] = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
-  const uint8_t cwmax[MAX_VERSION] = {17u, 32u, 53u, 78u, 106u};
-  const uint8_t ecclen[MAX_VERSION] = {7u, 10u, 15u, 20u, 26u};
-  const uint8_t numbytes[MAX_VERSION] = {26u, 44u, 70u, 100u, 134u};
+  const uint8_t bitmask[CHAR_BIT] = { 1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u };
+  const uint8_t cwmax[MAX_VERSION] = { 17u, 32u, 53u, 78u, 106u };
+  const uint8_t ecclen[MAX_VERSION] = { 7u, 10u, 15u, 20u, 26u };
+  const uint8_t numbytes[MAX_VERSION] = { 26u, 44u, 70u, 100u, 134u };
 
   if (*self != NULL)
   {
