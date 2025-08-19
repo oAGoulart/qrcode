@@ -116,6 +116,8 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 Planned features:
 1. encoding swithing (~60%)
 1. higher EC levels (TBD)
+   - [ ] lookup tables
+   - [ ] codewords spliting
 1. higher Version codes (TBD)
 
 ## Disclaimer
@@ -127,3 +129,4 @@ ISO/IEC 18004:2024 - Information technology — Automatic identification and dat
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 1. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
