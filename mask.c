@@ -312,13 +312,13 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   }
   if (version >= MAX_VERSION)
   {
-    eprintf("invalid qrcode version: %u", version);
+    eprintf("invalid qrcode version: %hhu", version);
     return EINVAL;
   }
   *self = (qrmask_t*)malloc(sizeof(qrmask_t));
   if (*self == NULL)
   {
-    eprintf("cannot allocate %u bytes", (uint32_t)sizeof(qrmask_t));
+    eprintf("cannot allocate %zu bytes", sizeof(qrmask_t));
     return ENOMEM;
   }
   (*self)->version_ = version;
@@ -329,7 +329,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
   (*self)->v_ = (uint8_t*)malloc((*self)->count_);
   if ((*self)->v_ == NULL)
   {
-    eprintf("cannot allocate %u bytes", (*self)->count_);
+    eprintf("cannot allocate %hu bytes", (*self)->count_);
     free(*self);
     *self = NULL;
     return ENOMEM;
@@ -450,11 +450,11 @@ qrmask_praw(qrmask_t* self)
   size_t row = 0;
   for (; row < self->order_; row++)
   {
-    printf("%u", self->v_[row * self->order_]);
+    printf("%hhu", self->v_[row * self->order_]);
     size_t col = 1;
     for (; col < self->order_; col++)
     {
-      printf(", %u", self->v_[row * self->order_ + col]);
+      printf(", %hhu", self->v_[row * self->order_ + col]);
     }
     puts("");
   }

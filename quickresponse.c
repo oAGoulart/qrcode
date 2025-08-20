@@ -255,13 +255,13 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   if (strcount > cwmax[version])
   {
-    eprintf("data must be less than %u characters long", cwmax[version]);
+    eprintf("data must be less than %hhu characters long", cwmax[version]);
     return EINVAL;
   }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
   if (*self == NULL)
   {
-    eprintf("cannot allocate %u bytes", (uint32_t)sizeof(qrcode_t));
+    eprintf("cannot allocate %zu bytes", sizeof(qrcode_t));
     return ENOMEM;
   }
   uint16_t offset = 0;
@@ -272,8 +272,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   const uint8_t* gen = rsgen + offset;
   if (verbose)
   {
-    pinfo("String length: %u", (uint32_t)strcount);
-    pinfo("Version selected: %u", version + 1u);
+    pinfo("String length: %zu", strcount);
+    pinfo("Version selected: %hhu", version + 1u);
   }
 
   (*self)->version_ = version;
@@ -282,7 +282,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   (*self)->stream_ = (uint8_t*)malloc(datalen);
   if ((*self)->stream_ == NULL)
   {
-    eprintf("cannot allocate %u bytes", datalen);
+    eprintf("cannot allocate %hhu bytes", datalen);
     free(*self);
     *self = NULL;
     return ENOMEM;
@@ -315,7 +315,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   uint8_t* tmpptr = (uint8_t*)realloc((*self)->stream_, byteslen);
   if (tmpptr == NULL)
   {
-    eprintf("cannot allocate %u bytes", byteslen);
+    eprintf("cannot allocate %hhu bytes", byteslen);
     free((*self)->stream_);
     free(*self);
     *self = NULL;
@@ -325,7 +325,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   memcpy(&(*self)->stream_[datalen], &ecc[ui8], ecclen[version]);
   if (verbose)
   {
-    pinfo("Calculated bytes (%u):", byteslen);
+    pinfo("Calculated bytes (%hhu):", byteslen);
     printf("0x%x", (*self)->stream_[0]);
     for (ui8 = 1; ui8 < byteslen; ui8++)
     {
@@ -388,13 +388,13 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
     if (verbose)
     {
-      pinfo("Mask [%u] penalty: %u", ui8, score);
+      pinfo("Mask [%hhu] penalty: %hu", ui8, score);
     }
   }
   (*self)->chosen_ = chosen;
   if (verbose)
   {
-    pinfo("Mask chosen: %u", chosen);
+    pinfo("Mask chosen: %hhu", chosen);
   }
   return 0;
 }

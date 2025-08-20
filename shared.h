@@ -6,6 +6,8 @@
 #   error "non-standard stdbool.h file"
 #endif
 
+#include <stdio.h>
+
 #define __nl "\r\n"
 #define __str(s) #s
 #define __xstr(s) __str(s)
