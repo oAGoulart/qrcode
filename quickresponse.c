@@ -15,22 +15,6 @@ extern const uint8_t logt[];
 extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
 
-static __inline__ void __attribute__((__nonnull__))
-array_pop_(uint8_t* __restrict__ arr, const uint8_t n)
-{
-  uint8_t remainder = (n - 1) % sizeof(uint64_t);
-  uint8_t ui8 = 0;
-  for (; ui8 < (n - 1) - remainder; ui8 += sizeof(uint64_t))
-  {
-    *(uint64_t*)&arr[ui8] = *(uint64_t*)&arr[ui8 + 1];
-  }
-  for (; ui8 < n - 1; ui8++)
-  {
-    arr[ui8] = arr[ui8 + 1];
-  }
-  arr[n - 1] = 0;
-}
-
 typedef enum csubset_e
 {
   SUBSET_NUMERIC = 1,
@@ -314,18 +298,18 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     (*self)->stream_[ui8 + 2] = (uint8_t)(str[ui8] << 4);
   }
 
-  uint8_t ecc[datalen];
+  uint8_t ecc[datalen + ecclen[version] + 1];
   memcpy(&ecc[0], (*self)->stream_, datalen);
+  memset(&ecc[datalen], 0, ecclen[version] + 1);
   pdebug("starting polynomial division (long division)");
   for (ui8 = 0; ui8 < datalen; ui8++)
   {
-    uint8_t lead = ecc[0];
+    uint8_t lead = ecc[ui8];
     uint8_t uj8 = 0;
     for (; uj8 < ecclen[version] + 1; uj8++)
     {
-      ecc[uj8] ^= alogt[(gen[uj8] + logt[lead]) % UINT8_MAX];
+      ecc[ui8 + uj8] ^= alogt[(gen[uj8] + logt[lead]) % UINT8_MAX];
     }
-    array_pop_(&ecc[0], datalen);
   }
   const uint8_t byteslen = numbytes[version];
   uint8_t* tmpptr = (uint8_t*)realloc((*self)->stream_, byteslen);
@@ -338,7 +322,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     return ENOMEM;
   }
   (*self)->stream_ = tmpptr;
-  memcpy(&(*self)->stream_[datalen], &ecc[0], ecclen[version]);
+  memcpy(&(*self)->stream_[datalen], &ecc[ui8], ecclen[version]);
   if (verbose)
   {
     pinfo("Calculated bytes (%u):", byteslen);

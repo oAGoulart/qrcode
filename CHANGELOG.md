@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Add `--optimize` option to reduce data size with encoding switching
 - Change error messages to comply with GNU style guide
 - Change `-G` option name to `-K`
+- Remove array pop from byte encoding, optimize xoring arrays
 
 ## [1.4.0] - 2025-08-15
 
