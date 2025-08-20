@@ -114,7 +114,7 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 ## Roadmap
 
 Planned features:
-1. encoding swithing (~65%)
+1. encoding swithing (~68%)
    - [ ] packedbits interface (~50%)
       - [x] heaparray interface (100%)
 1. higher EC levels (TBD)
