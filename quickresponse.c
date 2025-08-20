@@ -24,7 +24,7 @@ array_pop_(uint8_t* __restrict__ arr, const uint8_t n)
   {
     *(uint64_t*)&arr[ui8] = *(uint64_t*)&arr[ui8 + 1];
   }
-  for (ui8 = 0; ui8 < remainder; ui8++)
+  for (; ui8 < n - 1; ui8++)
   {
     arr[ui8] = arr[ui8 + 1];
   }
