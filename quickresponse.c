@@ -18,9 +18,13 @@ extern const uint8_t rsgen[];
 static __inline__ void __attribute__((__nonnull__))
 array_pop_(uint8_t* __restrict__ arr, const uint8_t n)
 {
-  // TODO: move up to 64-bits at once
+  uint8_t remainder = (n - 1) % sizeof(uint64_t);
   uint8_t ui8 = 0;
-  for (; ui8 < n - 1; ui8++)
+  for (; ui8 < (n - 1) - remainder; ui8 += sizeof(uint64_t))
+  {
+    *(uint64_t*)&arr[ui8] = *(uint64_t*)&arr[ui8 + 1];
+  }
+  for (ui8 = 0; ui8 < remainder; ui8++)
   {
     arr[ui8] = arr[ui8 + 1];
   }
@@ -244,7 +248,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       }
     }
-    // TODO: select min version, with new compact size
+    // NOTE: select min version, with new compact size
     for (ui8 = version; ui8 > 0; ui8--)
     {
       if (cwmin <= cwmax[ui8 - 1])
