@@ -12,11 +12,10 @@ __attribute__((__nonnull__)) void
 delete_pbits(pbits_t** self);
 
 __attribute__((__nonnull__)) int
-pbits_push_byte(pbits_t* self, uint8_t value, uint8_t limit);
-// short
-// long
-// quad
+pbits_push(pbits_t* self, uint64_t value, uint8_t count);
 
+__attribute__((__nonnull__)) int
+pbits_flush(pbits_t* self);
 __attribute__((__nonnull__)) const harray_t*
 pbits_bytes(pbits_t* self);
 
