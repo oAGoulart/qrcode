@@ -6,7 +6,7 @@
 static __inline__ uint8_t __attribute__((const))
 extract_bits_(uint64_t value, uint8_t offset, uint8_t n)
 {
-  return (uint8_t)((value >> offset) & ((1U << n) - 1));
+  return (uint8_t)((value >> offset) & ((1 << n) - 1));
 }
 
 struct pbits_s

@@ -20,5 +20,6 @@ harray_length(harray_t* self);
 
 __attribute__((__nonnull__)) uint8_t
 harray_byte(harray_t* self, const size_t index);
+// TODO: add short, long, quad when necessary
 
 #endif
