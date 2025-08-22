@@ -3,8 +3,8 @@ default: build
 
 TARGET_EXEC := qrcode
 
-CC := gcc
-CCFLAGS := -DNDEBUG -g0 -O3
+CC := clang
+CCFLAGS := -DNDEBUG -g0 -O3 -Wno-gnu-zero-variadic-macro-arguments
 LDFLAGS := -lm
 
 BUILD_DIR := ./bin

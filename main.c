@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +14,7 @@ typedef enum targ_e
   ARG_NOINLINE = 8,
   ARG_VERSION  = 0x10,
   ARG_OPTIMIZE = 0x20,
-  ARG_RESERVED __attribute__((deprecated)) = 0x8000,
+  ARG_RESERVED __attribute__((unavailable("bit mask limit"))) = 0x8000,
   ARG_MASK,
   ARG_VNUM,
   ARG_SCALE,
@@ -129,8 +128,7 @@ main(int argc, char* argv[])
   if (options & ARG_VERSION)
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION __nl
-      "Built with GCC " __xstr(__GNUC__) "." __xstr(__GNUC_MINOR__) "."
-      __xstr(__GNUC_PATCHLEVEL__) " @ " __DATE__ " " __TIME__);
+      "Built with clang " __clang_version__ " @ " __DATE__ " " __TIME__);
     return EXIT_SUCCESS;
   }
   if (argc - argcount < NUM_MANDATORY + 1)

@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -22,7 +21,7 @@ typedef enum csubset_e
   SUBSET_BYTE = 4
 } csubset_t;
 
-static __inline__ csubset_t __attribute__((const))
+static __inline__ csubset_t __attribute__((__const__))
 which_subset_(const uint8_t c)
 {
   if (c >= 0x30 && c <= 0x39)
@@ -51,7 +50,7 @@ count_segment_(const char* __restrict__ str, const csubset_t subset)
   return count;
 }
 
-static __inline__ uint8_t __attribute__((const))
+static __inline__ uint8_t __attribute__((__const__))
 minimum_segment_(const uint8_t version, const uint8_t iteration)
 {
   const uint8_t lengths[7][3] = {
@@ -69,7 +68,7 @@ minimum_segment_(const uint8_t version, const uint8_t iteration)
   return lengths[iteration][2];
 }
 
-static __inline__ uint8_t __attribute__((const))
+static __inline__ uint8_t __attribute__((__const__, unused))
 maximum_count_(const uint8_t version, const csubset_t subset)
 {
   const uint8_t lengths[3][3] = {
@@ -90,7 +89,7 @@ struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
   uint8_t slen_;
-  uint8_t* stream_ __attribute__((nonstring));
+  uint8_t* stream_;
   uint8_t chosen_;
   uint8_t version_;
 };
@@ -273,7 +272,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   if (verbose)
   {
     pinfo("String length: %zu", strcount);
-    pinfo("Version selected: %hhu", version + 1u);
+    pinfo("Version selected: %u", version + 1u);
   }
 
   (*self)->version_ = version;

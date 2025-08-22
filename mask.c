@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <limits.h>
 #include <math.h>
 #include <stdint.h>
@@ -16,7 +15,7 @@ struct qrmask_s
 {
   const uint16_t* i_;
   uint16_t count_;
-  uint8_t* v_ __attribute__((nonstring));
+  uint8_t* v_;
   uint8_t  version_;
   uint8_t  order_;
   uint8_t  masknum_;
@@ -25,10 +24,10 @@ struct qrmask_s
   uint16_t penalty_;
 };
 
-static __inline__ bool __attribute__((const))
+static __inline__ bool __attribute__((__const__))
 should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
 {
-  const uint16_t row = (uint16_t)floor(index / order);
+  const uint16_t row = (uint16_t)floor((double)index / order);
   const uint16_t col = index % order;
   switch (pattern)
   {
@@ -41,7 +40,7 @@ should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
   case 3:
     return (row + col) % 3 == 0;
   case 4:
-    return (long)(floor(row / 2) + floor(col / 3)) % 2 == 0;
+    return (long)(floor((double)row / 2) + floor((double)col / 3)) % 2 == 0;
   case 5:
     return ((row * col) % 2) + ((row * col) % 3) == 0;
   case 6:
@@ -199,7 +198,7 @@ place_timing_(qrmask_t* self)
 static void __attribute__((__nonnull__))
 percentage_penalty_(qrmask_t* self)
 {
-  double percentage = (self->dark_ / self->count_) * 10;
+  double percentage = ((double)self->dark_ / self->count_) * 10;
   double prev = floor(percentage) * 10;
   double next = percentage - fmod(percentage * 10, 5.0) + 5;
   prev = fabs(prev - 50) / 5;
@@ -277,7 +276,7 @@ module_penalty_(qrmask_t* self)
             break;
           }
         }
-        count = (uint16_t)floor((k - count) / self->order_);
+        count = (uint16_t)floor((double)(k - count) / self->order_);
         if (count > 4)
         {
           self->penalty_ += (count - 5) + 3;
@@ -532,7 +531,7 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
         bytes[index] <<= 1;
       }
     }
-    uint16_t diff = (uint16_t)ceil((self->order_ * scale) / 8) + index;
+    uint16_t diff = (uint16_t)ceil((double)(self->order_ * scale) / 8) + index;
     index++;
     for (j = index; j < nbytes; j++)
     {

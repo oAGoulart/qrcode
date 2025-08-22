@@ -1,9 +1,9 @@
-#include <errno.h>
 #include <limits.h>
+#include <stdlib.h>
 #include "packedbits.h"
 #include "shared.h"
 
-static __inline__ uint8_t __attribute__((const))
+static __inline__ uint8_t __attribute__((__const__))
 extract_bits_(uint64_t value, uint8_t offset, uint8_t n)
 {
   return (uint8_t)((value >> offset) & ((1 << n) - 1));

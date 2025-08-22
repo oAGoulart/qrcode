@@ -7,6 +7,7 @@
 #endif
 
 #include <stdio.h>
+#include <errno.h>
 
 #define __nl "\r\n"
 #define __str(s) #s
@@ -25,7 +26,7 @@
 // NOTE: prints with new-line
 #define eprintf(format, ...) \
   fprintf(stderr, \
-    __FILE__ ":" __xstr(__LINE__) ": " __c(31, "error: ") format __nl, \
+    __FILE_NAME__ ":" __xstr(__LINE__) ": " __c(31, "error: ") format __nl, \
     ##__VA_ARGS__)
 
 #if defined(perrno)

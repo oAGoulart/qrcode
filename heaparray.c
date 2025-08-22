@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include "heaparray.h"
@@ -6,7 +5,7 @@
 
 #define PAGE_SIZE 0x200u
 
-static __inline__ size_t __attribute__((const))
+static __inline__ size_t __attribute__((__const__))
 align_(size_t size)
 {
   size_t remainder = size % PAGE_SIZE;
@@ -15,9 +14,9 @@ align_(size_t size)
 
 struct harray_s
 {
-  uint8_t* data_;
-  size_t length_;
   size_t available_;
+  uint8_t* data_ __attribute__((counted_by(available_)));
+  size_t length_;
 };
 
 int
