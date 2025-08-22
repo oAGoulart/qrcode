@@ -1,6 +1,10 @@
 #ifndef SHARED_H
 #define SHARED_H 1
 
+#if !defined(__clang__)
+#   error "must be compiled with clang"
+#endif
+
 #include <stdbool.h>
 #if !defined(__bool_true_false_are_defined)
 #   error "non-standard stdbool.h file"
@@ -44,8 +48,38 @@
 #define pinfo(format, ...) \
   printf(__c(36, "  INFO ") format __nl, ##__VA_ARGS__)
 
+#if defined(__amd64__) || defined(__x86_64__)
+#   define PROJECT_ARCH "AMD64"
+#elif defined(__aarch64__)
+#   define PROJECT_ARCH "ARM64"
+#elif defined(__arm__)
+#   define PROJECT_ARCH "ARM"
+#elif defined(__i386__) || defined(_X86_)
+#   define PROJECT_ARCH "x86"
+#elif defined(__ia64__)
+#   define PROJECT_ARCH "IA-64"
+#elif defined(__powerpc__) || defined(__powerpc64__)
+#   define PROJECT_ARCH "PowerPC"
+#else
+#   define PROJECT_ARCH "???"
+#endif
+
+#if defined(__CYGWIN__)
+#   define PROJECT_TARGET "Cygwin"
+#elif defined(__MINGW64__)
+#   define PROJECT_TARGET "MinGW-w64"
+#elif defined(__MINGW32__)
+#   define PROJECT_TARGET "MinGW32"
+#elif defined(_WIN32)
+#   define PROJECT_TARGET "Windows"
+#elif defined(__linux__)
+#   define PROJECT_TARGET "Linux"
+#else
+#   define PROJECT_TARGET "???"
+#endif
+
 #define PROJECT_TITLE     "Command-line QR Code generator"
-#define PROJECT_VERSION   "(v1.4.0)"
+#define PROJECT_VERSION   "(v1.4.0:" PROJECT_TARGET ":" PROJECT_ARCH ")"
 #define PROJECT_COPYRIGHT "Copyright (C) 2025 Augusto Goulart."
 #define PROJECT_LICENSE \
   "Licensed under Microsoft Reciprocal License (Ms-RL)." __nl \

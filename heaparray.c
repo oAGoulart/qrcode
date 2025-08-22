@@ -97,7 +97,7 @@ harray_pop(harray_t* self, size_t size)
   if (size > self->length_)
   {
     eprintf("cannot pop %zu bytes from array of length %zu",
-           size, self->length_);
+            size, self->length_);
     return EINVAL;
   }
   self->length_ -= size;

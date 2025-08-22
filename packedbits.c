@@ -34,7 +34,7 @@ create_pbits(pbits_t** self)
   int err = create_harray(&(*self)->array_, 1);
   if (err)
   {
-    eprintf("cannot create packedbits' heaparray");
+    eprintf("cannot create heaparray member of packedbits");
     free(*self);
     *self = NULL;
     return err;

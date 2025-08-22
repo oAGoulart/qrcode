@@ -68,7 +68,7 @@ main(int argc, char* argv[])
 #endif
   if (argc < NUM_MANDATORY + 1)
   {
-    eprintf("not enough arguments, provided %d", argc);
+    eprintf("not enough arguments, provided %d", argc - 1);
     return phelp_(argv[0]);
   }
 
@@ -129,7 +129,7 @@ main(int argc, char* argv[])
   if (options & ARG_VERSION)
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION __nl
-         "Built with clang " __clang_version__ "@ " __DATE__ " " __TIME__);
+         "Built with Clang " __clang_version__ "@ " __DATE__ " " __TIME__);
     return EXIT_SUCCESS;
   }
   if (argc - argcount < NUM_MANDATORY + 1)
