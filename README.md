@@ -52,7 +52,7 @@ Latest (stable) releases can be found at this repo's [Releases](https://github.c
 
 **Build tools used for binaries:**
 1. GNU Make **4.3**
-1. GNU Compiler Collection (GCC) **11.4.0**
+1. Clang **14.0.0**
 1. Python **3.10.12** (for scripts)
 
 ### Examples
