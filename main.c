@@ -25,20 +25,21 @@ typedef enum targ_e
 #define NUM_MANDATORY 1
 
 static const char* args_[NUM_ARGS] = {
-  "--nocopy", "--verbose", "--raw", "--noinline", "--version", "--optimize",
+  "--nocopy", "--verbose", "--raw",
+  "--noinline", "--version", "--optimize",
   "-m", "-u", "-s", "-B", "-K"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
-  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE, ARG_VERSION, ARG_OPTIMIZE,
+  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW,
+  ARG_NOINLINE, ARG_VERSION, ARG_OPTIMIZE,
   ARG_MASK, ARG_VNUM, ARG_SCALE, ARG_BMP, ARG_SVG
 };
 
 static __inline__ int
 phelp_(const char* __restrict__ cmdln)
 {
-  fprintf(stderr,
-    "Usage: %s [OPTIONS] <string>" __nl
+  fprintf(stderr, "Usage: %s [OPTIONS] <string>" __nl
     "OPTIONS:" __nl
     "  --nocopy     omit copyright header from inline printing" __nl
     "  --noinline   do not print any inline code, disregards --raw" __nl
@@ -128,7 +129,7 @@ main(int argc, char* argv[])
   if (options & ARG_VERSION)
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION __nl
-      "Built with clang " __clang_version__ " @ " __DATE__ " " __TIME__);
+         "Built with clang " __clang_version__ "@ " __DATE__ " " __TIME__);
     return EXIT_SUCCESS;
   }
   if (argc - argcount < NUM_MANDATORY + 1)
@@ -145,7 +146,9 @@ main(int argc, char* argv[])
   pdebug("creating qrcode object");
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr,
-    argv[argc - 1], vnum, options & ARG_OPTIMIZE, options & ARG_VERBOSE);
+    argv[argc - 1], vnum,
+    options & ARG_OPTIMIZE,
+    options & ARG_VERBOSE);
   if (err != 0)
   {
     eprintf("could not create qrcode");

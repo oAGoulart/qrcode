@@ -54,8 +54,13 @@ static __inline__ uint8_t __attribute__((__const__))
 minimum_segment_(const uint8_t version, const uint8_t iteration)
 {
   const uint8_t lengths[7][3] = {
-    { 6, 7, 8 }, { 4, 4, 5 }, { 7, 8, 9 },
-    { 13, 15, 17 }, { 6, 8, 9 }, { 6, 7, 8 }, { 11, 15, 16 }
+    { 6, 7, 8 },
+    { 4, 4, 5 },
+    { 7, 8, 9 },
+    { 13, 15, 17 },
+    { 6, 8, 9 },
+    { 6, 7, 8 },
+    { 11, 15, 16 }
   };
   if (version < 10)
   {
@@ -72,7 +77,9 @@ static __inline__ uint8_t __attribute__((__const__, unused))
 maximum_count_(const uint8_t version, const csubset_t subset)
 {
   const uint8_t lengths[3][3] = {
-    { 10, 9, 8 }, { 12, 11, 16 }, { 14, 13, 16 }
+    { 10, 9, 8 },
+    { 12, 11, 16 },
+    { 14, 13, 16 }
   };
   if (version < 10)
   {
@@ -98,11 +105,18 @@ int
 create_qrcode(qrcode_t** self, const char* __restrict__ str, 
               int vnum, bool optimize, bool verbose)
 {
-  const uint8_t bitmask[CHAR_BIT] = { 1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u };
-  const uint8_t cwmax[MAX_VERSION] = { 17u, 32u, 53u, 78u, 106u };
-  const uint8_t ecclen[MAX_VERSION] = { 7u, 10u, 15u, 20u, 26u };
-  const uint8_t numbytes[MAX_VERSION] = { 26u, 44u, 70u, 100u, 134u };
-
+  const uint8_t bitmask[CHAR_BIT] = {
+    1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u
+  };
+  const uint8_t cwmax[MAX_VERSION] = {
+    17u, 32u, 53u, 78u, 106u
+  };
+  const uint8_t ecclen[MAX_VERSION] = {
+    7u, 10u, 15u, 20u, 26u
+  };
+  const uint8_t numbytes[MAX_VERSION] = {
+    26u, 44u, 70u, 100u, 134u
+  };
   if (*self != NULL)
   {
     eprintf("pointer to garbage in *self");
@@ -195,7 +209,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           break;
         }
         uint32_t seg = count_segment_(&str[i], SUBSET_NUMERIC);
-        if (which_subset_(str[i]) && seg - i >= minimum_segment_(version, 3))
+        if (which_subset_(str[i]) &&
+            seg - i >= minimum_segment_(version, 3))
         {
           encode = SUBSET_NUMERIC;
           encodechanged = true;
@@ -207,13 +222,15 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
         /* TODO: encode byte */
         uint32_t seg = count_segment_(&str[i], SUBSET_NUMERIC);
         csubset_t subset = which_subset_(str[i]);
-        if (subset == SUBSET_BYTE && seg - i >= minimum_segment_(version, 4))
+        if (subset == SUBSET_BYTE &&
+            seg - i >= minimum_segment_(version, 4))
         {
           encode = SUBSET_NUMERIC;
           encodechanged = true;
           break;
         }
-        if (subset == SUBSET_ALPHA && seg - i >= minimum_segment_(version, 5))
+        if (subset == SUBSET_ALPHA &&
+            seg - i >= minimum_segment_(version, 5))
         {
           // NOTE: redundant if MAX_VERSION < 10
           //       keep it for further updates
@@ -222,7 +239,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           break;
         }
         seg = count_segment_(&str[i], SUBSET_ALPHA);
-        if (subset == SUBSET_BYTE && seg - i >= minimum_segment_(version, 6))
+        if (subset == SUBSET_BYTE &&
+            seg - i >= minimum_segment_(version, 6))
         {
           encode = SUBSET_ALPHA;
           encodechanged = true;
@@ -372,7 +390,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
     }
   }
-  
+
   pdebug("calculating masks penalty");
   uint16_t minscore = UINT16_MAX;
   uint8_t chosen = 0;

@@ -40,7 +40,8 @@ should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
   case 3:
     return (row + col) % 3 == 0;
   case 4:
-    return (long)(floor((double)row / 2) + floor((double)col / 3)) % 2 == 0;
+    return (long)(floor((double)row / 2)
+         + floor((double)col / 3)) % 2 == 0;
   case 5:
     return ((row * col) % 2) + ((row * col) % 3) == 0;
   case 6:
@@ -68,6 +69,8 @@ colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
   return 0;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
 static void __attribute__((__nonnull__))
 mask_double_(const uint8_t* __restrict__ v, uint8_t order)
 {
@@ -138,6 +141,7 @@ mask_single_(const uint8_t* __restrict__ v, uint8_t order)
     printf("    %s    " __nl, str);
   }
 }
+#pragma GCC diagnostic pop
 
 static void __attribute__((__nonnull__))
 place_finder_(qrmask_t* self)
@@ -155,9 +159,11 @@ place_finder_(qrmask_t* self)
   for (; i < 7; i++)
   {
     memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
-    memcpy(&self->v_[(self->order_ - 7u) + self->order_ * i], &finder[i], 7u);
-    memcpy(&self->v_[(self->order_ - 7u) * self->order_ +
-                     self->order_ * i], &finder[i], 7u);
+    memcpy(&self->v_[(self->order_ - 7u) + self->order_ * i],
+      &finder[i], 7u);
+    memcpy(
+      &self->v_[(self->order_ - 7u) * self->order_ + self->order_ * i],
+      &finder[i], 7u);
   }
   // NOTE: separators not required (array is initialized to 0)
 }
@@ -209,8 +215,12 @@ percentage_penalty_(qrmask_t* self)
 static void __attribute__((__nonnull__))
 module_penalty_(qrmask_t* self)
 {
-  const uint8_t patleft[9] = { 1, 1, 1, 0, 1, 0, 0, 0, 0 };
-  const uint8_t patright[9] = { 1, 1, 1, 0, 1, 0, 0, 0, 0 };
+  const uint8_t patleft[9] = {
+    1, 1, 1, 0, 1, 0, 0, 0, 0
+  };
+  const uint8_t patright[9] = {
+    1, 1, 1, 0, 1, 0, 0, 0, 0
+  };
   uint8_t i = 0;
   for (; i < self->order_; i++)
   {
@@ -286,7 +296,8 @@ module_penalty_(qrmask_t* self)
       if (k < self->count_ - (10 * self->order_) && *next == MASK_LIGHT)
       {
         const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
-        if (!colcmp_(module + (2 * self->order_), self->order_, 9, pattern))
+        if (!colcmp_(module + (2 * self->order_),
+          self->order_, 9, pattern))
         {
           self->penalty_ += 40;
         }
@@ -298,12 +309,21 @@ module_penalty_(qrmask_t* self)
 int
 create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 {
-  const uint8_t qr_order[MAX_VERSION] = { 21u, 25u, 29u, 33u, 37u };
-  const uint16_t qr_count[MAX_VERSION] = { 441u, 625u, 841u, 1089u, 1369u };
-  const uint16_t qr_basedark[MAX_VERSION] = { 91u, 112u, 114u, 118u, 122u };
-  const uint16_t qr_baselight[MAX_VERSION] = { 127u, 139u, 141u, 145u, 149u };
-  const uint16_t qr_offset[MAX_VERSION] = { 0, 208u, 567u, 1134u, 1941u };
-
+  const uint8_t qr_order[MAX_VERSION] = {
+    21u, 25u, 29u, 33u, 37u
+  };
+  const uint16_t qr_count[MAX_VERSION] = {
+    441u, 625u, 841u, 1089u, 1369u
+  };
+  const uint16_t qr_basedark[MAX_VERSION] = {
+    91u, 112u, 114u, 118u, 122u
+  };
+  const uint16_t qr_baselight[MAX_VERSION] = {
+    127u, 139u, 141u, 145u, 149u
+  };
+  const uint16_t qr_offset[MAX_VERSION] = {
+    0, 208u, 567u, 1134u, 1941u
+  };
   if (*self != NULL)
   {
     eprintf("pointer to garbage in *self");
@@ -438,7 +458,8 @@ qrmask_pbox(qrmask_t* self)
   }
   if (self->order_ % 2 != 0)
   {
-    mask_single_(&self->v_[(self->order_ - 1) * self->order_], self->order_);
+    mask_single_(&self->v_[(self->order_ - 1) * self->order_],
+      self->order_);
   }
   puts(__nl);
 }
@@ -488,8 +509,14 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
   const uint32_t datalen = nlongs * nbits;
   const uint32_t offset = (uint32_t)sizeof(bitmap_t);
   bitmap_t bm = {
-    { 'B', 'M' }, offset + datalen, 0, offset, 40, nbits, nbits, 1, 1, 0,
-    datalen, 4800, 4800, 2, 0, { { -1, -1, -1, 0 }, { 0, 0, 0, 0 } }
+    { 'B', 'M' }, offset + datalen,
+    0, offset, 40, nbits,
+    nbits, 1, 1, 0,
+    datalen, 4800, 4800, 2,
+    0, {
+      { -1, -1, -1, 0 },
+      { 0, 0, 0, 0 }
+    }
   };
   pdebug("writing bitmap header");
   if (!fwrite(&bm, sizeof(bitmap_t), 1, file))
@@ -531,7 +558,8 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
         bytes[index] <<= 1;
       }
     }
-    uint16_t diff = (uint16_t)ceil((double)(self->order_ * scale) / 8) + index;
+    uint16_t diff =
+      (uint16_t)ceil((double)(self->order_ * scale) / 8) + index;
     index++;
     for (j = index; j < nbytes; j++)
     {
@@ -600,7 +628,9 @@ qrmask_outsvg(qrmask_t* self, FILE* __restrict__ file)
       size_t index = row * self->order_ + col;
       if (self->v_[index] == MASK_DARK)
       {
-        fprintf(file, "<use href=\"#m\" x=\"%u\" y=\"%u\"/>" __nl, col, row);
+        fprintf(file,
+          "<use href=\"#m\" x=\"%u\" y=\"%u\"/>" __nl,
+          col, row);
       }
     }
   }
