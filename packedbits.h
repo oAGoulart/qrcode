@@ -11,7 +11,7 @@ create_pbits(pbits_t** self);
 __attribute__((__nonnull__)) void
 delete_pbits(pbits_t** self);
 
-__attribute__((__nonnull__, warning("bit packing may not work"))) int
+__attribute__((__nonnull__)) int
 pbits_push(pbits_t* self, uint64_t value, uint8_t count);
 
 __attribute__((__nonnull__)) int

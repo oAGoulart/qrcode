@@ -305,24 +305,20 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   pdebug("encoding data bits");
   harray_t* arr = pbits_bytes((*self)->bits_);
-  uint8_t ebyte = (uint8_t)(GEN_MODE << 4) | (uint8_t)(strcount >> 4);
-  harray_push(arr, &ebyte, 1);
-  ebyte = (uint8_t)strcount << 4;
+  pbits_push((*self)->bits_, GEN_MODE, 4);
+  pbits_push((*self)->bits_, strcount, 8);
   for (ui8 = 0; ui8 < strcount; ui8++)
   {
-    ebyte |= str[ui8] >> 4;
-    harray_push(arr, &ebyte, 1);
-    ebyte = str[ui8] << 4;
+    pbits_push((*self)->bits_, str[ui8], 8);
   }
-  harray_push(arr, &ebyte, 1);
   // NOTE: padding bytes
-  ebyte = 0;
   for (ui8 += 2; ui8 < datalen; ui8++)
   {
-    harray_push(arr, &ebyte, 1);
+    pbits_push((*self)->bits_, 0, 8);
   }
+  pbits_flush((*self)->bits_);
 
-  const uint8_t eccn = datalen + ecclen[version] + 1;
+  const uint8_t eccn = datalen + ecclen[version];
   uint8_t ecc[eccn];
   memset(ecc, 0, eccn);
   harray_copy(arr, ecc, datalen);

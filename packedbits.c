@@ -1,13 +1,8 @@
 #include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include "packedbits.h"
 #include "shared.h"
-
-static __inline__ uint8_t __attribute__((__const__))
-extract_bits_(uint64_t value, uint8_t offset, uint8_t n)
-{
-  return (uint8_t)((value >> offset) & ((1 << n) - 1));
-}
 
 struct pbits_s
 {
@@ -66,7 +61,7 @@ pbits_push(pbits_t* self, uint64_t value, uint8_t count)
   {
     uint8_t remaider = CHAR_BIT - self->bit_;
     uint8_t n = (count < remaider) ? count : remaider;
-    uint8_t bits = extract_bits_(value, offset, n);
+    uint8_t bits = (uint8_t)(value >> (offset + n));
     self->buffer_ |= bits << (CHAR_BIT - self->bit_ - n);
     self->bit_ += n;
     count -= n;
@@ -85,7 +80,7 @@ pbits_push(pbits_t* self, uint64_t value, uint8_t count)
   }
   while (count >= CHAR_BIT)
   {
-    uint8_t byte = extract_bits_(value, offset, CHAR_BIT);
+    uint8_t byte = (uint8_t)(value >> offset);
     int err = harray_push(self->array_, &byte, 1);
     if (err)
     {
@@ -97,7 +92,7 @@ pbits_push(pbits_t* self, uint64_t value, uint8_t count)
   }
   if (count > 0)
   {
-    uint8_t bits = extract_bits_(value, offset, count);
+    uint8_t bits = (uint8_t)value & (0xFF >> (CHAR_BIT - count));
     self->buffer_ = bits << (CHAR_BIT - count);
     self->bit_ = count;
   }
