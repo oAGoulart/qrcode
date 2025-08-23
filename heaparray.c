@@ -130,6 +130,19 @@ harray_copy(harray_t* self, uint8_t* out, size_t outlen)
   memcpy(out, self->data_, n);
 }
 
+int
+harray_replace(harray_t *self, size_t at, uint8_t *__restrict obj, size_t size)
+{
+  if (at + size > self->length_)
+  {
+    eprintf("cannot replace length %zu from index %zu, array length is %zu",
+            size, at, self->length_);
+    return ERANGE;
+  }
+  memcpy(&self->data_[at], obj, size);
+  return 0;
+}
+
 __inline__ uint8_t
 harray_byte(harray_t* self, const size_t index)
 {

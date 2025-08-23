@@ -20,6 +20,9 @@ harray_length(harray_t* self);
 
 __attribute__((__nonnull__)) void
 harray_copy(harray_t* self, uint8_t* out, size_t outlen);
+__attribute__((__nonnull__)) int
+harray_replace(harray_t* self, size_t at,
+               uint8_t* __restrict__ obj, size_t size);
 
 __attribute__((__nonnull__)) uint8_t
 harray_byte(harray_t* self, const size_t index);
