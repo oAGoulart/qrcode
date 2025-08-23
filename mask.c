@@ -309,19 +309,19 @@ module_penalty_(qrmask_t* self)
 int
 create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 {
-  const uint8_t qr_order[MAX_VERSION] = {
+  static const uint8_t qr_order[MAX_VERSION] = {
     21u, 25u, 29u, 33u, 37u
   };
-  const uint16_t qr_count[MAX_VERSION] = {
+  static const uint16_t qr_count[MAX_VERSION] = {
     441u, 625u, 841u, 1089u, 1369u
   };
-  const uint16_t qr_basedark[MAX_VERSION] = {
+  static const uint16_t qr_basedark[MAX_VERSION] = {
     91u, 112u, 114u, 118u, 122u
   };
-  const uint16_t qr_baselight[MAX_VERSION] = {
+  static const uint16_t qr_baselight[MAX_VERSION] = {
     127u, 139u, 141u, 145u, 149u
   };
-  const uint16_t qr_offset[MAX_VERSION] = {
+  static const uint16_t qr_offset[MAX_VERSION] = {
     0, 208u, 567u, 1134u, 1941u
   };
   if (*self != NULL)

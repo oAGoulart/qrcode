@@ -61,7 +61,7 @@ delete_pbits(pbits_t** self)
 int
 pbits_push(pbits_t* self, uint64_t value, uint8_t count)
 {
-  uint8_t offset = 0;
+  uint8_t offset = (count < CHAR_BIT) ? 0 : count - CHAR_BIT;
   if (self->bit_ > 0)
   {
     uint8_t remaider = CHAR_BIT - self->bit_;
@@ -69,8 +69,8 @@ pbits_push(pbits_t* self, uint64_t value, uint8_t count)
     uint8_t bits = extract_bits_(value, offset, n);
     self->buffer_ |= bits << (CHAR_BIT - self->bit_ - n);
     self->bit_ += n;
-    offset += n;
     count -= n;
+    offset = (count < CHAR_BIT) ? 0 : count - CHAR_BIT;
     if (self->bit_ == CHAR_BIT)
     {
       int err = harray_push(self->array_, &self->buffer_, 1);
@@ -92,8 +92,8 @@ pbits_push(pbits_t* self, uint64_t value, uint8_t count)
       eprintf("could not push whole byte into array");
       return err;
     }
-    offset += CHAR_BIT;
     count -= CHAR_BIT;
+    offset = (count < CHAR_BIT) ? 0 : count - CHAR_BIT;
   }
   if (count > 0)
   {
@@ -121,7 +121,7 @@ pbits_flush(pbits_t* self)
   return 0;
 }
 
-__inline__ const harray_t*
+__inline__ harray_t*
 pbits_bytes(pbits_t* self)
 {
   return self->array_;

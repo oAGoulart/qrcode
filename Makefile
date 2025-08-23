@@ -4,11 +4,11 @@ default: build
 TARGET_EXEC := qrcode
 
 CC := clang
-CCFLAGS := -DNDEBUG -g0 -O3 -Wno-gnu-zero-variadic-macro-arguments
+CCFLAGS := -DNDEBUG -g0 -O3
 LDFLAGS := -lm
 
 BUILD_DIR := ./bin
-SRCS := mask.c quickresponse.c main.c
+SRCS := packedbits.c heaparray.c mask.c quickresponse.c main.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
@@ -26,7 +26,7 @@ build: lookup.o $(OBJS)
 	$(CC) $(BUILD_DIR)/lookup.o $(OBJS) -o $(BUILD_DIR)/$(TARGET_EXEC) $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: %.c
-	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 --std=gnu11 $(CCFLAGS) -c $< -o $@
+	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 -Wno-gnu-zero-variadic-macro-arguments --std=gnu11 $(CCFLAGS) -c $< -o $@
 
 lookup.o:
 	mkdir -p $(BUILD_DIR)

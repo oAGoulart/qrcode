@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include "heaparray.h"
@@ -15,7 +16,7 @@ align_(size_t size)
 struct harray_s
 {
   size_t available_;
-  uint8_t* data_ __attribute__((counted_by(available_)));
+  uint8_t* data_;
   size_t length_;
 };
 
@@ -120,6 +121,13 @@ __inline__ size_t
 harray_length(harray_t* self)
 {
   return self->length_;
+}
+
+__inline__ void
+harray_copy(harray_t* self, uint8_t* out, size_t outlen)
+{
+  size_t n = (outlen < self->length_) ? outlen : self->length_;
+  memcpy(out, self->data_, n);
 }
 
 __inline__ uint8_t

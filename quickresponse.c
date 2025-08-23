@@ -1,9 +1,12 @@
 #include <limits.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "heaparray.h"
 #include "mask.h"
+#include "packedbits.h"
 #include "quickresponse.h"
 #include "shared.h"
 
@@ -95,8 +98,7 @@ maximum_count_(const uint8_t version, const csubset_t subset)
 struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
-  uint8_t slen_;
-  uint8_t* stream_;
+  pbits_t* bits_;
   uint8_t chosen_;
   uint8_t version_;
 };
@@ -113,9 +115,6 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   };
   const uint8_t ecclen[MAX_VERSION] = {
     7u, 10u, 15u, 20u, 26u
-  };
-  const uint8_t numbytes[MAX_VERSION] = {
-    26u, 44u, 70u, 100u, 134u
   };
   if (*self != NULL)
   {
@@ -180,16 +179,15 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       {
       case SUBSET_NUMERIC:
       {
-        /* TODO: encode numeric 
+        // TODO: encode numeric 
         if (encodechanged)
         {
-          Add mode indicator and segment count
+          //Add mode indicator and segment count
         }
         else
         {
-          Append bits to stream
+          //Append bits to stream
         }
-        */
         csubset_t subset = which_subset_(str[i + 1]);
         if (subset != SUBSET_NUMERIC)
         {
@@ -200,7 +198,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       case SUBSET_ALPHA:
       {
-        /* TODO: encode alpha */
+        // TODO: encode alpha
         csubset_t subset = which_subset_(str[i + 1]);
         if (subset == SUBSET_BYTE)
         {
@@ -219,7 +217,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       default:
       {
-        /* TODO: encode byte */
+        // TODO: encode byte
         uint32_t seg = count_segment_(&str[i], SUBSET_NUMERIC);
         csubset_t subset = which_subset_(str[i]);
         if (subset == SUBSET_BYTE &&
@@ -281,6 +279,15 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     eprintf("cannot allocate %zu bytes", sizeof(qrcode_t));
     return ENOMEM;
   }
+  (*self)->bits_ = NULL;
+  int err = create_pbits(&(*self)->bits_);
+  if (err)
+  {
+    eprintf("cannot create pbits member of qrcode");
+    free(*self);
+    *self = NULL;
+    return err;
+  }
   uint16_t offset = 0;
   for (ui8 = 0; ui8 < version; ui8++)
   {
@@ -295,58 +302,49 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   (*self)->version_ = version;
   const uint8_t datalen = cwmax[version] + 2;
-  (*self)->slen_ = datalen;
-  (*self)->stream_ = (uint8_t*)malloc(datalen);
-  if ((*self)->stream_ == NULL)
-  {
-    eprintf("cannot allocate %hhu bytes", datalen);
-    free(*self);
-    *self = NULL;
-    return ENOMEM;
-  }
-  memset((*self)->stream_, 0, datalen);
 
   pdebug("encoding data bits");
-  (*self)->stream_[0] = (GEN_MODE << 4) | (uint8_t)(strcount >> 4);
-  (*self)->stream_[1] = (uint8_t)(strcount << 4);
+  harray_t* arr = pbits_bytes((*self)->bits_);
+  uint8_t ebyte = (uint8_t)(GEN_MODE << 4) | (uint8_t)(strcount >> 4);
+  harray_push(arr, &ebyte, 1);
+  ebyte = (uint8_t)strcount << 4;
   for (ui8 = 0; ui8 < strcount; ui8++)
   {
-    (*self)->stream_[ui8 + 1] |= (uint8_t)(str[ui8] >> 4);
-    (*self)->stream_[ui8 + 2] = (uint8_t)(str[ui8] << 4);
+    ebyte |= str[ui8] >> 4;
+    harray_push(arr, &ebyte, 1);
+    ebyte = str[ui8] << 4;
+  }
+  harray_push(arr, &ebyte, 1);
+  // NOTE: padding bytes
+  ebyte = 0;
+  for (ui8 += 2; ui8 < datalen; ui8++)
+  {
+    harray_push(arr, &ebyte, 1);
   }
 
-  uint8_t ecc[datalen + ecclen[version] + 1];
-  memcpy(&ecc[0], (*self)->stream_, datalen);
-  memset(&ecc[datalen], 0, ecclen[version] + 1);
+  const uint8_t eccn = datalen + ecclen[version] + 1;
+  uint8_t ecc[eccn];
+  memset(ecc, 0, eccn);
+  harray_copy(arr, ecc, datalen);
   pdebug("starting polynomial division (long division)");
   for (ui8 = 0; ui8 < datalen; ui8++)
   {
     uint8_t lead = ecc[ui8];
     uint8_t uj8 = 0;
-    for (; uj8 < ecclen[version] + 1; uj8++)
+    for (; uj8 <= ecclen[version]; uj8++)
     {
       ecc[ui8 + uj8] ^= alogt[(gen[uj8] + logt[lead]) % UINT8_MAX];
     }
   }
-  const uint8_t byteslen = numbytes[version];
-  uint8_t* tmpptr = (uint8_t*)realloc((*self)->stream_, byteslen);
-  if (tmpptr == NULL)
-  {
-    eprintf("cannot allocate %hhu bytes", byteslen);
-    free((*self)->stream_);
-    free(*self);
-    *self = NULL;
-    return ENOMEM;
-  }
-  (*self)->stream_ = tmpptr;
-  memcpy(&(*self)->stream_[datalen], &ecc[ui8], ecclen[version]);
+  harray_push(arr, &ecc[ui8], ecclen[version]);
+
   if (verbose)
   {
-    pinfo("Calculated bytes (%hhu):", byteslen);
-    printf("0x%x", (*self)->stream_[0]);
-    for (ui8 = 1; ui8 < byteslen; ui8++)
+    pinfo("Calculated bytes (%hhu):", eccn);
+    printf("0x%x", harray_byte(arr, 0));
+    for (ui8 = 1; ui8 < eccn; ui8++)
     {
-      printf(", 0x%x", (*self)->stream_[ui8]);
+      printf(", 0x%x", harray_byte(arr, ui8));
     }
     puts("");
   }
@@ -361,14 +359,16 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
   }
   pdebug("applying XOR masks");
-  for (ui8 = 0; ui8 < byteslen; ui8++)
+  size_t arrlen = harray_length(arr);
+  for (ui8 = 0; ui8 < arrlen; ui8++)
   {
     offset = ui8 * 8;
     // NOTE: bitstream goes from bit 7 to bit 0
     int8_t bit = 7;
     for (; bit >= 0; bit--)
     {
-      uint8_t module = ((*self)->stream_[ui8] & bitmask[bit]) >> bit & 1;
+      uint8_t module =
+        (harray_byte(arr, ui8) & bitmask[bit]) >> bit & 1;
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
@@ -385,7 +385,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
-        uint16_t index = (uint16_t)(byteslen * 8) + ui8;
+        uint16_t index = (uint16_t)(arrlen * 8) + ui8;
         qrmask_set((*self)->masks_[uj8], index, MASK_LIGHT);
       }
     }
@@ -421,9 +421,9 @@ delete_qrcode(qrcode_t** self)
 {
   if (*self != NULL)
   {
-    if ((*self)->stream_ != NULL)
+    if ((*self)->bits_ != NULL)
     {
-      free((*self)->stream_);
+      delete_pbits(&(*self)->bits_);
     }
     uint8_t ui8 = 0;
     for (; ui8 < NUM_MASKS; ui8++)
@@ -438,7 +438,7 @@ delete_qrcode(qrcode_t** self)
   }
 }
 
-int
+__inline__ int
 qrcode_forcemask(qrcode_t* self, int mask)
 {
   if (mask >= 0 && mask < 8)
@@ -449,7 +449,7 @@ qrcode_forcemask(qrcode_t* self, int mask)
   return EINVAL;
 }
 
-void
+__inline__ void
 qrcode_print(qrcode_t* self, bool useraw)
 {
   if (useraw)
