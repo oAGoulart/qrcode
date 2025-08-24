@@ -29,7 +29,7 @@ def generate_indexes(version: int) -> None:
   direction = -1 # -1=up 1=down
   idx = order * order - 1
   flipped = False
-  print("v = [", end='')
+  print("  .short ", end='')
   for i in range(num_bits):
     if flipped:
       flipped = False
@@ -43,14 +43,14 @@ def generate_indexes(version: int) -> None:
         return index + direction * (order + direction)
       else:
         return index - 1
-    
+
     if should_move(column):
       idx -= 1
       row = math.floor(idx / order)
       column = idx % order
     if should_flip(row, column, direction):
       if i + 2 == num_bits:
-        print(f"{idx},{idx - 1}]")
+        print(f"{idx},{idx - 1}")
         break
       print(f"{idx},{idx - 1},", end='')
       flipped = True
