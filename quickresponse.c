@@ -20,8 +20,8 @@ extern const uint8_t rsgen[];
 typedef enum csubset_e
 {
   SUBSET_NUMERIC = 1,
-  SUBSET_ALPHA = 2,
-  SUBSET_BYTE = 4
+  SUBSET_ALPHA   = 2,
+  SUBSET_BYTE    = 4
 } csubset_t;
 
 static __inline__ csubset_t __attribute__((__const__))
@@ -336,7 +336,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   if (verbose)
   {
-    pinfo("Calculated bytes (%hhu):", eccn);
+    pinfo("Calculated codewords (%hhu):", eccn);
     printf("0x%x", harray_byte(arr, 0));
     for (ui8 = 1; ui8 < eccn; ui8++)
     {
