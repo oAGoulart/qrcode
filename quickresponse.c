@@ -31,7 +31,7 @@ which_subset_(const uint8_t c)
   {
     return SUBSET_NUMERIC;
   }
-  if ((c >= 0x41 && c <= 0x5A) || strchr(" $%*+-./:", c) != NULL)
+  if ((c >= 0x41 && c <= 0x5A) || __builtin_strchr(" $%*+-./:", c) != NULL)
   {
     return SUBSET_ALPHA;
   }
@@ -125,7 +125,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   /* WARNING WORK IN PROGRESS BELOW */
   uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ?
     vnum - 1 : MAX_VERSION - 1;
-  size_t strcount = strlen(str);
+  size_t strcount = __builtin_strlen(str);
   // NOTE: initial version selection
   uint8_t ui8 = 0;
   if (vnum != version)
@@ -320,7 +320,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   const uint8_t eccn = datalen + ecclen[version];
   uint8_t ecc[eccn];
-  memset(ecc, 0, eccn);
+  __builtin_memset(ecc, 0, eccn);
   harray_copy(arr, ecc, datalen);
   pdebug("starting polynomial division (long division)");
   for (ui8 = 0; ui8 < datalen; ui8++)

@@ -85,25 +85,25 @@ mask_double_(const uint8_t* __restrict__ v, uint8_t order)
     {
     case 0:
     {
-      strcpy(&str[i], " ");
+      __builtin_strcpy(&str[i], " ");
       i += 3;
       break;
     }
     case 1:
     {
-      strcpy(&str[i], "▄");
+      __builtin_strcpy(&str[i], "▄");
       i += 3;
       break;
     }
     case 2:
     {
-      strcpy(&str[i], "▀");
+      __builtin_strcpy(&str[i], "▀");
       i += 3;
       break;
     }
     default:
     {
-      strcpy(&str[i], "█");
+      __builtin_strcpy(&str[i], "█");
       i += 3;
       break;
     }
@@ -126,12 +126,12 @@ mask_single_(const uint8_t* __restrict__ v, uint8_t order)
   {
     if (v[top] == 0)
     {
-      strcpy(&str[i], " ");
+      __builtin_strcpy(&str[i], " ");
       i += 3;
     }
     else
     {
-      strcpy(&str[i], "▀");
+      __builtin_strcpy(&str[i], "▀");
       i += 3;
     }
   }
@@ -158,10 +158,10 @@ place_finder_(qrmask_t* self)
   size_t i = 0;
   for (; i < 7; i++)
   {
-    memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
-    memcpy(&self->v_[(self->order_ - 7u) + self->order_ * i],
-      &finder[i], 7u);
-    memcpy(
+    __builtin_memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
+    __builtin_memcpy(&self->v_[(self->order_ - 7u) + self->order_ * i],
+                     &finder[i], 7u);
+    __builtin_memcpy(
       &self->v_[(self->order_ - 7u) * self->order_ + self->order_ * i],
       &finder[i], 7u);
   }
@@ -182,7 +182,7 @@ place_align_(qrmask_t* self)
   size_t i = 0;
   for (; i < 5; i++)
   {
-    memcpy(&self->v_[index + i * self->order_], &align[i], 5u);
+    __builtin_memcpy(&self->v_[index + i * self->order_], &align[i], 5u);
   }
 }
 
@@ -263,7 +263,7 @@ module_penalty_(qrmask_t* self)
       if (j < self->order_ - 10 && *next == MASK_LIGHT)
       {
         const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
-        if (!memcmp(module + 2, pattern, 9))
+        if (!__builtin_memcmp(module + 2, pattern, 9))
         {
           self->penalty_ += 40;
         }
@@ -353,7 +353,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
     *self = NULL;
     return ENOMEM;
   }
-  memset((*self)->v_, 0, (*self)->count_);
+  __builtin_memset((*self)->v_, 0, (*self)->count_);
   (*self)->dark_ = qr_basedark[version];
   (*self)->light_ = qr_baselight[version];
   (*self)->penalty_ = 0;

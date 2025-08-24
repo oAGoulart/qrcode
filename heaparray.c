@@ -5,13 +5,13 @@
 #include "heaparray.h"
 #include "shared.h"
 
-#define PAGE_SIZE 0x200u
+#define ARRAY_SIZE 0x20u
 
 static __inline__ size_t __attribute__((__const__))
 align_(size_t size)
 {
-  size_t remainder = size % PAGE_SIZE;
-  return (remainder > 0) ? (size - remainder) + PAGE_SIZE : size;
+  size_t remainder = size % ARRAY_SIZE;
+  return (remainder > 0) ? (size - remainder) + ARRAY_SIZE : size;
 }
 
 struct harray_s
@@ -80,13 +80,13 @@ harray_push(harray_t* self, uint8_t* __restrict__ obj, size_t size)
       return ENOMEM;
     }
     self->data_ = tmp;
-    memcpy(&self->data_[self->length_], obj, size);
+    __builtin_memcpy(&self->data_[self->length_], obj, size);
     self->length_ += size;
     self->available_ = asize - self->length_;
   }
   else
   {
-    memcpy(&self->data_[self->length_], obj, size);
+    __builtin_memcpy(&self->data_[self->length_], obj, size);
     self->length_ += size;
     self->available_ -= size;
   }
@@ -104,7 +104,7 @@ harray_pop(harray_t* self, size_t size)
   }
   self->length_ -= size;
   self->available_ += size;
-  if (self->available_ > PAGE_SIZE)
+  if (self->available_ > ARRAY_SIZE)
   {
     const size_t asize = align_(self->length_);
     uint8_t* tmp = (uint8_t*)realloc(self->data_, asize);
@@ -128,7 +128,7 @@ __inline__ void
 harray_copy(harray_t* self, uint8_t* out, size_t outlen)
 {
   size_t n = (outlen < self->length_) ? outlen : self->length_;
-  memcpy(out, self->data_, n);
+  __builtin_memcpy(out, self->data_, n);
 }
 
 int
@@ -140,7 +140,7 @@ harray_replace(harray_t *self, size_t at, uint8_t *__restrict obj, size_t size)
             size, at, self->length_);
     return ERANGE;
   }
-  memcpy(&self->data_[at], obj, size);
+  __builtin_memcpy(&self->data_[at], obj, size);
   return 0;
 }
 
