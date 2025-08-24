@@ -15,7 +15,7 @@ struct qrmask_s
 {
   const uint16_t* i_;
   uint16_t count_;
-  uint8_t* v_;
+  uint8_t* v_; // NOTE: cannot be harray_h
   uint8_t  version_;
   uint8_t  order_;
   uint8_t  masknum_;
@@ -27,8 +27,8 @@ struct qrmask_s
 static __inline__ bool __attribute__((__const__))
 should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
 {
-  const uint16_t row = (uint16_t)floor((double)index / order);
   const uint16_t col = index % order;
+  const uint16_t row = (index - col) / order;
   switch (pattern)
   {
   case 0:
@@ -40,8 +40,7 @@ should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
   case 3:
     return (row + col) % 3 == 0;
   case 4:
-    return (long)(floor((double)row / 2)
-         + floor((double)col / 3)) % 2 == 0;
+    return ((row - (row % 2)) / 2 + (col - (col % 3)) / 3) % 2 == 0;
   case 5:
     return ((row * col) % 2) + ((row * col) % 3) == 0;
   case 6:
@@ -306,15 +305,15 @@ module_penalty_(qrmask_t* self)
   }
 }
 
+static __inline__ uint8_t __attribute__((__const__))
+symbol_order_(const uint8_t version)
+{
+  return 4u * (version + 1) + 17u;
+}
+
 int
 create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
 {
-  static const uint8_t qr_order[MAX_VERSION] = {
-    21u, 25u, 29u, 33u, 37u
-  };
-  static const uint16_t qr_count[MAX_VERSION] = {
-    441u, 625u, 841u, 1089u, 1369u
-  };
   static const uint16_t qr_basedark[MAX_VERSION] = {
     91u, 112u, 114u, 118u, 122u
   };
@@ -341,8 +340,8 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
     return ENOMEM;
   }
   (*self)->version_ = version;
-  (*self)->order_ = qr_order[version];
-  (*self)->count_ = qr_count[version];
+  (*self)->order_ = symbol_order_(version);
+  (*self)->count_ = (*self)->order_ * (*self)->order_;
   (*self)->masknum_ = masknum;
   (*self)->i_ = qrindex + qr_offset[version];
   (*self)->v_ = (uint8_t*)malloc((*self)->count_);

@@ -107,9 +107,6 @@ int
 create_qrcode(qrcode_t** self, const char* __restrict__ str, 
               int vnum, bool optimize, bool verbose)
 {
-  const uint8_t bitmask[CHAR_BIT] = {
-    1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u
-  };
   const uint8_t cwmax[MAX_VERSION] = {
     17u, 32u, 53u, 78u, 106u
   };
@@ -345,13 +342,14 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     puts("");
   }
 
+  __builtin_memset((*self)->masks_, 0, sizeof((*self)->masks_));
   for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
   {
-    (*self)->masks_[ui8] = NULL;
-    if (create_qrmask(&(*self)->masks_[ui8], version, ui8) != 0)
+    int err = create_qrmask(&(*self)->masks_[ui8], version, ui8);
+    if (err)
     {
       delete_qrcode(self);
-      return ENOMEM;
+      return err;
     }
   }
   pdebug("applying XOR masks");
@@ -364,7 +362,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     for (; bit >= 0; bit--)
     {
       uint8_t module =
-        (harray_byte(arr, ui8) & bitmask[bit]) >> bit & 1;
+        (harray_byte(arr, ui8) & 1 << bit) >> bit & 1;
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
@@ -417,17 +415,11 @@ delete_qrcode(qrcode_t** self)
 {
   if (*self != NULL)
   {
-    if ((*self)->bits_ != NULL)
-    {
-      delete_pbits(&(*self)->bits_);
-    }
+    delete_pbits(&(*self)->bits_);
     uint8_t ui8 = 0;
     for (; ui8 < NUM_MASKS; ui8++)
     {
-      if ((*self)->masks_[ui8] != NULL)
-      {
-        delete_qrmask(&(*self)->masks_[ui8]);
-      }
+      delete_qrmask(&(*self)->masks_[ui8]);
     }
     free(*self);
     *self = NULL;

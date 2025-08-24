@@ -10,10 +10,6 @@
 #   error "non-standard stdbool.h file"
 #endif
 
-#if defined(__STDC_VERSION__)
-#   warning "use ISO C 2011 with GNU extensions"
-#endif
-
 #include <stdio.h>
 #include <errno.h>
 

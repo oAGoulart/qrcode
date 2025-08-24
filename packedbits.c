@@ -44,10 +44,7 @@ delete_pbits(pbits_t** self)
 {
   if (*self != NULL)
   {
-    if ((*self)->array_ != NULL)
-    {
-      delete_harray(&(*self)->array_);
-    }
+    delete_harray(&(*self)->array_);
     free(*self);
     *self = NULL;
   }
