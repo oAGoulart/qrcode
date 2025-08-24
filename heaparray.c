@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "heaparray.h"
@@ -147,4 +148,22 @@ __inline__ uint8_t
 harray_byte(harray_t* self, const size_t index)
 {
   return self->data_[index];
+}
+
+__inline__ uint16_t
+harray_short(harray_t* self, const size_t index)
+{
+  return *(uint16_t*)&self->data_[index];
+}
+
+__inline__ uint32_t
+harray_long(harray_t* self, const size_t index)
+{
+  return *(uint32_t*)&self->data_[index];
+}
+
+__inline__ uint64_t
+harray_quad(harray_t* self, const size_t index)
+{
+  return *(uint64_t*)&self->data_[index];
 }

@@ -26,6 +26,12 @@ harray_replace(harray_t* self, size_t at,
 
 __attribute__((__nonnull__)) uint8_t
 harray_byte(harray_t* self, const size_t index);
+__attribute__((__nonnull__)) uint16_t
+harray_short(harray_t* self, const size_t index);
+__attribute__((__nonnull__)) uint32_t
+harray_long(harray_t* self, const size_t index);
+__attribute__((__nonnull__)) uint64_t
+harray_quad(harray_t* self, const size_t index);
 // TODO: add short, long, quad when necessary
 
 #endif
