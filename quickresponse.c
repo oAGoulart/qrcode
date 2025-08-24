@@ -56,7 +56,7 @@ count_segment_(const char* __restrict__ str, const csubset_t subset)
 static __inline__ uint8_t __attribute__((__const__))
 minimum_segment_(const uint8_t version, const uint8_t iteration)
 {
-  const uint8_t lengths[7][3] = {
+  static const uint8_t lengths[7][3] = {
     { 6, 7, 8 },
     { 4, 4, 5 },
     { 7, 8, 9 },
@@ -65,34 +65,37 @@ minimum_segment_(const uint8_t version, const uint8_t iteration)
     { 6, 7, 8 },
     { 11, 15, 16 }
   };
-  if (version < 10)
+  uint8_t colidx = 0;
+  if (version >= 10 && version < 27)
   {
-    return lengths[iteration][0];
+    colidx = 1;
   }
-  else if (version < 27)
+  else if (version >= 27)
   {
-    return lengths[iteration][1];
+    colidx = 2;
   }
-  return lengths[iteration][2];
+  return lengths[iteration][colidx];
 }
 
 static __inline__ uint8_t __attribute__((__const__, unused))
-maximum_count_(const uint8_t version, const csubset_t subset)
+maximum_count_(const uint8_t version, csubset_t subset)
 {
-  const uint8_t lengths[3][3] = {
+  static const uint8_t lengths[3][3] = {
     { 10, 9, 8 },
     { 12, 11, 16 },
     { 14, 13, 16 }
   };
-  if (version < 10)
+  static const uint8_t subidx[5] = { 0, 0, 1, 0, 2 };
+  uint8_t colidx = 0;
+  if (version >= 10 && version < 27)
   {
-    return lengths[subset][0];
+    colidx = 1;
   }
-  else if (version < 27)
+  else if (version >= 27)
   {
-    return lengths[subset][1];
+    colidx = 2;
   }
-  return lengths[subset][2];
+  return lengths[subidx[subset]][colidx];
 }
 
 struct qrcode_s
@@ -103,14 +106,23 @@ struct qrcode_s
   uint8_t version_;
 };
 
+static __inline__ void
+encodeheader_(qrcode_t* self, csubset_t s, uint32_t next)
+{
+  pbits_push(self->bits_, s, 4);
+  pbits_push(
+    self->bits_, next,
+    maximum_count_(self->version_, s));
+}
+
 int
 create_qrcode(qrcode_t** self, const char* __restrict__ str, 
               int vnum, bool optimize, bool verbose)
 {
-  const uint8_t cwmax[MAX_VERSION] = {
+  static const uint8_t cwmax[MAX_VERSION] = {
     17u, 32u, 53u, 78u, 106u
   };
-  const uint8_t ecclen[MAX_VERSION] = {
+  static const uint8_t ecclen[MAX_VERSION] = {
     7u, 10u, 15u, 20u, 26u
   };
   if (*self != NULL)
@@ -120,156 +132,6 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
 
   /* WARNING WORK IN PROGRESS BELOW */
-  uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ?
-    vnum - 1 : MAX_VERSION - 1;
-  size_t strcount = __builtin_strlen(str);
-  // NOTE: initial version selection
-  uint8_t ui8 = 0;
-  if (vnum != version)
-  {
-    for (; ui8 <= version; ui8++)
-    {
-      if (strcount <= cwmax[ui8])
-      {
-        version = ui8;
-        break;
-      }
-    }
-  }
-
-  size_t __attribute__((unused)) cwmin = 0;
-  bool __attribute__((unused)) encodechanged = true;
-  csubset_t __attribute__((unused)) encode = SUBSET_BYTE;
-  if (optimize)
-  {
-    if (which_subset_(str[0]) != SUBSET_BYTE)
-    {
-      uint32_t next = count_segment_(str, SUBSET_ALPHA);
-      if (which_subset_(str[next]) == SUBSET_BYTE &&
-          minimum_segment_(version, 0))
-      {
-        encode = SUBSET_ALPHA;
-      }
-      else
-      {
-        next = count_segment_(str, SUBSET_NUMERIC);
-        if (which_subset_(str[next]) == SUBSET_BYTE &&
-            minimum_segment_(version, 1))
-        {
-          // encode = SUBSET_BYTE; // redundant;
-        }
-        else if (which_subset_(str[next]) == SUBSET_ALPHA &&
-                 minimum_segment_(version, 2))
-        {
-          encode = SUBSET_ALPHA;
-        }
-        else
-        {
-          encode = SUBSET_NUMERIC;
-        }
-      }
-    }
-    size_t i = 0;
-    for (; i < strcount; i++)
-    {
-      switch (encode)
-      {
-      case SUBSET_NUMERIC:
-      {
-        // TODO: encode numeric 
-        if (encodechanged)
-        {
-          //Add mode indicator and segment count
-        }
-        else
-        {
-          //Append bits to stream
-        }
-        csubset_t subset = which_subset_(str[i + 1]);
-        if (subset != SUBSET_NUMERIC)
-        {
-          encode = subset;
-          encodechanged = true;
-        }
-        break;
-      }
-      case SUBSET_ALPHA:
-      {
-        // TODO: encode alpha
-        csubset_t subset = which_subset_(str[i + 1]);
-        if (subset == SUBSET_BYTE)
-        {
-          encode = subset;
-          encodechanged = true;
-          break;
-        }
-        uint32_t seg = count_segment_(&str[i], SUBSET_NUMERIC);
-        if (which_subset_(str[i]) &&
-            seg - i >= minimum_segment_(version, 3))
-        {
-          encode = SUBSET_NUMERIC;
-          encodechanged = true;
-        }
-        break;
-      }
-      default:
-      {
-        // TODO: encode byte
-        uint32_t seg = count_segment_(&str[i], SUBSET_NUMERIC);
-        csubset_t subset = which_subset_(str[i]);
-        if (subset == SUBSET_BYTE &&
-            seg - i >= minimum_segment_(version, 4))
-        {
-          encode = SUBSET_NUMERIC;
-          encodechanged = true;
-          break;
-        }
-        if (subset == SUBSET_ALPHA &&
-            seg - i >= minimum_segment_(version, 5))
-        {
-          // NOTE: redundant if MAX_VERSION < 10
-          //       keep it for further updates
-          encode = SUBSET_NUMERIC;
-          encodechanged = true;
-          break;
-        }
-        seg = count_segment_(&str[i], SUBSET_ALPHA);
-        if (subset == SUBSET_BYTE &&
-            seg - i >= minimum_segment_(version, 6))
-        {
-          encode = SUBSET_ALPHA;
-          encodechanged = true;
-        }
-        break;
-      } // default
-      } // switch
-    }
-    // NOTE: select min version, with new compact size
-    for (ui8 = version; ui8 > 0; ui8--)
-    {
-      if (cwmin <= cwmax[ui8 - 1])
-      {
-        continue;
-      }
-      else
-      {
-        break;
-      }
-    }
-    if (version == 0)
-    {
-      eprintf("optimized data length is larger than non-optimized, somehow");
-      return ENOTRECOVERABLE;
-    }
-    version = ui8;
-  }
-  /* WARNING WORK IN PROGRESS ABOVE */
-
-  if (strcount > cwmax[version])
-  {
-    eprintf("data must be less than %hhu characters long", cwmax[version]);
-    return EINVAL;
-  }
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
   if (*self == NULL)
   {
@@ -284,6 +146,172 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     free(*self);
     *self = NULL;
     return err;
+  }
+
+  uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ?
+    vnum - 1 : MAX_VERSION - 1;
+  size_t strcount = __builtin_strlen(str);
+  // NOTE: initial version selection
+  uint8_t ui8 = 0;
+  if (vnum != version)
+  {
+    for (; ui8 <= version; ui8++)
+    {
+      if (strcount <= cwmax[ui8])
+      {
+        (*self)->version_ = ui8;
+        break;
+      }
+    }
+  }
+
+  size_t __attribute__((unused)) cwmin = 0;
+  bool switched = true;
+  char numseg[4] = { '\0', '\0', '\0', '\0' };
+  uint8_t numc = 0;
+  csubset_t __attribute__((unused)) encode = SUBSET_BYTE;
+  if (optimize)
+  {
+    if (which_subset_(str[0]) != SUBSET_BYTE)
+    {
+      uint32_t next = count_segment_(str, SUBSET_ALPHA);
+      if (which_subset_(str[next]) == SUBSET_BYTE &&
+          next >= minimum_segment_(version, 0))
+      {
+        encode = SUBSET_ALPHA;
+        encodeheader_(*self, encode, next + 1);
+      }
+      else
+      {
+        next = count_segment_(str, SUBSET_NUMERIC);
+        if (which_subset_(str[next]) == SUBSET_BYTE &&
+            next >= minimum_segment_(version, 1))
+        {
+          // encode = SUBSET_BYTE; // redundant;
+          next += count_segment_(&str[next], SUBSET_BYTE);
+          encodeheader_(*self, encode, next + 1);
+        }
+        else if (which_subset_(str[next]) == SUBSET_ALPHA &&
+                 next >= minimum_segment_(version, 2))
+        {
+          encode = SUBSET_ALPHA;
+          next += count_segment_(&str[next], SUBSET_ALPHA);
+          encodeheader_(*self, encode, next + 1);
+        }
+        else
+        {
+          // NOTE: entire string is numeric
+          encode = SUBSET_NUMERIC;
+          encodeheader_(*self, encode, strcount);
+        }
+      }
+    }
+    size_t i = 0;
+    for (; i < strcount; i++)
+    {
+      if (switched)
+      {
+        uint32_t next = count_segment_(&str[i], encode);
+        encodeheader_(*self, encode, next + 1);
+        switched = false;
+      }
+      switch (encode)
+      {
+      case SUBSET_NUMERIC:
+      {
+        numseg[numc] = str[i];
+        numc++;
+        csubset_t subset = which_subset_(str[i + 1]);
+        if (subset != SUBSET_NUMERIC)
+        {
+          encode = subset;
+          switched = true;
+        }
+        if (numc == 3 || switched)
+        {
+          const uint8_t maxb[3] = { 4, 7, 10 };
+          numseg[numc] = '\0';
+          int numch = atoi(numseg);
+          pbits_push((*self)->bits_, numch, maxb[numc - 1]);
+          numc = 0;
+        }
+        break;
+      }
+      case SUBSET_ALPHA:
+      {
+        // TODO: encode alpha
+        csubset_t subset = which_subset_(str[i + 1]);
+        if (subset == SUBSET_BYTE)
+        {
+          encode = subset;
+          switched = true;
+          break;
+        }
+        uint32_t seg = count_segment_(&str[i], SUBSET_NUMERIC);
+        if (which_subset_(str[i]) &&
+            seg - i >= minimum_segment_(version, 3))
+        {
+          encode = SUBSET_NUMERIC;
+          switched = true;
+        }
+        break;
+      }
+      default:
+      {
+        // TODO: encode byte
+        uint32_t seg = count_segment_(&str[i], SUBSET_NUMERIC);
+        csubset_t subset = which_subset_(str[i]);
+        if (subset == SUBSET_BYTE &&
+            seg - i >= minimum_segment_(version, 4))
+        {
+          encode = SUBSET_NUMERIC;
+          switched = true;
+          break;
+        }
+        if (subset == SUBSET_ALPHA &&
+            seg - i >= minimum_segment_(version, 5))
+        {
+          // NOTE: redundant if MAX_VERSION < 10
+          //       keep it for further updates
+          encode = SUBSET_NUMERIC;
+          switched = true;
+          break;
+        }
+        seg = count_segment_(&str[i], SUBSET_ALPHA);
+        if (subset == SUBSET_BYTE &&
+            seg - i >= minimum_segment_(version, 6))
+        {
+          encode = SUBSET_ALPHA;
+          switched = true;
+        }
+        break;
+      } // default
+      } // switch
+    }
+    // NOTE: select min version, with new compact size
+    for (ui8 = version; ui8 > 0; ui8--)
+    {
+      if (cwmin <= cwmax[ui8 - 1])
+      {
+        continue;
+      }
+      break;
+    }
+    if (version == 0)
+    {
+      eprintf("optimized data length is larger than non-optimized, somehow");
+      return ENOTRECOVERABLE;
+    }
+    version = ui8;
+  }
+  // else -> do default (byte) encoding
+  /* WARNING WORK IN PROGRESS ABOVE */
+
+  if (strcount > cwmax[version])
+  {
+    eprintf("data must be less than %hhu characters long", cwmax[version]);
+    delete_qrcode(self);
+    return EINVAL;
   }
   uint16_t offset = 0;
   for (ui8 = 0; ui8 < version; ui8++)
