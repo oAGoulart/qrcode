@@ -56,10 +56,10 @@ static __inline__ int __attribute__((__nonnull__))
 colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
         const uint16_t n, const uint8_t arr[n])
 {
-  uint16_t i = 0;
-  for (; i < n; i++)
+  uint32_t i = 0;
+  for (; i < n * order; i += order)
   {
-    int diff = v[i * order] - arr[i];
+    int diff = v[i] - arr[i];
     if (diff != 0)
     {
       return diff;
@@ -68,8 +68,6 @@ colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
   return 0;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated"
 static void __attribute__((__nonnull__))
 mask_double_(const uint8_t* __restrict__ v, uint8_t order)
 {
@@ -140,7 +138,6 @@ mask_single_(const uint8_t* __restrict__ v, uint8_t order)
     printf("    %s    " __nl, str);
   }
 }
-#pragma GCC diagnostic pop
 
 static void __attribute__((__nonnull__))
 place_finder_(qrmask_t* self)
