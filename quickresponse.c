@@ -241,8 +241,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           encodechanged = true;
         }
         break;
-      }
-      }
+      } // default
+      } // switch
     }
     // NOTE: select min version, with new compact size
     for (ui8 = version; ui8 > 0; ui8--)

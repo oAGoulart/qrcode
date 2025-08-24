@@ -103,8 +103,8 @@ mask_double_(const uint8_t* __restrict__ v, uint8_t order)
       __builtin_strcpy(&str[i], "█");
       i += 3;
       break;
-    }
-    }
+    } // default
+    } // switch
   }
   if (i > 0)
   {
