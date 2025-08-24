@@ -32,6 +32,9 @@ __attribute__((__nonnull__)) uint32_t
 harray_long(harray_t* self, const size_t index);
 __attribute__((__nonnull__)) uint64_t
 harray_quad(harray_t* self, const size_t index);
-// TODO: add short, long, quad when necessary
+
+__attribute__((__nonnull__)) size_t
+harray_first(harray_t* self, size_t from,
+             uint8_t* __restrict__ obj, size_t size);
 
 #endif

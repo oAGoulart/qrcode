@@ -167,3 +167,27 @@ harray_quad(harray_t* self, const size_t index)
 {
   return *(uint64_t*)&self->data_[index];
 }
+
+size_t
+harray_first(harray_t* self, size_t from,
+             uint8_t* __restrict__ obj, size_t size)
+{
+  if (from + size > self->length_)
+  {
+    eprintf("cannot find length %zu from index %zu, array length is %zu",
+            size, from, self->length_);
+    return ERANGE;
+  }
+  char* ch = __builtin_char_memchr((char*)self->data_,
+                                   *obj, self->length_ - size);
+  while (ch != NULL)
+  {
+    ptrdiff_t diff = (uintptr_t)ch - (uintptr_t)self->data_;
+    if (__builtin_memcmp(ch, obj, size) == 0)
+    {
+      return diff;
+    }
+    ch = __builtin_char_memchr(ch + 1, *obj, self->length_ - diff - size);
+  }
+  return -1;
+}
