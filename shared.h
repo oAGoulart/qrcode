@@ -10,6 +10,10 @@
 #   error "non-standard stdbool.h file"
 #endif
 
+#if defined(__STDC_VERSION__)
+#   warning "use ISO C 2011 with GNU extensions"
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 
@@ -58,8 +62,14 @@
 #   define PROJECT_ARCH "x86"
 #elif defined(__ia64__)
 #   define PROJECT_ARCH "IA-64"
-#elif defined(__powerpc__) || defined(__powerpc64__)
+#elif defined(__powerpc64__)
+#   define PROJECT_ARCH "PowerPC64"
+#elif defined(__powerpc__)
 #   define PROJECT_ARCH "PowerPC"
+#elif defined(__mips__)
+#   define PROJECT_ARCH "MIPS"
+#elif defined(__sparc__)
+#   define PROJECT_ARCH "SPARC"
 #else
 #   define PROJECT_ARCH "???"
 #endif
@@ -72,6 +82,14 @@
 #   define PROJECT_TARGET "MinGW32"
 #elif defined(_WIN32)
 #   define PROJECT_TARGET "Windows"
+#elif defined(__NetBSD__)
+#   define PROJECT_TARGET "NetBSD"
+#elif defined(__FreeBSD__)
+#   define PROJECT_TARGET "FreeBSD"
+#elif defined(__serenity__)
+#   define PROJECT_TARGET "SerenityOS"
+#elif defined(__MACH__)
+#   define PROJECT_TARGET "MacOS"
 #elif defined(__linux__)
 #   define PROJECT_TARGET "Linux"
 #else
