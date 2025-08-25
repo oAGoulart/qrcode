@@ -9,7 +9,11 @@ All notable changes to this project will be documented in this file.
 - Change error messages to comply with GNU style guide
 - Change `-G` option name to `-K`
 - Change compiler to `clang`
-- Remove array pop from byte encoding, optimize xoring arrays
+- Change lookup table generation to build time
+- Change standard calls with `clang`'s builtins
+- Change encoding stream to `packedbits` interface
+- Change language standard to ISO C with GNU extensions
+- Remove `array_pop` from byte encoding, optimize xoring arrays
 
 ## [1.4.0] - 2025-08-15
 
