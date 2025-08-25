@@ -56,10 +56,10 @@ static __inline__ int __attribute__((__nonnull__))
 colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
         const uint16_t n, const uint8_t arr[n])
 {
-  uint32_t i = 0;
-  for (; i < n * order; i += order)
+  uint16_t i = 0;
+  for (; i < n; i++)
   {
-    int diff = v[i] - arr[i];
+    int diff = v[i * order] - arr[i];
     if (diff != 0)
     {
       return diff;

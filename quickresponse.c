@@ -159,11 +159,12 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     {
       if (strcount <= cwmax[ui8])
       {
-        (*self)->version_ = ui8;
+        version = ui8;
         break;
       }
     }
   }
+  (*self)->version_ = version;
 
   size_t __attribute__((unused)) cwmin = 0;
   bool switched = true;
@@ -373,7 +374,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   __builtin_memset((*self)->masks_, 0, sizeof((*self)->masks_));
   for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
   {
-    int err = create_qrmask(&(*self)->masks_[ui8], version, ui8);
+    err = create_qrmask(&(*self)->masks_[ui8], version, ui8);
     if (err)
     {
       delete_qrcode(self);

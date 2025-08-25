@@ -28,9 +28,12 @@ build: lookup.o $(OBJS)
 $(BUILD_DIR)/%.o: %.c
 	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 -Wno-gnu-zero-variadic-macro-arguments --std=gnu11 $(CCFLAGS) -c $< -o $@
 
-lookup.o:
+lookup.o: lookup.S
 	mkdir -p $(BUILD_DIR)
 	$(CC) -c lookup.S -o $(BUILD_DIR)/lookup.o
+
+lookup.S:
+	bash -c scripts/lookup.sh
 
 .PHONY: clean
 clean:
