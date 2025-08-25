@@ -115,6 +115,44 @@ encodeheader_(qrcode_t* self, csubset_t s, uint32_t next)
     maximum_count_(self->version_, s));
 }
 
+static __inline__ uint8_t
+frombyte_(uint8_t b)
+{
+  switch (b)
+  {
+  case ' ':
+    return 36;
+  case '$':
+    return 37;
+  case '%':
+    return 38;
+  case '*':
+    return 39;
+  case '+':
+    return 40;
+  case '-':
+    return 41;
+  case '.':
+    return 42;
+  case '/':
+    return 43;
+  case ':':
+    return 44;
+  default:
+  {
+    if (b >= 48 && b <= 57)
+    {
+      return b - 48;
+    }
+    else if (b >= 65 && b <= 90)
+    {
+      return (b - 65) + 10;
+    }
+  } // default
+  } // switch
+  return UINT8_MAX;
+}
+
 int
 create_qrcode(qrcode_t** self, const char* __restrict__ str, 
               int vnum, bool optimize, bool verbose)
