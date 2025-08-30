@@ -49,15 +49,16 @@ Latest (stable) releases can be found at this repo's [Releases](https://github.c
 > [!WARNING]
 > This repo's `master` branch may or may not contain uncompilable, unstable code.
 > It's recommended that you select the latest tag release, unless you wish to collaborate with code.
+> FreeBSD is not fully-supported yet.
 
 **Build tools used for binaries:**
 
-Tool  | Ubuntu 22.04 <br>(WSL 2) | Windows 11 <br>(MinGW)
-----: | :------------------- | :-----------------
-GNU Make | 4.3 | 4.4
-Clang | 14.0.0 | 20.1.8
-Python | 3.10.12 | 3.12.6
-
+Tool  | Ubuntu 22.04<br>amd64<br>(WSL 2) | Windows 11<br>amd64<br>(MinGW) | FreeBSD<br>x86<br>(VM)
+----: | :-------------------: | :-----------------: | :------------:
+GNU Make | 4.3 | 4.4 | 4.4.1
+Clang | 14.0.0 | 20.1.8 | 19.1.7
+Python | 3.10.12 | 3.12.6 | 3.11.13
+*status* | 🟩 | 🟩 | 🟧
 
 ### Examples
 
@@ -138,6 +139,7 @@ ISO/IEC 18004:2024 - Information technology — Automatic identification and dat
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 1. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
 
 
