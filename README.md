@@ -49,7 +49,7 @@ Latest (stable) releases can be found at this repo's [Releases](https://github.c
 > [!WARNING]
 > This repo's `master` branch may or may not contain uncompilable, unstable code.
 > It's recommended that you select the latest tag release, unless you wish to collaborate with code.
-> FreeBSD is not fully-supported yet.
+> FreeBSD is not fully-supported yet, see this [issue](https://github.com/oAGoulart/qrcode/issues/16).
 
 **Build tools used for binaries:**
 
@@ -139,6 +139,7 @@ ISO/IEC 18004:2024 - Information technology — Automatic identification and dat
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 1. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
 
 
