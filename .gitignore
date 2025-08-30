@@ -6,3 +6,4 @@ build/
 /*.svg
 /*.i
 /*.txt
+/*.S

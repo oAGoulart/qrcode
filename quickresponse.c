@@ -115,7 +115,7 @@ encodeheader_(qrcode_t* self, csubset_t s, uint32_t next)
     maximum_count_(self->version_, s));
 }
 
-static __inline__ uint8_t
+static __inline__ uint8_t __attribute__((unused))
 frombyte_(uint8_t b)
 {
   switch (b)
