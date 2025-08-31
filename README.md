@@ -49,7 +49,6 @@ Latest (stable) releases can be found at this repo's [Releases](https://github.c
 > [!WARNING]
 > This repo's `master` branch may or may not contain uncompilable, unstable code.
 > It's recommended that you select the latest tag release, unless you wish to collaborate with code.
-> FreeBSD is not fully-supported yet, see this [issue](https://github.com/oAGoulart/qrcode/issues/16).
 
 **Build tools used for binaries:**
 
@@ -58,7 +57,7 @@ Tool  | Ubuntu 22.04<br>amd64/x86<br>(WSL 2) | Windows 11<br>amd64<br>(MSYS2) | 
 GNU Make | 4.3 | 4.4 | 4.4.1
 Clang | 14.0.0 | 20.1.8 | 19.1.7
 Python | 3.10.12 | 3.12.6 | 3.11.13
-*status* | 🟩 | 🟩 | 🟧
+*status* | 🟩 | 🟩 | 🟩
 
 ### Examples
 
