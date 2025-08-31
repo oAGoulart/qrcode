@@ -78,6 +78,8 @@
 #   define PROJECT_TARGET "MinGW32"
 #elif defined(_WIN32)
 #   define PROJECT_TARGET "Windows"
+#elif defined(__sun)
+#   define PROJECT_TARGET "Solaris"
 #elif defined(__NetBSD__)
 #   define PROJECT_TARGET "NetBSD"
 #elif defined(__FreeBSD__)
