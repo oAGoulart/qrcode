@@ -26,13 +26,17 @@ build: lookup.o $(OBJS)
 	$(CC) $(BUILD_DIR)/lookup.o $(OBJS) -o $(BUILD_DIR)/$(TARGET_EXEC) $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: %.c
-	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 -Wno-gnu-zero-variadic-macro-arguments --std=gnu11 $(CCFLAGS) -c $< -o $@
+	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 \
+	-Wno-gnu-zero-variadic-macro-arguments --std=gnu11 $(CCFLAGS) -c $< -o $@
 
 lookup.o: lookup.S
-	mkdir -p $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR) ; \
 	$(CC) -c lookup.S -o $(BUILD_DIR)/lookup.o
 
 lookup.S:
+	chmod 777 scripts/lookup.sh  ; \
+	chmod 777 scripts/indexes.py ; \
+	rm -f lookup.S               ; \
 	bash -c scripts/lookup.sh
 
 .PHONY: clean
