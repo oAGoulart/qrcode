@@ -1,0 +1,17 @@
+name: MacOS target
+
+on:
+  workflow_run:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: make
+      run: make debug
+    - name: test output
+      run: bin/qrcode --verbose oagoulart.github.io/rambles/keep-thyself-credible
