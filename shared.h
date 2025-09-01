@@ -49,47 +49,47 @@
   printf(__c(36, "  INFO ") format __nl, ##__VA_ARGS__)
 
 #if defined(__amd64__) || defined(__x86_64__)
-#   define PROJECT_ARCH "AMD64"
+#   define PROJECT_ARCH "amd64"
 #elif defined(__aarch64__)
-#   define PROJECT_ARCH "ARM64"
+#   define PROJECT_ARCH "aarch64"
 #elif defined(__arm__)
-#   define PROJECT_ARCH "ARM"
+#   define PROJECT_ARCH "arm"
 #elif defined(__i386__) || defined(_X86_)
-#   define PROJECT_ARCH "x86"
+#   define PROJECT_ARCH "i386"
 #elif defined(__ia64__)
-#   define PROJECT_ARCH "IA-64"
+#   define PROJECT_ARCH "ia64"
 #elif defined(__powerpc64__)
-#   define PROJECT_ARCH "PowerPC64"
+#   define PROJECT_ARCH "ppc64"
 #elif defined(__powerpc__)
-#   define PROJECT_ARCH "PowerPC"
+#   define PROJECT_ARCH "ppc"
 #elif defined(__mips__)
-#   define PROJECT_ARCH "MIPS"
+#   define PROJECT_ARCH "mips"
 #elif defined(__sparc__)
-#   define PROJECT_ARCH "SPARC"
+#   define PROJECT_ARCH "sparc"
 #else
 #   define PROJECT_ARCH "???"
 #endif
 
 #if defined(__CYGWIN__)
-#   define PROJECT_TARGET "Cygwin"
+#   define PROJECT_TARGET "cygwin"
 #elif defined(__MINGW64__)
-#   define PROJECT_TARGET "MinGW-w64"
+#   define PROJECT_TARGET "mingw64"
 #elif defined(__MINGW32__)
-#   define PROJECT_TARGET "MinGW32"
+#   define PROJECT_TARGET "mingw32"
 #elif defined(_WIN32)
-#   define PROJECT_TARGET "Windows"
+#   define PROJECT_TARGET "windows"
 #elif defined(__sun)
-#   define PROJECT_TARGET "Solaris"
+#   define PROJECT_TARGET "solaris"
 #elif defined(__NetBSD__)
-#   define PROJECT_TARGET "NetBSD"
+#   define PROJECT_TARGET "netbsd"
 #elif defined(__FreeBSD__)
-#   define PROJECT_TARGET "FreeBSD"
+#   define PROJECT_TARGET "freebsd"
 #elif defined(__serenity__)
-#   define PROJECT_TARGET "SerenityOS"
+#   define PROJECT_TARGET "serenity"
 #elif defined(__MACH__)
-#   define PROJECT_TARGET "MacOS"
+#   define PROJECT_TARGET "macos"
 #elif defined(__linux__)
-#   define PROJECT_TARGET "Linux"
+#   define PROJECT_TARGET "linux"
 #else
 #   define PROJECT_TARGET "???"
 #endif
