@@ -10,6 +10,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: env check
+      run: make --version && python3 --version
     - name: make
       run: make debug
     - name: test output
