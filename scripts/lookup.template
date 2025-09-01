@@ -1,7 +1,7 @@
 .data
 #if defined(_WIN32)
   .section rdata, "rd"
-#elif defined(__MACH__)
+#elif defined(__APPLE__)
   .section __TEXT, __const
 #else
   .section rodata, "aR", @progbits
