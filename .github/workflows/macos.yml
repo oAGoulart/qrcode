@@ -11,10 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: update make
-      run: brew install make --with-default-names
+      run: brew install make
     - name: env check
-      run: make --version && python3 --version
+      run: gmake --version && python3 --version
     - name: make
-      run: make debug
+      run: gmake debug
     - name: test output
       run: bin/qrcode --verbose oagoulart.github.io/rambles/keep-thyself-credible
