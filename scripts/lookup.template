@@ -1,6 +1,8 @@
 .data
-#ifdef _WIN32
+#if defined(_WIN32)
   .section rdata, "rd"
+#elif defined(__MACH__)
+  .section __TEXT, __const
 #else
   .section rodata, "aR", @progbits
 #endif
