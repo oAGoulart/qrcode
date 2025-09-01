@@ -10,6 +10,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: update make
+      run: brew install make --with-default-names
     - name: env check
       run: make --version && python3 --version
     - name: make
