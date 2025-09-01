@@ -52,12 +52,12 @@ Latest (stable) releases can be found at this repo's [Releases](https://github.c
 
 **Build tools used for binaries:**
 
-Tool  | Ubuntu 22.04<br>amd64/x86<br>(WSL 2) | Windows 11<br>amd64<br>(MSYS2) | FreeBSD<br>x86<br>(VM)
-----: | :-------------------: | :-----------------: | :------------:
-GNU Make | 4.3 | 4.4 | 4.4.1
-Clang | 14.0.0 | 20.1.8 | 19.1.7
-Python | 3.10.12 | 3.12.6 | 3.11.13
-*status* | 🟩 | 🟩 | 🟩
+Tool  | Ubuntu 22.04<br>amd64/x86<br>(WSL 2) | Windows 11<br>amd64<br>(MSYS2) | FreeBSD 14.3<br>x86<br>(VM) | macOS 14<br>aarch64<br>(GH Workflow)
+----: | :----: | :----: | :----: | :----:
+GNU Make | 4.3 | 4.4 | 4.4.1 | 4.4.1
+Clang | 14.0.0 | 20.1.8 | 19.1.7 | 15.0.0
+Python | 3.10.12 | 3.12.6 | 3.11.13 | 3.13.7
+*status* | 🟩 | 🟩 | 🟩 | 🟩
 
 ### Examples
 
@@ -138,6 +138,7 @@ ISO/IEC 18004:2024 - Information technology — Automatic identification and dat
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 1. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
 
 
