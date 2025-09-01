@@ -2,7 +2,7 @@
 #if defined(_WIN32)
   .section rdata, "rd"
 #elif defined(__APPLE__)
-  .section __TEXT, __const
+  .section __DATA, __static_data
 #else
   .section rodata, "aR", @progbits
 #endif
