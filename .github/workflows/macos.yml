@@ -1,8 +1,8 @@
 name: MacOS target
 
 on:
-  workflow_run:
-    branches: [ "master" ]
+  label:
+    types: [created]
 
 jobs:
   build:
