@@ -120,12 +120,7 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 ## Roadmap
 
 Planned features:
-1. encoding switching (~80%)
-   - [x] packedbits interface (~100%)
-      - [x] heaparray interface (100%)
-   - [x] numeric segments
-   - [ ] alphanumeric segments
-   - [ ] byte segments (currently, only for whole data)
+1. encoding switching (100%, next release)
 1. higher EC levels (TBD)
    - [ ] lookup tables
    - [ ] codewords spliting
