@@ -4,16 +4,18 @@
 [![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** Model 2, byte mode, from version 1 to 5, with EC level L, as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on Windows and Linux. Output inline, bitmap, or vectors.
+**Objective:** Model 2, from version 1 to 5, with EC level L, as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on Windows and Linux. Output inline, bitmap, or vectors.
 
 **Available generation:**
 
- **Version**                | 1    | 2    | 3    | 4    | 5    
+ **Version**                | 1    | 2    | 3    | 4    | 5
 --------------------------: | ---- | ---- | ---- | ---- | ----
- **Capacity (codewords)**   | 17   | 32   | 53   | 78   | 106 
+ **Capacity (codewords)**   | 17   | 32   | 53   | 78   | 106
 
 > [!NOTE]
 > Generator will auto-select smallest Version possible. Unless option `-u` specified.
+> Here, codeword refers to a full byte. Numeric encoding uses up to 10-bits for 3 digits (~58% reduction).
+> Alphanumeric encoding uses up to 11-bits for each pair of characters (~31% reduction).
 
 **Pre-generated lookup tables:**
 1. Reed-Solomon EC generator polynomials.
