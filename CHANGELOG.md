@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Add `--optimize` option to reduce data size with encoding switching
+- Add `--optimize` option to reduce data size
+- Add numeric and alphanumeric encoding in addition to byte
 - Add platform and architecture to `--version` option output
 - Change error messages to comply with GNU style guide
 - Change `-G` option name to `-K`
