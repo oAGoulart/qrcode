@@ -4,7 +4,7 @@
 [![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** Model 2, from version 1 to 5, with EC level L, as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on Windows and Linux. Output inline, bitmap, or vectors.
+**Objective:** Model 2, from version 1 to 5, with EC level L, as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on any platform. Output inline (stdout), bitmap, or vectors (svg).
 
 **Available generation:**
 
@@ -46,9 +46,9 @@ OPTIONS:
 
 ### Building and binaries
 
-Latest (stable) releases can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases). To compile this project, use `make`.
+Latest (stable) releases can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases). To build this project, use `make`. Otherwise, as long as your system has Clang and Python, you may run Makefile's build commands manually.
 
-> [!WARNING]
+> [!CAUTION]
 > This repo's `master` branch may or may not contain uncompilable, unstable code.
 > It's recommended that you select the latest tag release, unless you wish to collaborate with code.
 
@@ -123,7 +123,7 @@ Planned features:
 1. encoding switching (100%, next release)
 1. higher EC levels (TBD)
    - [ ] lookup tables
-   - [ ] codewords spliting
+   - [ ] codewords splitting
 1. higher Version codes (TBD)
 
 ## Disclaimer
