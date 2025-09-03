@@ -10,7 +10,6 @@
 #include "quickresponse.h"
 #include "shared.h"
 
-#define GEN_MODE    4
 #define NUM_PADBITS 7
 
 extern const uint8_t logt[];
