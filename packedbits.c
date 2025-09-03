@@ -53,16 +53,15 @@ delete_pbits(pbits_t** self)
 int
 pbits_push(pbits_t* self, uint64_t value, uint8_t count)
 {
-  uint8_t offset = (count <= CHAR_BIT) ? 0 : count - CHAR_BIT;
   if (self->bit_ > 0)
   {
     uint8_t remaider = CHAR_BIT - self->bit_;
     uint8_t n = (count < remaider) ? count : remaider;
-    uint8_t bits = (uint8_t)(value >> (offset + n));
+    uint8_t bits = (uint8_t)(value >> (count - n));
+    //bits &= 0xFF >> (CHAR_BIT - n);
     self->buffer_ |= bits << (CHAR_BIT - self->bit_ - n);
     self->bit_ += n;
     count -= n;
-    offset = (count <= CHAR_BIT) ? 0 : count - CHAR_BIT;
     if (self->bit_ == CHAR_BIT)
     {
       int err = harray_push(self->array_, &self->buffer_, 1);
@@ -75,6 +74,7 @@ pbits_push(pbits_t* self, uint64_t value, uint8_t count)
       self->bit_ = 0;
     }
   }
+  uint8_t offset = (count <= CHAR_BIT) ? 0 : count - CHAR_BIT;
   while (count >= CHAR_BIT)
   {
     uint8_t byte = (uint8_t)(value >> offset);

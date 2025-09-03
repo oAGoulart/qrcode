@@ -108,9 +108,8 @@ static __inline__ void
 encodeheader_(qrcode_t* self, csubset_t s, size_t next)
 {
   pbits_push(self->bits_, s, 4);
-  pbits_push(
-    self->bits_, next,
-    maximum_count_(self->version_, s));
+  const uint8_t max = maximum_count_(self->version_, s);
+  pbits_push(self->bits_, next, max);
 }
 
 static __inline__ uint8_t
@@ -188,14 +187,14 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     vnum - 1 : MAX_VERSION - 1;
   size_t strcount = __builtin_strlen(str);
   // NOTE: initial version selection
-  uint8_t ui8 = 0;
+  size_t i = 0;
   if (vnum != version)
   {
-    for (; ui8 <= version; ui8++)
+    for (; i <= version; i++)
     {
-      if (strcount <= cwmax[ui8])
+      if (strcount <= cwmax[i])
       {
-        version = ui8;
+        version = i;
         break;
       }
     }
@@ -231,8 +230,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
         }
       }
     }
-    size_t i = 0;
-    for (; i < strcount; i++)
+    for (i = 0; i < strcount; i++)
     {
       if (switched)
       {
@@ -352,27 +350,27 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       eprintf("optimized data length is larger than non-optimized");
       return ENOTRECOVERABLE;
     }
-    for (ui8 = version; ui8 > 0; ui8--)
+    for (i = version; i > 0; i--)
     {
-      if (cwmin <= cwmax[ui8 - 1])
+      if (cwmin <= cwmax[i - 1])
       {
         continue;
       }
       break;
     }
-    version = ui8;
+    version = i;
     (*self)->version_ = version;
   }
   else
   {
     encodeheader_(*self, SUBSET_BYTE, strcount);
-    size_t i = 0;
-    for (; i < strcount; i++)
+    for (i = 0; i < strcount; i++)
     {
       // TODO: change to 64bits
       pbits_push((*self)->bits_, str[i], 8);
     }
   }
+  pbits_flush((*self)->bits_);
   size_t datalen = harray_length(arr);
   if (datalen > cwmax[version] + 2)
   {
@@ -380,19 +378,17 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     delete_qrcode(self);
     return EINVAL;
   }
-  size_t i = 0;
-  for (; i < (cwmax[version] + 2) - datalen; i++)
+  for (i = 0; i < (cwmax[version] + 2) - datalen; i++)
   {
     // NOTE: padding bytes
     // TODO: change to 64bits
     pbits_push((*self)->bits_, 0, 8);
   }
-  pbits_flush((*self)->bits_);
   datalen = harray_length(arr);
   uint16_t offset = 0;
-  for (ui8 = 0; ui8 < version; ui8++)
+  for (i = 0; i < version; i++)
   {
-    offset += ecclen[ui8] + 1;
+    offset += ecclen[i] + 1;
   }
   const uint8_t* gen = rsgen + offset;
   if (verbose)
@@ -422,33 +418,33 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     pinfo("Calculated codewords (%zu):", datalen);
     printf("0x%x", harray_byte(arr, 0));
-    for (ui8 = 1; ui8 < datalen; ui8++)
+    for (i = 1; i < datalen; i++)
     {
-      printf(", 0x%x", harray_byte(arr, ui8));
+      printf(", 0x%x", harray_byte(arr, i));
     }
     puts("");
   }
 
   pdebug("applying XOR masks");
   __builtin_memset((*self)->masks_, 0, sizeof((*self)->masks_));
-  for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
+  for (i = 0; i < NUM_MASKS; i++)
   {
-    err = create_qrmask(&(*self)->masks_[ui8], version, ui8);
+    err = create_qrmask(&(*self)->masks_[i], version, i);
     if (err)
     {
       delete_qrcode(self);
       return err;
     }
   }
-  for (ui8 = 0; ui8 < datalen; ui8++)
+  for (i = 0; i < datalen; i++)
   {
-    offset = ui8 * 8;
+    offset = i * 8;
     // NOTE: bitstream goes from bit 7 to bit 0
     int8_t bit = 7;
     for (; bit >= 0; bit--)
     {
       uint8_t module =
-        (harray_byte(arr, ui8) & 1 << bit) >> bit & 1;
+        (harray_byte(arr, i) & 1 << bit) >> bit & 1;
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
@@ -460,12 +456,12 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   // NOTE: padding bits, MUST check xor
   if (version > 0)
   {
-    for (ui8 = 0; ui8 < NUM_PADBITS; ui8++)
+    for (i = 0; i < NUM_PADBITS; i++)
     {
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
-        uint16_t index = (uint16_t)(datalen * 8) + ui8;
+        uint16_t index = (uint16_t)(datalen * 8) + i;
         qrmask_set((*self)->masks_[uj8], index, MASK_LIGHT);
       }
     }
@@ -474,18 +470,18 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   pdebug("calculating masks penalty");
   uint16_t minscore = UINT16_MAX;
   uint8_t chosen = 0;
-  for (ui8 = 0; ui8 < NUM_MASKS; ui8++)
+  for (i = 0; i < NUM_MASKS; i++)
   {
-    uint16_t score = qrmask_penalty((*self)->masks_[ui8]);
-    qrmask_apply((*self)->masks_[ui8]);
+    uint16_t score = qrmask_penalty((*self)->masks_[i]);
+    qrmask_apply((*self)->masks_[i]);
     if (score < minscore)
     {
       minscore = score;
-      chosen = ui8;
+      chosen = i;
     }
     if (verbose)
     {
-      pinfo("Mask [%hhu] penalty: %hu", ui8, score);
+      pinfo("Mask [%zu] penalty: %u", i, score);
     }
   }
   (*self)->chosen_ = chosen;
@@ -502,10 +498,10 @@ delete_qrcode(qrcode_t** self)
   if (*self != NULL)
   {
     delete_pbits(&(*self)->bits_);
-    uint8_t ui8 = 0;
-    for (; ui8 < NUM_MASKS; ui8++)
+    uint8_t i = 0;
+    for (; i < NUM_MASKS; i++)
     {
-      delete_qrmask(&(*self)->masks_[ui8]);
+      delete_qrmask(&(*self)->masks_[i]);
     }
     free(*self);
     *self = NULL;
