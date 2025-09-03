@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 - Add `--optimize` option to reduce data size
 - Add numeric and alphanumeric encoding in addition to byte
 - Add platform and architecture to `--version` option output
+- Add support for FreeBSD, Solaris and macOS
+- Add `heaparray` and `packedbits` interfaces
 - Change error messages to comply with GNU style guide
 - Change `-G` option name to `-K`
 - Change compiler to `clang`
