@@ -38,10 +38,10 @@ which_subset_(const uint8_t c)
   return SUBSET_BYTE;
 }
 
-static __inline__ uint32_t __attribute__((__nonnull__))
-count_segment_(const char* __restrict__ str, const csubset_t subset)
+static __inline__ size_t __attribute__((__nonnull__))
+count_segment_(const char* str, const csubset_t subset)
 {
-  uint32_t i = 0;
+  size_t i = 0;
   for (; str[i] != '\0'; i++)
   {
     if (which_subset_(str[i]) != subset)
@@ -106,7 +106,7 @@ struct qrcode_s
 };
 
 static __inline__ void
-encodeheader_(qrcode_t* self, csubset_t s, uint32_t next)
+encodeheader_(qrcode_t* self, csubset_t s, size_t next)
 {
   pbits_push(self->bits_, s, 4);
   pbits_push(
@@ -114,7 +114,7 @@ encodeheader_(qrcode_t* self, csubset_t s, uint32_t next)
     maximum_count_(self->version_, s));
 }
 
-static uint8_t
+static __inline__ uint8_t
 frombyte_(uint8_t b)
 {
   switch (b)
@@ -214,7 +214,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     pdebug("optimizing data bits");
     if (which_subset_(str[0]) != SUBSET_BYTE)
     {
-      uint32_t next = count_segment_(str, SUBSET_ALPHA);
+      size_t next = count_segment_(str, SUBSET_ALPHA);
       if (next >= minimum_segment_(version, 0))
       {
         encode = SUBSET_ALPHA;
@@ -237,7 +237,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     {
       if (switched)
       {
-        uint32_t next = count_segment_(&str[i], encode);
+        size_t next = count_segment_(&str[i], encode);
         encodeheader_(*self, encode, next);
         switched = false;
       }
@@ -275,13 +275,15 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
         }
         else
         {
-          uint32_t seg = count_segment_(
-            &str[i + 1], SUBSET_NUMERIC);
-          if (which_subset_(str[seg]) == SUBSET_ALPHA &&
-              seg - i >= minimum_segment_(version, 3))
+          size_t seg = count_segment_(&str[i + 1], SUBSET_NUMERIC);
+          if (seg > 0)
           {
-            encode = SUBSET_NUMERIC;
-            switched = true;
+            if (which_subset_(str[i + 1 + seg]) == SUBSET_ALPHA &&
+                seg + 1 >= minimum_segment_(version, 3))
+            {
+              encode = SUBSET_NUMERIC;
+              switched = true;
+            }
           }
         }
         if (blen == 2 || switched)
@@ -304,30 +306,41 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       default:
       {
         pbits_push((*self)->bits_, str[i], 8);
-        uint32_t seg = count_segment_(&str[i + 1], SUBSET_NUMERIC);
-        csubset_t subset = which_subset_(str[seg]);
-        if (subset == SUBSET_BYTE &&
-            seg - i >= minimum_segment_(version, 4))
+        size_t seg = count_segment_(&str[i + 1], SUBSET_NUMERIC);
+        if (seg != 0)
         {
-          encode = SUBSET_NUMERIC;
-          switched = true;
-          break;
+          csubset_t subset = which_subset_(str[i + 1 + seg]);
+          if (subset == SUBSET_BYTE &&
+              seg + 1 >= minimum_segment_(version, 4))
+          {
+            encode = SUBSET_NUMERIC;
+            switched = true;
+            break;
+          }
+          if (subset == SUBSET_ALPHA &&
+              seg + 1 >= minimum_segment_(version, 5))
+          {
+            // NOTE: redundant if MAX_VERSION < 10
+            //       keep it for further updates
+            encode = SUBSET_NUMERIC;
+            switched = true;
+            break;
+          }
         }
-        if (subset == SUBSET_ALPHA &&
-            seg - i >= minimum_segment_(version, 5))
+        else
         {
-          // NOTE: redundant if MAX_VERSION < 10
-          //       keep it for further updates
-          encode = SUBSET_NUMERIC;
-          switched = true;
-          break;
-        }
-        seg = count_segment_(&str[i + 1], SUBSET_ALPHA);
-        if (subset == SUBSET_BYTE &&
-            seg - i >= minimum_segment_(version, 6))
-        {
-          encode = SUBSET_ALPHA;
-          switched = true;
+          seg = count_segment_(&str[i + 1], SUBSET_ALPHA);
+          if (seg == 0)
+          {
+            break;
+          }
+          csubset_t subset = which_subset_(str[i + 1 + seg]);
+          if (subset == SUBSET_BYTE &&
+              seg + 1 >= minimum_segment_(version, 6))
+          {
+            encode = SUBSET_ALPHA;
+            switched = true;
+          }
         }
         break;
       } // default
