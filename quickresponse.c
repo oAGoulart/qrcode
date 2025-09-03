@@ -387,6 +387,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     // TODO: change to 64bits
     pbits_push((*self)->bits_, 0, 8);
   }
+  pbits_flush((*self)->bits_);
   datalen = harray_length(arr);
   uint16_t offset = 0;
   for (ui8 = 0; ui8 < version; ui8++)
