@@ -267,7 +267,6 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       default:
       {
-        pbits_push((*self)->bits_, str[i], 8);
         if (seg.type == SUBSET_NUMERIC)
         {
           subset_t subset = which_subset_(str[i + 1 + seg.count]);
