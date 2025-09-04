@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -16,14 +17,20 @@ extern const uint8_t logt[];
 extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
 
-typedef enum csubset_e
+typedef enum subset_e
 {
   SUBSET_NUMERIC = 1,
   SUBSET_ALPHA   = 2,
   SUBSET_BYTE    = 4
-} csubset_t;
+} __attribute__((packed)) subset_t;
 
-static __inline__ csubset_t __attribute__((__const__))
+typedef struct segment_s
+{
+  subset_t type;
+  size_t count;
+} segment_t;
+
+static __inline__ subset_t __attribute__((__const__))
 which_subset_(const uint8_t c)
 {
   if (c >= 0x30 && c <= 0x39)
@@ -37,9 +44,11 @@ which_subset_(const uint8_t c)
   return SUBSET_BYTE;
 }
 
-static __inline__ size_t __attribute__((__nonnull__))
-count_segment_(const char* str, const csubset_t subset)
+static __inline__ segment_t __attribute__((__nonnull__))
+count_segment_(const char* str)
 {
+  const subset_t subset = which_subset_(str[0]);
+  segment_t seg = { subset, 0 };
   size_t i = 0;
   for (; str[i] != '\0'; i++)
   {
@@ -48,7 +57,8 @@ count_segment_(const char* str, const csubset_t subset)
       break;
     }
   }
-  return i;
+  seg.count = i;
+  return seg;
 }
 
 static __inline__ uint8_t __attribute__((__const__))
@@ -76,7 +86,7 @@ minimum_segment_(const uint8_t version, const uint8_t iteration)
 }
 
 static __inline__ uint8_t __attribute__((__const__))
-maximum_count_(const uint8_t version, csubset_t subset)
+maximum_count_(const uint8_t version, subset_t subset)
 {
   static const uint8_t lengths[3][3] = {
     { 10, 9, 8 },
@@ -103,14 +113,6 @@ struct qrcode_s
   uint8_t chosen_;
   uint8_t version_;
 };
-
-static __inline__ void
-encodeheader_(qrcode_t* self, csubset_t s, size_t next)
-{
-  pbits_push(self->bits_, s, 4);
-  const uint8_t max = maximum_count_(self->version_, s);
-  pbits_push(self->bits_, next, max);
-}
 
 static __inline__ uint8_t
 frombyte_(uint8_t b)
@@ -201,56 +203,143 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
   (*self)->version_ = version;
 
-  pdebug("encoding data bits");
-  size_t cwmin = 0;
-  bool switched = true;
-  char bseg[4] = { '\0', '\0', '\0', '\0' };
-  uint8_t blen = 0;
-  csubset_t encode = SUBSET_BYTE;
+  pinfo("Queuing subset segments");
+  harray_t* segments = NULL;
+  create_harray(&segments, sizeof(segment_t));
+  segment_t segment = { SUBSET_BYTE, 0 };
   if (optimize)
   {
     pdebug("optimizing data bits");
-    if (which_subset_(str[0]) != SUBSET_BYTE)
+    segment_t seg = count_segment_(str);
+    segment.count = seg.count;
+    if (seg.type != SUBSET_BYTE)
     {
-      size_t next = count_segment_(str, SUBSET_ALPHA);
-      if (next >= minimum_segment_(version, 0))
+      if (seg.type == SUBSET_ALPHA &&
+          seg.count >= minimum_segment_(version, 0))
       {
-        encode = SUBSET_ALPHA;
+        segment.type = SUBSET_ALPHA;
       }
       else
       {
-        next = count_segment_(str, SUBSET_NUMERIC);
-        if (next >= minimum_segment_(version, 1))
+        if (seg.count >= minimum_segment_(version, 1))
         {
-          encode = SUBSET_NUMERIC;
+          segment.type = SUBSET_NUMERIC;
         }
         else
         {
-          encode = SUBSET_ALPHA;
+          segment.type = SUBSET_ALPHA;
         }
       }
     }
-    for (i = 0; i < strcount; i++)
+    bool pushseg = false;
+    for (i = segment.count; i < strcount; i++)
     {
-      if (switched)
+      seg = count_segment_(&str[i]);
+      if (seg.type == segment.type)
       {
-        size_t next = count_segment_(&str[i], encode);
-        encodeheader_(*self, encode, next);
-        switched = false;
+        i += seg.count - 1;
+        segment.count += seg.count;
+        continue;
       }
-      switch (encode)
+      switch (segment.type)
       {
       case SUBSET_NUMERIC:
       {
-        bseg[blen] = str[i];
-        blen++;
-        csubset_t subset = which_subset_(str[i + 1]);
-        if (subset != SUBSET_NUMERIC)
+        if (seg.type != SUBSET_NUMERIC)
         {
-          encode = subset;
-          switched = true;
+          pushseg = true;
         }
-        if (blen == 3 || switched)
+        break;
+      }
+      case SUBSET_ALPHA:
+      {
+        if (seg.type == SUBSET_BYTE)
+        {
+          pushseg = true;
+        }
+        else if (seg.type == SUBSET_NUMERIC &&
+                 seg.count > minimum_segment_(version, 3) &&
+                 which_subset_(str[i + 1 + seg.count]) == SUBSET_ALPHA)
+        {
+          pushseg = true;
+        }
+        break;
+      }
+      default:
+      {
+        pbits_push((*self)->bits_, str[i], 8);
+        if (seg.type == SUBSET_NUMERIC)
+        {
+          subset_t subset = which_subset_(str[i + 1 + seg.count]);
+          if (subset == SUBSET_BYTE &&
+              seg.count >= minimum_segment_(version, 4))
+          {
+            pushseg = true;
+          }
+          if (subset == SUBSET_ALPHA &&
+              seg.count >= minimum_segment_(version, 5))
+          {
+            pushseg = true;
+          }
+        }
+        else if (seg.type == SUBSET_ALPHA)
+        {
+          if (seg.count == 0)
+          {
+            break;
+          }
+          subset_t subset = which_subset_(str[i + 1 + seg.count]);
+          if (subset == SUBSET_BYTE &&
+              seg.count >= minimum_segment_(version, 6))
+          {
+            pushseg = true;
+          }
+        }
+        break;
+      } // default
+      } // switch
+      if (pushseg)
+      {
+        harray_push(segments, &segment, sizeof(segment_t));
+        segment = seg;
+        i += seg.count - 1;
+        pushseg = false;
+      }
+      else
+      {
+        segment.count++;
+      }
+    }
+    harray_push(segments, &segment, sizeof(segment_t));
+  }
+  else
+  {
+    segment.count = strcount;
+    harray_push(segments, &segment, sizeof(segment_t));
+  }
+
+  pinfo("Encoding data bits");
+  const size_t seglen = harray_length(segments) / sizeof(segment_t);
+  size_t k = 0;
+  for (i = 0; i < seglen; i++)
+  {
+    harray_at(segments, i, sizeof(segment_t), &segment);
+    pbits_push((*self)->bits_, segment.type, 4);
+    const uint8_t max = maximum_count_((*self)->version_,
+                                       segment.type);
+    pbits_push((*self)->bits_, segment.count, max);
+    char bseg[4] = { '\0', '\0', '\0', '\0' };
+    uint8_t blen = 0;
+    size_t j = 0;
+    for (; j < segment.count; j++)
+    {
+      switch (segment.type)
+      {
+      case SUBSET_NUMERIC:
+      {
+        bseg[blen] = str[k + j];
+        blen++;
+        if (blen == 3 || j == segment.count - 1)
         {
           const uint8_t maxb[3] = { 4, 7, 10 };
           bseg[blen] = '\0';
@@ -262,39 +351,20 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       case SUBSET_ALPHA:
       {
-        bseg[blen] = str[i];
+        bseg[blen] = str[k + j];
         blen++;
-        csubset_t subset = which_subset_(str[i + 1]);
-        if (subset == SUBSET_BYTE)
-        {
-          encode = subset;
-          switched = true;
-        }
-        else
-        {
-          size_t seg = count_segment_(&str[i + 1], SUBSET_NUMERIC);
-          if (seg > 0)
-          {
-            if (which_subset_(str[i + 1 + seg]) == SUBSET_ALPHA &&
-                seg + 1 >= minimum_segment_(version, 3))
-            {
-              encode = SUBSET_NUMERIC;
-              switched = true;
-            }
-          }
-        }
-        if (blen == 2 || switched)
+        if (blen == 2 || j == segment.count - 1)
         {
           if (blen == 2)
           {
-            uint16_t v = (uint16_t)frombyte_(bseg[0]) * 45 +
-                         (uint16_t)frombyte_(bseg[1]);
-            pbits_push((*self)->bits_, v, 11);
+            uint16_t value = (uint16_t)frombyte_(bseg[0]) * 45 +
+                             (uint16_t)frombyte_(bseg[1]);
+            pbits_push((*self)->bits_, value, 11);
           }
           else
           {
-            uint8_t v = frombyte_(bseg[0]);
-            pbits_push((*self)->bits_, v, 6);
+            uint8_t value = frombyte_(bseg[0]);
+            pbits_push((*self)->bits_, value, 6);
           }
           blen = 0;
         }
@@ -302,76 +372,27 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       default:
       {
-        pbits_push((*self)->bits_, str[i], 8);
-        size_t seg = count_segment_(&str[i + 1], SUBSET_NUMERIC);
-        if (seg != 0)
-        {
-          csubset_t subset = which_subset_(str[i + 1 + seg]);
-          if (subset == SUBSET_BYTE &&
-              seg + 1 >= minimum_segment_(version, 4))
-          {
-            encode = SUBSET_NUMERIC;
-            switched = true;
-            break;
-          }
-          if (subset == SUBSET_ALPHA &&
-              seg + 1 >= minimum_segment_(version, 5))
-          {
-            // NOTE: redundant if MAX_VERSION < 10
-            //       keep it for further updates
-            encode = SUBSET_NUMERIC;
-            switched = true;
-            break;
-          }
-        }
-        else
-        {
-          seg = count_segment_(&str[i + 1], SUBSET_ALPHA);
-          if (seg == 0)
-          {
-            break;
-          }
-          csubset_t subset = which_subset_(str[i + 1 + seg]);
-          if (subset == SUBSET_BYTE &&
-              seg + 1 >= minimum_segment_(version, 6))
-          {
-            encode = SUBSET_ALPHA;
-            switched = true;
-          }
-        }
+        pbits_push((*self)->bits_, str[k + j], 8);
         break;
       } // default
       } // switch
     }
-    // NOTE: select min version, with new compact size
-    cwmin = harray_length(arr);
-    if (cwmin > cwmax[version] + 2)
-    {
-      eprintf("optimized data length is larger than non-optimized");
-      return ENOTRECOVERABLE;
-    }
-    for (i = version; i > 0; i--)
-    {
-      if (cwmin <= cwmax[i - 1])
-      {
-        continue;
-      }
-      break;
-    }
-    version = i;
-    (*self)->version_ = version;
-  }
-  else
-  {
-    encodeheader_(*self, SUBSET_BYTE, strcount);
-    for (i = 0; i < strcount; i++)
-    {
-      // TODO: change to 64bits
-      pbits_push((*self)->bits_, str[i], 8);
-    }
+    k += segment.count;
   }
   pbits_flush((*self)->bits_);
+  delete_harray(&segments);
+
   size_t datalen = harray_length(arr);
+  for (i = version; i > 0; i--)
+  {
+    if (datalen <= cwmax[i - 1])
+    {
+      continue;
+    }
+    break;
+  }
+  version = i;
+  (*self)->version_ = version;
   if (datalen > cwmax[version] + 2)
   {
     eprintf("data must be less than %hhu characters long", cwmax[version]);

@@ -68,7 +68,7 @@ delete_harray(harray_t** self)
 }
 
 int
-harray_push(harray_t* self, uint8_t* __restrict__ obj, size_t size)
+harray_push(harray_t* self, void* __restrict__ obj, size_t size)
 {
   if (self->available_ < size)
   {
@@ -118,6 +118,18 @@ harray_pop(harray_t* self, size_t size)
   return 0;
 }
 
+int
+harray_at(harray_t* self, size_t index, size_t size, void* out)
+{
+  if (index * size > self->length_)
+  {
+    eprintf("out of bonds index %zu", index);
+    return EINVAL;
+  }
+  __builtin_memcpy(out, self->data_ + index * size, size);
+  return 0;
+}
+
 __inline__ size_t
 harray_length(harray_t* self)
 {
@@ -125,14 +137,14 @@ harray_length(harray_t* self)
 }
 
 __inline__ void
-harray_copy(harray_t* self, uint8_t* out, size_t outlen)
+harray_copy(harray_t* self, void* out, size_t outlen)
 {
   size_t n = (outlen < self->length_) ? outlen : self->length_;
   __builtin_memcpy(out, self->data_, n);
 }
 
 int
-harray_replace(harray_t *self, size_t at, uint8_t *__restrict obj, size_t size)
+harray_replace(harray_t* self, size_t at, void* __restrict obj, size_t size)
 {
   if (at + size > self->length_)
   {
@@ -170,7 +182,7 @@ harray_quad(harray_t* self, const size_t index)
 
 size_t
 harray_first(harray_t* self, size_t from,
-             uint8_t* __restrict__ obj, size_t size)
+             void* __restrict__ obj, size_t size)
 {
   if (from + size > self->length_)
   {
@@ -179,7 +191,7 @@ harray_first(harray_t* self, size_t from,
     return ERANGE;
   }
   char* ch = __builtin_char_memchr((char*)self->data_,
-                                   *obj, self->length_ - size);
+                                   *(char*)obj, self->length_ - size);
   while (ch != NULL)
   {
     ptrdiff_t diff = (uintptr_t)ch - (uintptr_t)self->data_;
@@ -187,7 +199,8 @@ harray_first(harray_t* self, size_t from,
     {
       return diff;
     }
-    ch = __builtin_char_memchr(ch + 1, *obj, self->length_ - diff - size);
+    ch = __builtin_char_memchr(ch + 1, *(char*)obj,
+                               self->length_ - diff - size);
   }
   return -1;
 }

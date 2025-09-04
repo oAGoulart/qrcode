@@ -12,17 +12,19 @@ __attribute__((__nonnull__)) void
 delete_harray(harray_t** self);
 
 __attribute__((__nonnull__)) int
-harray_push(harray_t* self, uint8_t* __restrict__ obj, size_t size);
+harray_push(harray_t* self, void* __restrict__ obj, size_t size);
 __attribute__((__nonnull__)) int
 harray_pop(harray_t* self, size_t size);
+__attribute__((__nonnull__(1))) int
+harray_at(harray_t* self, size_t index, size_t size, void* out);
 __attribute__((__nonnull__)) size_t
 harray_length(harray_t* self);
 
 __attribute__((__nonnull__)) void
-harray_copy(harray_t* self, uint8_t* out, size_t outlen);
+harray_copy(harray_t* self, void* dst, size_t dstlen);
 __attribute__((__nonnull__)) int
 harray_replace(harray_t* self, size_t at,
-               uint8_t* __restrict__ obj, size_t size);
+               void* __restrict__ obj, size_t size);
 
 __attribute__((__nonnull__)) uint8_t
 harray_byte(harray_t* self, const size_t index);
@@ -35,6 +37,6 @@ harray_quad(harray_t* self, const size_t index);
 
 __attribute__((__nonnull__)) size_t
 harray_first(harray_t* self, size_t from,
-             uint8_t* __restrict__ obj, size_t size);
+             void* __restrict__ obj, size_t size);
 
 #endif
