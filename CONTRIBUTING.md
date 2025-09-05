@@ -4,8 +4,8 @@ All contributions that furthers this project's **objective** are welcome.
 As of right now, this project needs quantitative testing of generated QR codes.
 
 How to contribute with **testing**:
-1. Compile the code with `make` (use MinGW or other on Windows);
-1. Generate _at least_ two QR codes for each version and try to scan it with your mobile device;
+1. Compile the code with `make debug`;
+1. Generate _at least_ ten QR codes for each version and try to scan it with your mobile device, try edge cases, like switching subsets;
 1. Open an issue in this repo with your results (even if all scans succeeded).
 
 How to contribute with **code**:

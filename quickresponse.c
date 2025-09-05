@@ -167,7 +167,6 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     eprintf("pointer to garbage in *self");
     return EINVAL;
   }
-
   *self = (qrcode_t*)malloc(sizeof(qrcode_t));
   if (*self == NULL)
   {
@@ -184,7 +183,6 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     return err;
   }
   harray_t* arr = pbits_bytes((*self)->bits_);
-
   uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ?
     vnum - 1 : MAX_VERSION - 1;
   size_t strcount = __builtin_strlen(str);
@@ -202,10 +200,18 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
   }
   (*self)->version_ = version;
-
-  pinfo("Queuing subset segments");
+  if (verbose)
+  {
+    pinfo("Queuing subset segments");
+  }
   harray_t* segments = NULL;
-  create_harray(&segments, sizeof(segment_t));
+  err = create_harray(&segments, sizeof(segment_t));
+  if (err)
+  {
+    eprintf("cannot create heaparray for subset segments");
+    delete_qrcode(self);
+    return err;
+  }
   segment_t segment = { SUBSET_BYTE, 0 };
   if (optimize)
   {
@@ -317,7 +323,10 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     harray_push(segments, &segment, sizeof(segment_t));
   }
 
-  pinfo("Encoding data bits");
+  if (verbose)
+  {
+    pinfo("Encoding data bits");
+  }
   const size_t seglen = harray_length(segments) / sizeof(segment_t);
   size_t k = 0;
   for (i = 0; i < seglen; i++)

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.11.0] - 2025-09-05
+
+Add subset mode switching and data bits packing
+
 - Add `--optimize` option to reduce data size
 - Add numeric and alphanumeric encoding in addition to byte
 - Add platform and architecture to `--version` option output
@@ -94,7 +98,8 @@ Initial release.
 - Added Version 1 and 2 QR Codes
 
 
-[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.4.0..HEAD
+[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.11.0..HEAD
+[1.11.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.11.0
 [1.4.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.4.0
 [1.3.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.3.0
 [1.2.2]: https://github.com/oAGoulart/qrcode/releases/tag/v1.2.2
