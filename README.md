@@ -4,7 +4,7 @@
 [![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** Model 2, from version 1 to 5, with EC level L, as specified in
+**Objective:** Model 2, from version 1 to 5, byte/num/alpha modes, with EC level L, as specified in
 ISO/IEC 18004:2024. There are no dependencies, generator can be built from code
 on any platform. Output inline (stdout), bitmap, or vectors (svg).
 

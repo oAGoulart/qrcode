@@ -1,3 +1,4 @@
+#include <assert.h>
 #ifndef QUICKRESPONSE_H
 #define QUICKRESPONSE_H 1
 
@@ -7,7 +8,7 @@ typedef enum imgfmt_e
 {
   FMT_BMP,
   FMT_SVG
-} imgfmt_t;
+} __attribute__((packed)) imgfmt_t;
 
 typedef struct qrcode_s qrcode_t;
 
