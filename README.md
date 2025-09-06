@@ -128,11 +128,10 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 ## Roadmap
 
 Planned features:
-1. encoding switching (100%, next release)
-2. higher EC levels (TBD)
+1. higher EC levels (TBD)
    - [ ] lookup tables
    - [ ] codewords splitting
-3. higher Version codes (TBD)
+2. higher Version codes (TBD)
 
 ## Disclaimer
 QR Code, iQR Code SQRC and FrameQR are registered trademarks
@@ -146,4 +145,5 @@ ISO/IEC 2024 – All rights reserved.
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 2. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
