@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "quickresponse.h"
 #include "shared.h"
 
@@ -39,28 +40,28 @@ static const targ_t arge_[NUM_ARGS] = {
 static __inline__ int
 phelp_(const char* __restrict__ cmdln)
 {
-  fprintf(stderr, "Usage: %s [OPTIONS] <string>" __nl
-    "OPTIONS:" __nl
-    "  --nocopy     omit copyright header from inline printing" __nl
-    "  --noinline   do not print any inline code, disregards --raw" __nl
-    "  --optimize   reduce data size, encode numeric, alphanumeric, byte" __nl
-    "                 segments separately (if any)" __nl
-    "  --raw        print generated code with chars 1, 0 (no box-chars)" __nl
-    "  --verbose    print runtime information for generated values" __nl
-    "  --version    show generator's version and build information" __nl
-    "  -m <uint>    force choice of mask <0-7>, regardless of penalty" __nl
-    "  -s <uint>    scale image output <1-" __xstr(MAX_SCALE) "> times" __nl
-    "  -u <uint>    force use of version <1-" __xstr(MAX_VERSION) "> code"
-                      "(or lower, if" __nl
-    "                 used with --optimize)" __nl
-    "  -B <string>  create bitmap file with generated code" __nl
-    "  -K <string>  create scalable vector image, disregards -s" __nl,
+  fprintf(stderr, "Usage: %s [OPTIONS] <string>" _nl
+    "OPTIONS:" _nl
+    "  --nocopy     omit copyright header from inline printing" _nl
+    "  --noinline   do not print any inline code, disregards --raw" _nl
+    "  --optimize   reduce data size, encode numeric, alphanumeric, byte" _nl
+    "                 segments separately (if any)" _nl
+    "  --raw        print generated code with chars 1, 0 (no box-chars)" _nl
+    "  --verbose    print runtime information for generated values" _nl
+    "  --version    show generator's version and build information" _nl
+    "  -m <uint>    force choice of mask <0-7>, regardless of penalty" _nl
+    "  -s <uint>    scale image output <1-" _xstr(MAX_SCALE) "> times" _nl
+    "  -u <uint>    force use of version <1-" _xstr(MAX_VERSION) "> code"
+                      "(or lower, if" _nl
+    "                 used with --optimize)" _nl
+    "  -B <string>  create bitmap file with generated code" _nl
+    "  -K <string>  create scalable vector image, disregards -s" _nl,
     cmdln);
   return EINVAL;
 }
 
 int
-main(int argc, char* argv[])
+main(const int argc, char* argv[])
 {
 #if defined(_WIN32)
   // NOTE: to allow box-drawing characters
@@ -81,13 +82,11 @@ main(int argc, char* argv[])
   char* imgout = NULL;
 
   pdebug("started parsing cmdln arguments");
-  int i = 1;
-  for (; i < argc; i++)
+  for (int i = 1; i < argc; i++)
   {
     if (argv[i][0] == '-')
     {
-      size_t j = 0;
-      for (; j < NUM_ARGS; j++)
+      for (size_t j = 0; j < NUM_ARGS; j++)
       {
         if (!strcmp(argv[i], args_[j]))
         {
@@ -96,17 +95,17 @@ main(int argc, char* argv[])
           switch (arge_[j])
           {
           case ARG_MASK:
-            mask = (uint8_t)atoi(argv[i + 1]);
+            mask = strtol(argv[i + 1], NULL, 0);
             break;
           case ARG_VNUM:
-            vnum = (uint8_t)atoi(argv[i + 1]) - 1;
+            vnum = strtol(argv[i + 1], NULL, 0) - 1;
             break;
           case ARG_SCALE:
-            scale = (uint8_t)atoi(argv[i + 1]);
+            scale = strtol(argv[i + 1], NULL, 0);
             break;
           case ARG_BMP:
             imgfmt = FMT_BMP;
-            __attribute__ ((fallthrough));
+            __attribute__((fallthrough));
           case ARG_SVG:
             imgout = argv[i + 1];
             break;
@@ -128,19 +127,19 @@ main(int argc, char* argv[])
   pdebug("finished parsing cmdln arguments");
   if (options & ARG_VERSION)
   {
-    puts(PROJECT_TITLE " " PROJECT_VERSION __nl
+    puts(PROJECT_TITLE " " PROJECT_VERSION _nl
          "Built with Clang " __clang_version__ "@ " __DATE__ " " __TIME__);
     return EXIT_SUCCESS;
   }
   if (argc - argcount < NUM_MANDATORY + 1)
   {
-    eprintf("must provide " __xstr(NUM_MANDATORY) " mandatory argument(s)");
+    eprintf("must provide " _xstr(NUM_MANDATORY) " mandatory argument(s)");
     return phelp_(argv[0]);
   }
   if (!(options & ARG_NOCOPY))
   {
-    puts(PROJECT_TITLE " " PROJECT_VERSION __nl
-         PROJECT_COPYRIGHT __nl PROJECT_LICENSE __nl);
+    puts(PROJECT_TITLE " " PROJECT_VERSION _nl
+         PROJECT_COPYRIGHT _nl PROJECT_LICENSE _nl);
   }
 
   pdebug("creating qrcode object");

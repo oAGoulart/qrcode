@@ -2,27 +2,27 @@ import math
 import sys
 
 def generate_indexes(version: int) -> None:
-  if not (version > 0 and version < 6):
+  if not (0 < version < 6):
     raise ValueError("unsupported version.")
   order = 4 * version + 17
   num_bytes = [26, 44, 70, 100, 134]
   num_bits = num_bytes[version - 1] * 8 + (7 if version > 1 else 0)
 
-  def should_move(column: int) -> bool:
-    return column == 6
+  def should_move(col_: int) -> bool:
+    return col_ == 6
 
-  def should_flip(row: int, column: int, direction: int) -> bool:
-    if direction == -1:
-      return row == 0 or (row == 9 and (column < 9 or column > order - 9))
+  def should_flip(row_: int, col_: int, dir_: int) -> bool:
+    if dir_ == -1:
+      return row_ == 0 or (row_ == 9 and (col_ < 9 or col_ > order - 9))
     else:
-      return row == order - 1 or (row == order - 9 and column < 9)
+      return row_ == order - 1 or (row_ == order - 9 and col_ < 9)
 
-  def should_skip(row: int, column: int) -> bool:
-    if row == 6:
+  def should_skip(row_: int, col_: int) -> bool:
+    if row_ == 6:
       return True
     if version > 1:
-      if (row > order - 10 and row < order - 4) and\
-         (column > order - 10 and column < order - 4):
+      if (order - 10 < row_ < order - 4) and\
+         (order - 10 < col_ < order - 4):
         return True
     return False
 

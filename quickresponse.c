@@ -1,3 +1,5 @@
+#include "quickresponse.h"
+
 #include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -5,10 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "heaparray.h"
 #include "mask.h"
 #include "packedbits.h"
-#include "quickresponse.h"
 #include "shared.h"
 
 #define NUM_PADBITS 7
@@ -86,7 +88,7 @@ minimum_segment_(const uint8_t version, const uint8_t iteration)
 }
 
 static __inline__ uint8_t __attribute__((__const__))
-maximum_count_(const uint8_t version, subset_t subset)
+maximum_count_(const uint8_t version, const subset_t subset)
 {
   static const uint8_t lengths[3][3] = {
     { 10, 9, 8 },
@@ -115,7 +117,7 @@ struct qrcode_s
 };
 
 static __inline__ uint8_t
-frombyte_(uint8_t b)
+frombyte_(const uint8_t b)
 {
   switch (b)
   {
@@ -143,7 +145,7 @@ frombyte_(uint8_t b)
     {
       return b - 48;
     }
-    else if (b >= 65 && b <= 90)
+    if (b >= 65 && b <= 90)
     {
       return (b - 65) + 10;
     }
@@ -259,13 +261,10 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       case SUBSET_ALPHA:
       {
-        if (seg.type == SUBSET_BYTE)
-        {
-          pushseg = true;
-        }
-        else if (seg.type == SUBSET_NUMERIC &&
-                 seg.count > minimum_segment_(version, 3) &&
-                 which_subset_(str[i + 1 + seg.count]) == SUBSET_ALPHA)
+        if (seg.type == SUBSET_BYTE || (
+            seg.type == SUBSET_NUMERIC &&
+            seg.count > minimum_segment_(version, 3) &&
+            which_subset_(str[i + 1 + seg.count]) == SUBSET_ALPHA))
         {
           pushseg = true;
         }
@@ -338,8 +337,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     pbits_push((*self)->bits_, segment.count, max);
     char bseg[4] = { '\0', '\0', '\0', '\0' };
     uint8_t blen = 0;
-    size_t j = 0;
-    for (; j < segment.count; j++)
+    for (size_t j = 0; j < segment.count; j++)
     {
       switch (segment.type)
       {
@@ -434,8 +432,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   for (i = 0; i < datalen; i++)
   {
     uint8_t lead = ecc[i];
-    uint8_t j = 0;
-    for (; j <= ecclen[version]; j++)
+    for (uint8_t j = 0; j <= ecclen[version]; j++)
     {
       ecc[i + j] ^= alogt[(gen[j] + logt[lead]) % UINT8_MAX];
     }
@@ -469,8 +466,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     offset = i * 8;
     // NOTE: bitstream goes from bit 7 to bit 0
-    int8_t bit = 7;
-    for (; bit >= 0; bit--)
+    for (int8_t bit = 7; bit >= 0; bit--)
     {
       uint8_t module =
         (harray_byte(arr, i) & 1 << bit) >> bit & 1;
@@ -487,11 +483,10 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     for (i = 0; i < NUM_PADBITS; i++)
     {
-      uint8_t uj8 = 0;
-      for (; uj8 < NUM_MASKS; uj8++)
+      for (uint8_t j = 0; j < NUM_MASKS; j++)
       {
         uint16_t index = (uint16_t)(datalen * 8) + i;
-        qrmask_set((*self)->masks_[uj8], index, MASK_LIGHT);
+        qrmask_set((*self)->masks_[j], index, MASK_LIGHT);
       }
     }
   }
@@ -549,7 +544,7 @@ qrcode_forcemask(qrcode_t* self, int mask)
 }
 
 __inline__ void
-qrcode_print(qrcode_t* self, bool useraw)
+qrcode_print(const qrcode_t* self, bool useraw)
 {
   if (useraw)
   {
@@ -562,7 +557,7 @@ qrcode_print(qrcode_t* self, bool useraw)
 }
 
 int
-qrcode_output(qrcode_t* self, imgfmt_t fmt, int scale,
+qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
               const char* __restrict__ filename)
 {
   scale = (scale == -1) ? 1 : scale;

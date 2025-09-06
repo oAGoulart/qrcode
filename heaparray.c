@@ -1,16 +1,17 @@
-#include <stddef.h>
+#include "heaparray.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "heaparray.h"
+
 #include "shared.h"
 
 #define ARRAY_SIZE 0x20u
 
 static __inline__ size_t __attribute__((__const__))
-align_(size_t size)
+align_(const size_t size)
 {
-  size_t remainder = size % ARRAY_SIZE;
+  const size_t remainder = size % ARRAY_SIZE;
   return (remainder > 0) ? (size - remainder) + ARRAY_SIZE : size;
 }
 
@@ -22,7 +23,7 @@ struct harray_s
 };
 
 int
-create_harray(harray_t** self, size_t size)
+create_harray(harray_t** self, const size_t size)
 {
   if (*self != NULL)
   {
@@ -68,12 +69,12 @@ delete_harray(harray_t** self)
 }
 
 int
-harray_push(harray_t* self, void* __restrict__ obj, size_t size)
+harray_push(harray_t* self, const void* __restrict__ obj, size_t size)
 {
   if (self->available_ < size)
   {
     const size_t asize = align_(self->length_ + size);
-    uint8_t* tmp = (uint8_t*)realloc(self->data_, asize);
+    uint8_t* tmp = realloc(self->data_, asize);
     if (tmp == NULL)
     {
       eprintf("cannot re-allocate array to %zu bytes", asize);
@@ -94,7 +95,7 @@ harray_push(harray_t* self, void* __restrict__ obj, size_t size)
 }
 
 int
-harray_pop(harray_t* self, size_t size)
+harray_pop(harray_t* self, const size_t size)
 {
   if (size > self->length_)
   {
@@ -107,7 +108,7 @@ harray_pop(harray_t* self, size_t size)
   if (self->available_ > ARRAY_SIZE)
   {
     const size_t asize = align_(self->length_);
-    uint8_t* tmp = (uint8_t*)realloc(self->data_, asize);
+    uint8_t* tmp = realloc(self->data_, asize);
     if (tmp != NULL)
     {
       // NOTE: no error otherwise, since shrinking is optional
@@ -119,7 +120,8 @@ harray_pop(harray_t* self, size_t size)
 }
 
 int
-harray_at(harray_t* self, size_t index, size_t size, void* out)
+harray_at(const harray_t* self, const size_t index,
+          size_t size, void* out)
 {
   if (index * size > self->length_)
   {
@@ -131,20 +133,21 @@ harray_at(harray_t* self, size_t index, size_t size, void* out)
 }
 
 __inline__ size_t
-harray_length(harray_t* self)
+harray_length(const harray_t* self)
 {
   return self->length_;
 }
 
 __inline__ void
-harray_copy(harray_t* self, void* out, size_t outlen)
+harray_copy(const harray_t* self, void* dst, const size_t dstlen)
 {
-  size_t n = (outlen < self->length_) ? outlen : self->length_;
-  __builtin_memcpy(out, self->data_, n);
+  size_t n = (dstlen < self->length_) ? dstlen : self->length_;
+  __builtin_memcpy(dst, self->data_, n);
 }
 
 int
-harray_replace(harray_t* self, size_t at, void* __restrict obj, size_t size)
+harray_replace(harray_t* self, const size_t at,
+               const void* __restrict obj, size_t size)
 {
   if (at + size > self->length_)
   {
@@ -157,31 +160,31 @@ harray_replace(harray_t* self, size_t at, void* __restrict obj, size_t size)
 }
 
 __inline__ uint8_t
-harray_byte(harray_t* self, const size_t index)
+harray_byte(const harray_t* self, const size_t index)
 {
   return self->data_[index];
 }
 
 __inline__ uint16_t
-harray_short(harray_t* self, const size_t index)
+harray_short(const harray_t* self, const size_t index)
 {
   return *(uint16_t*)&self->data_[index];
 }
 
 __inline__ uint32_t
-harray_long(harray_t* self, const size_t index)
+harray_long(const harray_t* self, const size_t index)
 {
   return *(uint32_t*)&self->data_[index];
 }
 
 __inline__ uint64_t
-harray_quad(harray_t* self, const size_t index)
+harray_quad(const harray_t* self, const size_t index)
 {
   return *(uint64_t*)&self->data_[index];
 }
 
 size_t
-harray_first(harray_t* self, size_t from,
+harray_first(const harray_t* self, const size_t from,
              void* __restrict__ obj, size_t size)
 {
   if (from + size > self->length_)
@@ -194,7 +197,7 @@ harray_first(harray_t* self, size_t from,
                                    *(char*)obj, self->length_ - size);
   while (ch != NULL)
   {
-    ptrdiff_t diff = (uintptr_t)ch - (uintptr_t)self->data_;
+    const ptrdiff_t diff = (ptrdiff_t)(ch - (uintptr_t)self->data_);
     if (__builtin_memcmp(ch, obj, size) == 0)
     {
       return diff;

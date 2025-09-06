@@ -1,9 +1,9 @@
 #include <limits.h>
-#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "mask.h"
 #include "shared.h"
 
@@ -56,10 +56,9 @@ static __inline__ int __attribute__((__nonnull__))
 colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
         const uint16_t n, const uint8_t arr[n])
 {
-  uint16_t i = 0;
-  for (; i < n; i++)
+  for (uint16_t i = 0; i < n; i++)
   {
-    int diff = v[i * order] - arr[i];
+    const int diff = v[i * order] - arr[i];
     if (diff != 0)
     {
       return diff;
@@ -69,15 +68,14 @@ colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
 }
 
 static void __attribute__((__nonnull__))
-mask_double_(const uint8_t* __restrict__ v, uint8_t order)
+mask_double_(const uint8_t* __restrict__ v, const uint8_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
   uint8_t top = 0;
-  uint8_t bottom = 0;
   uint16_t i = 0;
-  for (bottom = order; top < order; top++, bottom++)
+  for (uint8_t bottom = order; top < order; top++, bottom++)
   {
-    uint8_t ch_case = (uint8_t)(v[top] << 1) + v[bottom];
+    const uint8_t ch_case = (uint8_t)(v[top] << 1) + v[bottom];
     switch (ch_case)
     {
     case 0:
@@ -109,17 +107,16 @@ mask_double_(const uint8_t* __restrict__ v, uint8_t order)
   if (i > 0)
   {
     str[i + 1] = '\0';
-    printf("    %s    " __nl, str);
+    printf("    %s    " _nl, str);
   }
 }
 
 static void __attribute__((__nonnull__))
-mask_single_(const uint8_t* __restrict__ v, uint8_t order)
+mask_single_(const uint8_t* __restrict__ v, const uint8_t order)
 {
   char str[(order * sizeof(uint32_t)) + 1];
-  uint8_t top = 0;
   uint16_t i = 0;
-  for (; top < order; top++)
+  for (uint8_t top = 0; top < order; top++)
   {
     if (v[top] == 0)
     {
@@ -135,14 +132,14 @@ mask_single_(const uint8_t* __restrict__ v, uint8_t order)
   if (i > 0)
   {
     str[i + 1] = '\0';
-    printf("    %s    " __nl, str);
+    printf("    %s    " _nl, str);
   }
 }
 
 static void __attribute__((__nonnull__))
 place_finder_(qrmask_t* self)
 {
-  const uint8_t finder[7][7] = {
+  static const uint8_t finder[7][7] = {
     { 1, 1, 1, 1, 1, 1, 1 },
     { 1, 0, 0, 0, 0, 0, 1 },
     { 1, 0, 1, 1, 1, 0, 1 },
@@ -151,8 +148,7 @@ place_finder_(qrmask_t* self)
     { 1, 0, 0, 0, 0, 0, 1 },
     { 1, 1, 1, 1, 1, 1, 1 },
   };
-  size_t i = 0;
-  for (; i < 7; i++)
+  for (size_t i = 0; i < 7; i++)
   {
     __builtin_memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
     __builtin_memcpy(&self->v_[(self->order_ - 7u) + self->order_ * i],
@@ -167,16 +163,16 @@ place_finder_(qrmask_t* self)
 static void __attribute__((__nonnull__))
 place_align_(qrmask_t* self)
 {
-  const uint8_t align[5][5] = {
+  static const uint8_t align[5][5] = {
     { 1, 1, 1, 1, 1 },
     { 1, 0, 0, 0, 1 },
     { 1, 0, 1, 0, 1 },
     { 1, 0, 0, 0, 1 },
     { 1, 1, 1, 1, 1 }
   };
-  size_t index = (self->order_ - 9u) * self->order_ + self->order_ - 9u;
-  size_t i = 0;
-  for (; i < 5; i++)
+  const size_t index = (self->order_ - 9u) *
+                       self->order_ + self->order_ - 9u;
+  for (size_t i = 0; i < 5; i++)
   {
     __builtin_memcpy(&self->v_[index + i * self->order_], &align[i], 5u);
   }
@@ -187,8 +183,7 @@ place_timing_(qrmask_t* self)
 {
   size_t idx1 = self->order_ * 6u + 8u;
   size_t idx2 = self->order_ * 8u + 6u;
-  size_t i = 0;
-  for (; i < self->order_ - 16u; i++)
+  for (size_t i = 0; i < self->order_ - 16u; i++)
   {
     self->v_[idx1] = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
     self->v_[idx2] = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
@@ -200,33 +195,34 @@ place_timing_(qrmask_t* self)
 static void __attribute__((__nonnull__))
 percentage_penalty_(qrmask_t* self)
 {
-  double percentage = ((double)self->dark_ / self->count_) * 10;
-  double prev = floor(percentage) * 10;
-  double next = percentage - fmod(percentage * 10, 5.0) + 5;
-  prev = fabs(prev - 50) / 5;
-  next = fabs(next - 50) / 5;
-  self->penalty_ += (uint16_t)(fmin(prev, next) * 10);
+  const uint32_t remain = self->dark_ % self->count_;
+  const uint16_t percentage = ((self->dark_ - remain) / self->count_) * 10;
+  int32_t prev = percentage * 10;
+  int32_t next = percentage - (prev % 5) + 5;
+  prev = (prev - 50) / 5;
+  next = (next - 50) / 5;
+  prev = (prev < 0) ? prev * -1 : prev;
+  next = (next < 0) ? next * -1 : next;
+  self->penalty_ += (prev < next) ? prev * 10 : next * 10;
 }
 
 static void __attribute__((__nonnull__))
 module_penalty_(qrmask_t* self)
 {
-  const uint8_t patleft[9] = {
+  static const uint8_t patright[9] = {
     1, 1, 1, 0, 1, 0, 0, 0, 0
   };
-  const uint8_t patright[9] = {
+  static const uint8_t patleft[9] = {
     1, 1, 1, 0, 1, 0, 0, 0, 0
   };
-  uint8_t i = 0;
-  for (; i < self->order_; i++)
+  for (uint8_t i = 0; i < self->order_; i++)
   {
-    uint16_t row = i * self->order_;
-    uint8_t j = 0;
+    const uint16_t row = i * self->order_;
     // Step 1: row direction >>>
-    for (; j < self->order_ - 1; j++)
+    for (uint8_t j = 0; j < self->order_ - 1; j++)
     {
       uint8_t* module = &self->v_[row + j];
-      uint8_t* next = &self->v_[row + j + 1];
+      const uint8_t* next = &self->v_[row + j + 1];
       if (*module == *next)
       {
         // NOTE: square penalty
@@ -266,11 +262,10 @@ module_penalty_(qrmask_t* self)
       }
     }
     // Step 2: column direction vvv
-    uint16_t k = 0;
-    for (; k < self->count_ - (4 * self->order_); k += self->order_)
+    for (uint32_t k = 0; k < self->count_ - (4u * self->order_); k += self->order_)
     {
-      uint8_t* module = &self->v_[i + k];
-      uint8_t* next = &self->v_[i + k + self->order_];
+      const uint8_t* module = &self->v_[i + k];
+      const uint8_t* next = &self->v_[i + k + self->order_];
       if (*module == *next)
       {
         // NOTE: sequential line penalty (column)
@@ -282,7 +277,8 @@ module_penalty_(qrmask_t* self)
             break;
           }
         }
-        count = (uint16_t)floor((double)(k - count) / self->order_);
+        const uint16_t remain = (k - count) % self->order_;
+        count = (k - count - remain) / self->order_;
         if (count > 4)
         {
           self->penalty_ += (count - 5) + 3;
@@ -305,11 +301,11 @@ module_penalty_(qrmask_t* self)
 static __inline__ uint8_t __attribute__((__const__))
 symbol_order_(const uint8_t version)
 {
-  return 4u * (version + 1) + 17u;
+  return 4u * (version + 1u) + 17u;
 }
 
 int
-create_qrmask(qrmask_t** self, uint8_t version, uint8_t masknum)
+create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t masknum)
 {
   static const uint16_t qr_basedark[MAX_VERSION] = {
     91u, 112u, 114u, 118u, 122u
@@ -411,7 +407,7 @@ qrmask_penalty(qrmask_t* self)
 void
 qrmask_apply(qrmask_t* self)
 {
-  const uint16_t maskinfo[NUM_MASKS] = {
+  static const uint16_t maskinfo[NUM_MASKS] = {
     30660u, 29427u, 32170u, 30877u,
     26159u, 25368u, 27713u, 26998u
   };
@@ -444,9 +440,9 @@ qrmask_apply(qrmask_t* self)
 }
 
 void
-qrmask_pbox(qrmask_t* self)
+qrmask_pbox(const qrmask_t* self)
 {
-  puts(__nl);
+  puts(_nl);
   uint16_t line = 0;
   for (; line < self->order_ - 1; line += 2)
   {
@@ -457,11 +453,11 @@ qrmask_pbox(qrmask_t* self)
     mask_single_(&self->v_[(self->order_ - 1) * self->order_],
       self->order_);
   }
-  puts(__nl);
+  puts(_nl);
 }
 
 void
-qrmask_praw(qrmask_t* self)
+qrmask_praw(const qrmask_t* self)
 {
   size_t row = 0;
   for (; row < self->order_; row++)
@@ -497,10 +493,13 @@ typedef struct __attribute__((packed)) bitmap_s
 } bitmap_t;
 
 int
-qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
+qrmask_outbmp(const qrmask_t* self,
+              const uint8_t scale,
+              FILE* __restrict__ file)
 {
   const uint32_t nbits = (8 + self->order_) * scale;
-  const uint8_t nlongs = (uint8_t)ceil((double)nbits / 32);
+  uint32_t remain = nbits % 32u;
+  const uint8_t nlongs = (nbits - remain) / 32u + 1u;
   const uint8_t nbytes = nlongs * 4;
   const uint32_t datalen = nlongs * nbits;
   const uint32_t offset = (uint32_t)sizeof(bitmap_t);
@@ -521,25 +520,23 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
     return EIO;
   }
   pdebug("writing bitmap raster data");
-  int16_t i = 0;
-  for (; i < nbytes * 4 * scale; i++)
+  for (size_t i = 0; i < nbytes * 4 * scale; i++)
   {
     fputc('\0', file);
   }
-  for (i = self->order_ - 1; i >= 0; i--)
+  for (int i = self->order_ - 1; i >= 0; i--)
   {
-    uint8_t* module = self->v_ + i * self->order_;
+    const uint8_t* module = self->v_ + i * self->order_;
     uint8_t bytes[nbytes];
     uint16_t mcount = 0;
     int16_t scount = scale;
-    uint8_t rest = (4 * scale) % 8;
+    const uint8_t rest = (4 * scale) % 8;
     uint16_t index = (uint16_t)(4 * scale - rest) / 8;
-    uint16_t j = 0;
-    for (; j <= index; j++)
+    for (uint16_t j = 0; j <= index; j++)
     {
       bytes[j] = 0;
     }
-    for (j = 0; j < 8 - rest; j++) // NOTE: left padding
+    for (int j = 0; j < 8 - rest; j++) // NOTE: left padding
     {
       if (scount == 0)
       {
@@ -554,16 +551,15 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
         bytes[index] <<= 1;
       }
     }
-    uint16_t diff =
-      (uint16_t)ceil((double)(self->order_ * scale) / 8) + index;
+    remain = (self->order_ * scale) % 8u;
+    const uint16_t diff = (self->order_ * scale - remain) / 8u + index;
     index++;
-    for (j = index; j < nbytes; j++)
+    for (uint16_t j = index; j < nbytes; j++)
     {
       bytes[index] = 0;
       if (j <= diff)
       {
-        uint8_t k = 0;
-        for (; k < 8; k++)
+        for (uint8_t k = 0; k < 8; k++)
         {
           if (scount == 0)
           {
@@ -584,12 +580,12 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
       }
       index++;
     }
-    for (j = 0; j < scale; j++)
+    for (uint8_t j = 0; j < scale; j++)
     {
       fwrite(bytes, 1, nbytes, file);
     }
   }
-  for (i = 0; i < nbytes * 4 * scale; i++)
+  for (uint32_t i = 0; i < nbytes * 4u * scale; i++)
   {
     fputc('\0', file);
   }
@@ -597,38 +593,35 @@ qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file)
 }
 
 void
-qrmask_outsvg(qrmask_t* self, FILE* __restrict__ file)
+qrmask_outsvg(const qrmask_t* self, FILE* __restrict__ file)
 {
   const uint32_t nmods = 8 + self->order_;
   fprintf(file,
-    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" __nl
-    "<!-- Generated by " PROJECT_TITLE " " PROJECT_VERSION " -->" __nl
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" _nl
+    "<!-- Generated by " PROJECT_TITLE " " PROJECT_VERSION " -->" _nl
     "<svg width=\"%umm\" height=\"%umm\" viewBox=\"0 0 %u %u\" version=\"1.1\" "
-      "id=\"svg1\" xmlns=\"http://www.w3.org/2000/svg\" "
-      "xmlns:svg=\"http://www.w3.org/2000/svg\">" __nl
+      "id=\"svg1\" xmlns=\"http://www.w3.org/2000/svg\">" _nl
     "<defs>"
       "<rect id=\"m\" fill=\"black\" width=\"1\" height=\"1\"/>"
-    "</defs>" __nl
+    "</defs>" _nl
     "<g id=\"background\">"
       "<rect fill=\"white\" width=\"%u\" height=\"%u\" x=\"0\" y=\"0\"/>"
-    "</g>" __nl
-    "<g id=\"modules\" transform=\"translate(4 4)\">" __nl,
+    "</g>" _nl
+    "<g id=\"modules\" transform=\"translate(4 4)\">" _nl,
     nmods, nmods, nmods, nmods, nmods, nmods);
 
-  uint32_t row = 0;
-  for (; row < self->order_; row++)
+  for (uint32_t row = 0; row < self->order_; row++)
   {
-    uint32_t col = 0;
-    for (; col < self->order_; col++)
+    for (uint32_t col = 0; col < self->order_; col++)
     {
-      size_t index = row * self->order_ + col;
+      const size_t index = row * self->order_ + col;
       if (self->v_[index] == MASK_DARK)
       {
         fprintf(file,
-          "<use href=\"#m\" x=\"%u\" y=\"%u\"/>" __nl,
+          "<use href=\"#m\" x=\"%u\" y=\"%u\"/>" _nl,
           col, row);
       }
     }
   }
-  fprintf(file, "</g>" __nl "</svg>" __nl);
+  fprintf(file, "</g>" _nl "</svg>" _nl);
 }

@@ -22,13 +22,13 @@ __attribute__((__nonnull__)) void
 qrmask_apply(qrmask_t* self);
 
 __attribute__((__nonnull__)) void
-qrmask_pbox(qrmask_t* self);
+qrmask_pbox(const qrmask_t* self);
 __attribute__((__nonnull__)) void
-qrmask_praw(qrmask_t* self);
+qrmask_praw(const qrmask_t* self);
 
 __attribute__((__nonnull__)) int
-qrmask_outbmp(qrmask_t* self, uint8_t scale, FILE* __restrict__ file);
+qrmask_outbmp(const qrmask_t* self, uint8_t scale, FILE* __restrict__ file);
 __attribute__((__nonnull__)) void
-qrmask_outsvg(qrmask_t* self, FILE* __restrict__ file);
+qrmask_outsvg(const qrmask_t* self, FILE* __restrict__ file);
 
 #endif

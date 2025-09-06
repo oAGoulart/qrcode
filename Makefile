@@ -32,7 +32,7 @@ $(BUILD_DIR)/%.o: %.c
 
 lookup.o: lookup.S
 	mkdir -p $(BUILD_DIR) ; \
-	$(CC) -c lookup.S -o $(BUILD_DIR)/lookup.o
+	$(CC) -c lookup.S -o $(BUILD_DIR)/lookup.o -save-temps
 
 lookup.S:
 	chmod 777 scripts/lookup.sh  ; \

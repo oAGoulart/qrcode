@@ -10,16 +10,16 @@
 #   error "non-standard stdbool.h file"
 #endif
 
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
 
-#define __nl "\r\n"
-#define __str(s) #s
-#define __xstr(s) __str(s)
-#define __c(c, str) "\033[" __str(c) "m" str "\033[m"
+#define _nl "\n"
+#define _str(s) #s
+#define _xstr(s) _str(s)
+#define _c(c, str) "\033[" _str(c) "m" str "\033[m"
 
 #if !defined(NDEBUG)
-#   define pdebug(str) puts(__FILE__ ":" __xstr(__LINE__) ": " str)
+#   define pdebug(str) puts(__FILE__ ":" _xstr(__LINE__) ": " str)
 #else
 #   define pdebug(str)
 #endif
@@ -30,7 +30,7 @@
 // NOTE: prints with new-line
 #define eprintf(format, ...) \
   fprintf(stderr, \
-    __FILE_NAME__ ":" __xstr(__LINE__) ": " __c(31, "error: ") format __nl, \
+    __FILE_NAME__ ":" _xstr(__LINE__) ": " _c(31, "error: ") format _nl, \
     ##__VA_ARGS__)
 
 #if defined(perrno)
@@ -38,7 +38,7 @@
 #endif
 #define perrno(err) \
   errno = err; \
-  perror(__c(31, "  \u25CF ") "runtime error")
+  perror(_c(31, "  \u25CF ") "runtime error")
 
 
 #if defined(pinfo)
@@ -46,7 +46,7 @@
 #endif
 // NOTE: prints with new-line
 #define pinfo(format, ...) \
-  printf(__c(36, "  INFO ") format __nl, ##__VA_ARGS__)
+  printf(_c(36, "  INFO ") format _nl, ##__VA_ARGS__)
 
 #if defined(__amd64__) || defined(__x86_64__)
 #   define PROJECT_ARCH "amd64"
@@ -98,8 +98,8 @@
 #define PROJECT_VERSION   "(v1.11.0:" PROJECT_TARGET ":" PROJECT_ARCH ")"
 #define PROJECT_COPYRIGHT "Copyright (C) 2025 Augusto Goulart."
 #define PROJECT_LICENSE \
-  "Licensed under Microsoft Reciprocal License (Ms-RL)." __nl \
-  "QR Code is a registered trademark of DENSO WAVE" __nl \
+  "Licensed under Microsoft Reciprocal License (Ms-RL)." _nl \
+  "QR Code is a registered trademark of DENSO WAVE" _nl \
   "INCORPORATED in Japan and in other countries."
 
 #define MAX_VERSION 5

@@ -4,23 +4,26 @@
 [![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** Model 2, from version 1 to 5, with EC level L, as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code on any platform. Output inline (stdout), bitmap, or vectors (svg).
+**Objective:** Model 2, from version 1 to 5, with EC level L, as specified in
+ISO/IEC 18004:2024. There are no dependencies, generator can be built from code
+on any platform. Output inline (stdout), bitmap, or vectors (svg).
 
 **Available generation:**
 
- **Version**                | 1    | 2    | 3    | 4    | 5
---------------------------: | ---- | ---- | ---- | ---- | ----
- **Capacity (codewords)**   | 17   | 32   | 53   | 78   | 106
+|              **Version** | 1  | 2  | 3  | 4  | 5   |
+|-------------------------:|----|----|----|----|-----|
+| **Capacity (codewords)** | 17 | 32 | 53 | 78 | 106 |
 
 > [!NOTE]
-> Generator will auto-select smallest Version possible. Unless option `-u` specified.
-> Here, codeword refers to a full byte. Numeric encoding uses up to 10-bits for 3 digits (~58% reduction).
+> Generator will auto-select the smallest Version possible. Unless option `-u` specified.
+> Here, codeword refers to a full byte.
+> Numeric encoding uses up to 10-bits for 3 digits (~58% reduction).
 > Alphanumeric encoding uses up to 11-bits for each pair of characters (~31% reduction).
 
 **Pre-generated lookup tables:**
 1. Reed-Solomon EC generator polynomials.
-1. Galois field of 256 (285 primitive) log and anti-log table.
-1. Placement index of each data and error correction bit on the encoding region.
+2. Galois field of 256 (285 primitive) log and anti-log table.
+3. Placement index of each data and error correction bit on the encoding region.
 
 ## Usage
 
@@ -46,20 +49,23 @@ OPTIONS:
 
 ### Building and binaries
 
-Latest (stable) releases can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases). To build this project, use `make`. Otherwise, as long as your system has Clang and Python, you may run Makefile's build commands manually.
+Latest (stable) releases can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases).
+To build this project, use `make`. Otherwise, as long as your system has
+Clang and Python, you may run Makefile's build commands manually.
 
 > [!CAUTION]
 > This repo's `master` branch may or may not contain uncompilable, unstable code.
-> It's recommended that you select the latest tag release, unless you wish to collaborate with code.
+> It's recommended that you select the latest tag release,
+> unless you wish to collaborate with code.
 
 **Build tools used for binaries:**
 
-Tool  | Ubuntu 22.04<br>amd64/x86<br>(WSL 2) | Windows 11<br>amd64<br>(MSYS2) | FreeBSD 14.3<br>x86<br>(VM) | macOS 14<br>aarch64<br>(VM) | OmniOS r151054<br>amd64<br>(VM)
-----: | :----: | :----: | :----: | :----: | :----:
-GNU Make | 4.3 | 4.4 | 4.4.1 | 4.4.1 | 4.4.1
-Clang | 14.0.0 | 20.1.8 | 19.1.7 | 15.0.0 | 20.1.7
-Python | 3.10.12 | 3.12.6 | 3.11.13 | 3.13.7 | 3.13.3
-*status* | 🟩 | 🟩 | 🟩 | 🟩 |  🟩
+     Tool | Ubuntu 22.04<br>amd64/x86<br>(WSL 2) | Windows 11<br>amd64<br>(MSYS2) | FreeBSD 14.3<br>x86<br>(VM) | macOS 14<br>aarch64<br>(VM) | OmniOS r151054<br>amd64<br>(VM)
+---------:| :----: | :----: | :----: | :----: | :----:
+ GNU Make | 4.3 | 4.4 | 4.4.1 | 4.4.1 | 4.4.1
+    Clang | 14.0.0 | 20.1.8 | 19.1.7 | 15.0.0 | 20.1.7
+   Python | 3.10.12 | 3.12.6 | 3.11.13 | 3.13.7 | 3.13.3
+ *status* | 🟩 | 🟩 | 🟩 | 🟩 |  🟩
 
 ### Examples
 
@@ -92,8 +98,10 @@ qrcode oagoulart.github.io/rambles/keep-thyself-credible
 ```
 
 > [!TIP]
-> Using a `line-height` of `1em` (i.e. line height is equal to font size) will remove the unintended vertical spacing seen in the output above.
-> Some fonts may require a slight different value between `1 +/- .25`. You can also try value `normal`.
+> Using a `line-height` of `1em` (i.e. line height is equal to font size)
+> will remove the unintended vertical spacing seen in the output above.
+> Some fonts may require a slight different value between `1 +/- .25`.
+> You can also try value `normal`.
 
 #### 2. Bitmap generation
 
@@ -121,25 +129,20 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 
 Planned features:
 1. encoding switching (100%, next release)
-1. higher EC levels (TBD)
+2. higher EC levels (TBD)
    - [ ] lookup tables
    - [ ] codewords splitting
-1. higher Version codes (TBD)
+3. higher Version codes (TBD)
 
 ## Disclaimer
-QR Code, iQR Code SQRC and FrameQR are registered trademarks of DENSO WAVE INCORPORATED in Japan and in other countries.
+QR Code, iQR Code SQRC and FrameQR are registered trademarks
+of DENSO WAVE INCORPORATED in Japan and in other countries.
 
-ISO/IEC 18004:2024 - Information technology — Automatic identification and data capture techniques — QR Code bar code symbology specification is &copy; ISO/IEC 2024 – All rights reserved.
+ISO/IEC 18004:2024 - Information technology — Automatic identification and
+data capture techniques — QR Code bar code symbology specification is &copy;
+ISO/IEC 2024 – All rights reserved.
 
 ## Further reading
 
 1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
-1. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
-
-
-
-
-
-
-
-
+2. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)

@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Refactor codebase with `clang-tidy`
+
 ## [1.11.0] - 2025-09-05
 
 Add subset mode switching and data bits packing
