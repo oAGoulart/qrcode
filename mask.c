@@ -1,10 +1,11 @@
+#include "mask.h"
+
 #include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "mask.h"
 #include "shared.h"
 
 #define MASKINFO_LEN 15
@@ -262,7 +263,8 @@ module_penalty_(qrmask_t* self)
       }
     }
     // Step 2: column direction vvv
-    for (uint32_t k = 0; k < self->count_ - (4u * self->order_); k += self->order_)
+    for (uint32_t k = 0;
+      k < self->count_ - (4u * self->order_); k += self->order_)
     {
       const uint8_t* module = &self->v_[i + k];
       const uint8_t* next = &self->v_[i + k + self->order_];
@@ -536,7 +538,8 @@ qrmask_outbmp(const qrmask_t* self,
     {
       bytes[j] = 0;
     }
-    for (int j = 0; j < 8 - rest; j++) // NOTE: left padding
+    // NOTE: left padding
+    for (int j = 0; j < 8 - rest; j++)
     {
       if (scount == 0)
       {

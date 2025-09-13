@@ -159,7 +159,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
               int vnum, bool optimize, bool verbose)
 {
   static const uint8_t cwmax[MAX_VERSION] = {
-    17u, 32u, 53u, 78u, 106u
+    19u, 35u, 55u, 80u, 108u
   };
   static const uint8_t ecclen[MAX_VERSION] = {
     7u, 10u, 15u, 20u, 26u
@@ -194,7 +194,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     for (; i <= version; i++)
     {
-      if (strcount <= cwmax[i])
+      if (strcount <= cwmax[i] - 2)
       {
         version = i;
         break;
@@ -399,13 +399,19 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
   version = i;
   (*self)->version_ = version;
-  if (datalen > cwmax[version] + 2)
+  if (datalen > cwmax[version])
   {
-    eprintf("data must be less than %hhu characters long", cwmax[version]);
+    eprintf("data must be less than %u characters long", cwmax[version] - 2u);
     delete_qrcode(self);
     return EINVAL;
   }
-  for (i = 0; i < (cwmax[version] + 2) - datalen; i++)
+  if (verbose)
+  {
+    pinfo("String length: %zu", strcount);
+    pinfo("Data length: %zu", datalen - 2u);
+    pinfo("Version selected: %u", version + 1u);
+  }
+  for (i = 0; i < (cwmax[version]) - datalen; i++)
   {
     // NOTE: padding bytes
     // TODO: change to 64bits
@@ -418,11 +424,6 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     offset += ecclen[i] + 1;
   }
   const uint8_t* gen = rsgen + offset;
-  if (verbose)
-  {
-    pinfo("String length: %zu", strcount);
-    pinfo("Version selected: %u", version + 1u);
-  }
 
   pdebug("starting polynomial division (long division)");
   const size_t eccn = datalen + ecclen[version];

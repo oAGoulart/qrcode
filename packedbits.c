@@ -68,7 +68,7 @@ pbits_push(pbits_t* self, const uint64_t value, uint8_t count)
       const int err = harray_push(self->array_, &self->buffer_, 1);
       if (err)
       {
-        eprintf("could not push byte buffer into array");
+        eprintf("could not push byte into array");
         return err;
       }
       self->buffer_ = 0;
@@ -82,7 +82,7 @@ pbits_push(pbits_t* self, const uint64_t value, uint8_t count)
     const int err = harray_push(self->array_, &byte, 1);
     if (err)
     {
-      eprintf("could not push whole byte into array");
+      eprintf("could not push byte into array");
       return err;
     }
     count -= CHAR_BIT;
@@ -105,7 +105,7 @@ pbits_flush(pbits_t* self)
     const int err = harray_push(self->array_, &self->buffer_, 1);
     if (err)
     {
-      eprintf("could not push byte buffer into array");
+      eprintf("could not push byte into array");
       return err;
     }
     self->buffer_ = 0;

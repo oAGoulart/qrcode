@@ -54,10 +54,10 @@
 #   define PROJECT_ARCH "aarch64"
 #elif defined(__arm__)
 #   define PROJECT_ARCH "arm"
-#elif defined(__i386__) || defined(_X86_)
-#   define PROJECT_ARCH "i386"
 #elif defined(__ia64__)
 #   define PROJECT_ARCH "ia64"
+#elif defined(__i386__) || defined(_X86_)
+#   define PROJECT_ARCH "i386"
 #elif defined(__powerpc64__)
 #   define PROJECT_ARCH "ppc64"
 #elif defined(__powerpc__)
