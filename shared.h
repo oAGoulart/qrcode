@@ -70,7 +70,11 @@
 #   define PROJECT_ARCH "???"
 #endif
 
-#if defined(__CYGWIN__)
+#if defined(__MSYS__)
+#   define PROJECT_TARGET "msys"
+#elif defined(__CYGWIN64__)
+#   define PROJECT_TARGET "cygwin64"
+#elif defined(__CYGWIN__)
 #   define PROJECT_TARGET "cygwin"
 #elif defined(__MINGW64__)
 #   define PROJECT_TARGET "mingw64"

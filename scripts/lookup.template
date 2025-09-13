@@ -1,5 +1,5 @@
 .data
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__MSYS__) || defined(__CYGWIN__)
   .section rdata, "rd"
 #elif defined(__APPLE__)
   .section __DATA, __const

@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 - Refactor codebase with `clang-tidy`
+- Fix minimum version selection
+- Fix build issue on MSYS environment
 
 ## [1.11.0] - 2025-09-05
 
