@@ -155,8 +155,8 @@ frombyte_(const uint8_t b)
 }
 
 int
-create_qrcode(qrcode_t** self, const char* __restrict__ str, 
-              int vnum, bool optimize, bool verbose)
+create_qrcode(qrcode_t** self, const char* __restrict__ str,
+              int version, eclevel_t level, bool optimize, bool verbose)
 {
   static const uint8_t cwmax[MAX_VERSION] = {
     19u, 35u, 55u, 80u, 108u
@@ -185,23 +185,23 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     return err;
   }
   harray_t* arr = pbits_bytes((*self)->bits_);
-  uint8_t version = (vnum >= 0 && vnum < MAX_VERSION) ?
-    vnum - 1 : MAX_VERSION - 1;
+  uint8_t ver = (version >= 0 && version < MAX_VERSION) ?
+    version - 1 : MAX_VERSION - 1;
   size_t strcount = __builtin_strlen(str);
   // NOTE: initial version selection
   size_t i = 0;
-  if (vnum != version)
+  if (version != ver)
   {
-    for (; i <= version; i++)
+    for (; i <= ver; i++)
     {
       if (strcount <= cwmax[i] - 2)
       {
-        version = i;
+        ver = i;
         break;
       }
     }
   }
-  (*self)->version_ = version;
+  (*self)->version_ = ver;
   if (verbose)
   {
     pinfo("Queuing subset segments");
@@ -223,13 +223,13 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     if (seg.type != SUBSET_BYTE)
     {
       if (seg.type == SUBSET_ALPHA &&
-          seg.count >= minimum_segment_(version, 0))
+          seg.count >= minimum_segment_(ver, 0))
       {
         segment.type = SUBSET_ALPHA;
       }
       else
       {
-        if (seg.count >= minimum_segment_(version, 1))
+        if (seg.count >= minimum_segment_(ver, 1))
         {
           segment.type = SUBSET_NUMERIC;
         }
@@ -263,7 +263,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       {
         if (seg.type == SUBSET_BYTE || (
             seg.type == SUBSET_NUMERIC &&
-            seg.count > minimum_segment_(version, 3) &&
+            seg.count > minimum_segment_(ver, 3) &&
             which_subset_(str[i + 1 + seg.count]) == SUBSET_ALPHA))
         {
           pushseg = true;
@@ -276,12 +276,12 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
         {
           subset_t subset = which_subset_(str[i + 1 + seg.count]);
           if (subset == SUBSET_BYTE &&
-              seg.count >= minimum_segment_(version, 4))
+              seg.count >= minimum_segment_(ver, 4))
           {
             pushseg = true;
           }
           if (subset == SUBSET_ALPHA &&
-              seg.count >= minimum_segment_(version, 5))
+              seg.count >= minimum_segment_(ver, 5))
           {
             pushseg = true;
           }
@@ -294,7 +294,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           }
           subset_t subset = which_subset_(str[i + 1 + seg.count]);
           if (subset == SUBSET_BYTE &&
-              seg.count >= minimum_segment_(version, 6))
+              seg.count >= minimum_segment_(ver, 6))
           {
             pushseg = true;
           }
@@ -389,7 +389,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   delete_harray(&segments);
 
   size_t datalen = harray_length(arr);
-  for (i = version; i > 0; i--)
+  for (i = ver; i > 0; i--)
   {
     if (datalen <= cwmax[i - 1])
     {
@@ -397,11 +397,11 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
     break;
   }
-  version = i;
-  (*self)->version_ = version;
-  if (datalen > cwmax[version])
+  ver = i;
+  (*self)->version_ = ver;
+  if (datalen > cwmax[ver])
   {
-    eprintf("data must be less than %u characters long", cwmax[version] - 2u);
+    eprintf("data must be less than %u characters long", cwmax[ver] - 2u);
     delete_qrcode(self);
     return EINVAL;
   }
@@ -409,9 +409,9 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     pinfo("String length: %zu", strcount);
     pinfo("Data length: %zu", datalen - 2u);
-    pinfo("Version selected: %u", version + 1u);
+    pinfo("Version selected: %u", ver + 1u);
   }
-  for (i = 0; i < (cwmax[version]) - datalen; i++)
+  for (i = 0; i < (cwmax[ver]) - datalen; i++)
   {
     // NOTE: padding bytes
     // TODO: change to 64bits
@@ -419,26 +419,26 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
   datalen = harray_length(arr);
   uint16_t offset = 0;
-  for (i = 0; i < version; i++)
+  for (i = 0; i < ver; i++)
   {
     offset += ecclen[i] + 1;
   }
   const uint8_t* gen = rsgen + offset;
 
   pdebug("starting polynomial division (long division)");
-  const size_t eccn = datalen + ecclen[version];
+  const size_t eccn = datalen + ecclen[ver];
   uint8_t ecc[eccn];
-  __builtin_memset(ecc + datalen, 0, ecclen[version]);
+  __builtin_memset(ecc + datalen, 0, ecclen[ver]);
   harray_copy(arr, ecc, datalen);
   for (i = 0; i < datalen; i++)
   {
     uint8_t lead = ecc[i];
-    for (uint8_t j = 0; j <= ecclen[version]; j++)
+    for (uint8_t j = 0; j <= ecclen[ver]; j++)
     {
       ecc[i + j] ^= alogt[(gen[j] + logt[lead]) % UINT8_MAX];
     }
   }
-  harray_push(arr, &ecc[i], ecclen[version]);
+  harray_push(arr, &ecc[i], ecclen[ver]);
   datalen = harray_length(arr);
 
   if (verbose)
@@ -456,7 +456,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   __builtin_memset((*self)->masks_, 0, sizeof((*self)->masks_));
   for (i = 0; i < NUM_MASKS; i++)
   {
-    err = create_qrmask(&(*self)->masks_[i], version, i);
+    err = create_qrmask(&(*self)->masks_[i], ver, i);
     if (err)
     {
       delete_qrcode(self);
@@ -480,7 +480,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
   }
   // NOTE: padding bits, MUST check xor
-  if (version > 0)
+  if (ver > 0)
   {
     for (i = 0; i < NUM_PADBITS; i++)
     {

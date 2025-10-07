@@ -1,7 +1,7 @@
-#include <assert.h>
 #ifndef QUICKRESPONSE_H
 #define QUICKRESPONSE_H 1
 
+#include "mask.h"
 #include "shared.h"
 
 typedef enum imgfmt_e
@@ -14,7 +14,7 @@ typedef struct qrcode_s qrcode_t;
 
 __attribute__((__nonnull__)) int
 create_qrcode(qrcode_t** self, const char* __restrict__ str,
-              int vnum, bool optimize, bool verbose);
+              int version, eclevel_t level, bool optimize, bool verbose);
 __attribute__((__nonnull__)) void
 delete_qrcode(qrcode_t** self);
 

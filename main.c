@@ -1,8 +1,10 @@
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "mask.h"
 #include "quickresponse.h"
 #include "shared.h"
 
@@ -13,28 +15,30 @@ typedef enum targ_e
   ARG_VERBOSE  = 2,
   ARG_RAW      = 4,
   ARG_NOINLINE = 8,
-  ARG_VERSION  = 0x10,
+  ARG_INFO     = 0x10,
   ARG_OPTIMIZE = 0x20,
   ARG_RESERVED __attribute__((unavailable("bit mask limit"))) = 0x8000,
   ARG_MASK,
-  ARG_VNUM,
+  ARG_VER,
+  ARG_LEVEL,
   ARG_SCALE,
   ARG_BMP,
   ARG_SVG
 } targ_t;
-#define NUM_ARGS      11
+#define NUM_ARGS      12
 #define NUM_MANDATORY 1
 
 static const char* args_[NUM_ARGS] = {
   "--nocopy", "--verbose", "--raw",
   "--noinline", "--version", "--optimize",
-  "-m", "-u", "-s", "-B", "-K"
+  "-m", "-u", "-l", "-s", "-B", "-K"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
   ARG_NOCOPY, ARG_VERBOSE, ARG_RAW,
-  ARG_NOINLINE, ARG_VERSION, ARG_OPTIMIZE,
-  ARG_MASK, ARG_VNUM, ARG_SCALE, ARG_BMP, ARG_SVG
+  ARG_NOINLINE, ARG_INFO, ARG_OPTIMIZE,
+  ARG_MASK, ARG_VER, ARG_LEVEL, ARG_SCALE,
+  ARG_BMP, ARG_SVG
 };
 
 static __inline__ int
@@ -49,6 +53,7 @@ phelp_(const char* __restrict__ cmdln)
     "  --raw        print generated code with chars 1, 0 (no box-chars)" _nl
     "  --verbose    print runtime information for generated values" _nl
     "  --version    show generator's version and build information" _nl
+    "  -l <char>    use a specific error correction level (l, m, q, or h)" _nl
     "  -m <uint>    force choice of mask <0-7>, regardless of penalty" _nl
     "  -s <uint>    scale image output <1-" _xstr(MAX_SCALE) "> times" _nl
     "  -u <uint>    force use of version <1-" _xstr(MAX_VERSION) "> code"
@@ -73,10 +78,11 @@ main(const int argc, char* argv[])
     return phelp_(argv[0]);
   }
 
-  targ_t   options = ARG_NONE;
-  imgfmt_t imgfmt  = FMT_SVG;
+  targ_t    options = ARG_NONE;
+  imgfmt_t  imgfmt  = FMT_SVG;
+  eclevel_t level   = EC_LOW;
   int mask     = -1;
-  int vnum     = -1;
+  int ver      = -1;
   int scale    = -1;
   int argcount =  0;
   char* imgout = NULL;
@@ -88,7 +94,7 @@ main(const int argc, char* argv[])
     {
       for (size_t j = 0; j < NUM_ARGS; j++)
       {
-        if (!strcmp(argv[i], args_[j]))
+        if (!__builtin_strcmp(argv[i], args_[j]))
         {
           argcount++;
           bool xarg = true;
@@ -97,8 +103,38 @@ main(const int argc, char* argv[])
           case ARG_MASK:
             mask = strtol(argv[i + 1], NULL, 0);
             break;
-          case ARG_VNUM:
-            vnum = strtol(argv[i + 1], NULL, 0) - 1;
+          case ARG_LEVEL:
+          {
+            if (__builtin_strlen(argv[i + 1]) == 1)
+            {
+              const char lvl = argv[i + 1][0];
+              if (lvl == 'l' || lvl == 'L')
+              {
+                level = EC_LOW;
+                break;
+              }
+              if (lvl == 'm' || lvl == 'M')
+              {
+                level = EC_MEDIUM;
+                break;
+              }
+              if (lvl == 'q' || lvl == 'Q')
+              {
+                level = EC_QUARTILE;
+                break;
+              }
+              if (lvl == 'h' || lvl == 'H')
+              {
+                level = EC_HIGH;
+                break;
+              }
+            }
+            eprintf("unsupported error correction level");
+            perrno(EINVAL);
+            return EINVAL;
+          }
+          case ARG_VER:
+            ver = strtol(argv[i + 1], NULL, 0) - 1;
             break;
           case ARG_SCALE:
             scale = strtol(argv[i + 1], NULL, 0);
@@ -125,7 +161,7 @@ main(const int argc, char* argv[])
     }
   }
   pdebug("finished parsing cmdln arguments");
-  if (options & ARG_VERSION)
+  if (options & ARG_INFO)
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION _nl
          "Built with Clang " __clang_version__ "@ " __DATE__ " " __TIME__);
@@ -145,7 +181,7 @@ main(const int argc, char* argv[])
   pdebug("creating qrcode object");
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr,
-    argv[argc - 1], vnum,
+    argv[argc - 1], ver, level,
     options & ARG_OPTIMIZE,
     options & ARG_VERBOSE);
   if (err != 0)

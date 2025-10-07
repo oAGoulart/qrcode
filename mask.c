@@ -15,14 +15,14 @@ extern const uint16_t qrindex[];
 struct qrmask_s
 {
   const uint16_t* i_;
-  uint16_t count_;
-  uint8_t* v_; // NOTE: cannot be harray_h
-  uint8_t  version_;
-  uint8_t  order_;
-  uint8_t  masknum_;
-  uint16_t dark_;
-  uint16_t light_;
-  uint16_t penalty_;
+  uint16_t  count_;
+  uint8_t*  v_; // NOTE: cannot be harray_h
+  uint8_t   version_;
+  eclevel_t level_;
+  uint8_t   order_;
+  uint8_t   pattern_;
+  uint16_t  dark_;
+  uint16_t  penalty_;
 };
 
 static __inline__ bool __attribute__((__const__))
@@ -193,6 +193,12 @@ place_timing_(qrmask_t* self)
   }
 }
 
+static __inline__ void __attribute__((__nonnull__))
+place_darkmodule_(qrmask_t* self)
+{
+  self->v_[(self->order_ - 8) * self->order_ + 8] = MASK_DARK;
+}
+
 static void __attribute__((__nonnull__))
 percentage_penalty_(qrmask_t* self)
 {
@@ -307,13 +313,10 @@ symbol_order_(const uint8_t version)
 }
 
 int
-create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t masknum)
+create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
 {
   static const uint16_t qr_basedark[MAX_VERSION] = {
     91u, 112u, 114u, 118u, 122u
-  };
-  static const uint16_t qr_baselight[MAX_VERSION] = {
-    127u, 139u, 141u, 145u, 149u
   };
   static const uint16_t qr_offset[MAX_VERSION] = {
     0, 208u, 567u, 1134u, 1941u
@@ -337,7 +340,7 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t masknum)
   (*self)->version_ = version;
   (*self)->order_ = symbol_order_(version);
   (*self)->count_ = (*self)->order_ * (*self)->order_;
-  (*self)->masknum_ = masknum;
+  (*self)->pattern_ = pattern;
   (*self)->i_ = qrindex + qr_offset[version];
   (*self)->v_ = (uint8_t*)malloc((*self)->count_);
   if ((*self)->v_ == NULL)
@@ -349,7 +352,6 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t masknum)
   }
   __builtin_memset((*self)->v_, 0, (*self)->count_);
   (*self)->dark_ = qr_basedark[version];
-  (*self)->light_ = qr_baselight[version];
   (*self)->penalty_ = 0;
   place_finder_(*self);
   place_timing_(*self);
@@ -357,8 +359,7 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t masknum)
   {
     place_align_(*self);
   }
-  // NOTE: dark module
-  (*self)->v_[((*self)->order_ - 8) * (*self)->order_ + 8] = MASK_DARK;
+  place_darkmodule_(*self);
   return 0;
 }
 
@@ -380,16 +381,12 @@ void
 qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
 {
   const uint16_t idx = self->i_[index];
-  if (should_xor_(self->order_, idx, self->masknum_))
+  if (should_xor_(self->order_, idx, self->pattern_))
   {
     module = (module == MASK_DARK) ? MASK_LIGHT : MASK_DARK;
   }
   self->v_[idx] = module;
-  if (module == MASK_LIGHT)
-  {
-    self->light_++;
-  }
-  else
+  if (module == MASK_DARK)
   {
     self->dark_++;
   }
@@ -436,8 +433,8 @@ qrmask_apply(qrmask_t* self)
     {
       idx2 = self->order_ * 8 + self->order_ - 8 + i - 7;
     }
-    self->v_[idx1] = (maskinfo[self->masknum_] >> (MASKINFO_LEN - i - 1)) & 1;
-    self->v_[idx2] = (maskinfo[self->masknum_] >> (MASKINFO_LEN - i - 1)) & 1;
+    self->v_[idx1] = (maskinfo[self->pattern_] >> (MASKINFO_LEN - i - 1)) & 1;
+    self->v_[idx2] = (maskinfo[self->pattern_] >> (MASKINFO_LEN - i - 1)) & 1;
   }
 }
 
