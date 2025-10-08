@@ -15,6 +15,15 @@
 
 #define NUM_PADBITS 7
 
+typedef struct __attribute__((packed)) qrinfo_s
+{
+  uint16_t datalen;
+  uint8_t eccperblock;
+  uint8_t numblocks[2];
+  uint8_t dataperblock[2];
+} qrinfo_t;
+
+extern const qrinfo_t vlinfo[];
 extern const uint8_t logt[];
 extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
