@@ -12,7 +12,8 @@ typedef enum eclevel_e
   EC_LOW,      // 7%
   EC_MEDIUM,   // 15%
   EC_QUARTILE, // 25%
-  EC_HIGH      // 30%
+  EC_HIGH,     // 30%
+  EC_COUNT
 } __attribute__((packed)) eclevel_t;
 
 typedef struct qrmask_s qrmask_t;

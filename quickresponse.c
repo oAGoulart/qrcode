@@ -1,5 +1,6 @@
 #include "quickresponse.h"
 
+#include <corecrt.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -21,6 +22,7 @@ typedef struct __attribute__((packed)) qrinfo_s
   uint8_t eccperblock;
   uint8_t numblocks[2];
   uint8_t dataperblock[2];
+  uint8_t eccoffset;
 } qrinfo_t;
 
 extern const qrinfo_t vlinfo[];
@@ -167,12 +169,6 @@ int
 create_qrcode(qrcode_t** self, const char* __restrict__ str,
               int version, eclevel_t level, bool optimize, bool verbose)
 {
-  static const uint8_t cwmax[MAX_VERSION] = {
-    19u, 35u, 55u, 80u, 108u
-  };
-  static const uint8_t ecclen[MAX_VERSION] = {
-    7u, 10u, 15u, 20u, 26u
-  };
   if (*self != NULL)
   {
     eprintf("pointer to garbage in *self");
@@ -203,7 +199,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     for (; i <= ver; i++)
     {
-      if (strcount <= cwmax[i] - 2)
+      if (strcount <= vlinfo[i * EC_COUNT + level].datalen - 2)
       {
         ver = i;
         break;
@@ -400,17 +396,19 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t datalen = harray_length(arr);
   for (i = ver; i > 0; i--)
   {
-    if (datalen <= cwmax[i - 1])
+    if (datalen <= vlinfo[(i - 1) * EC_COUNT + level].datalen)
     {
       continue;
     }
     break;
   }
   ver = i;
+  // NOTE: final version
   (*self)->version_ = ver;
-  if (datalen > cwmax[ver])
+  const qrinfo_t* finalvl = &vlinfo[ver * EC_COUNT + level];
+  if (datalen > finalvl->datalen)
   {
-    eprintf("data must be less than %u characters long", cwmax[ver] - 2u);
+    eprintf("data must be less than %u characters long", finalvl->datalen - 2u);
     delete_qrcode(self);
     return EINVAL;
   }
@@ -420,34 +418,30 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     pinfo("Data length: %zu", datalen - 2u);
     pinfo("Version selected: %u", ver + 1u);
   }
-  for (i = 0; i < (cwmax[ver]) - datalen; i++)
+  for (i = 0; i < (finalvl->datalen) - datalen; i++)
   {
     // NOTE: padding bytes
     // TODO: change to 64bits
     pbits_push((*self)->bits_, 0, 8);
   }
   datalen = harray_length(arr);
-  uint16_t offset = 0;
-  for (i = 0; i < ver; i++)
-  {
-    offset += ecclen[i] + 1;
-  }
-  const uint8_t* gen = rsgen + offset;
+  const uint8_t* gen = rsgen + finalvl->eccoffset;
 
+  // TODO: split data into blocks (for higher EC and Version)
   pdebug("starting polynomial division (long division)");
-  const size_t eccn = datalen + ecclen[ver];
+  const size_t eccn = datalen + finalvl->eccperblock;
   uint8_t ecc[eccn];
-  __builtin_memset(ecc + datalen, 0, ecclen[ver]);
+  __builtin_memset(ecc + datalen, 0, finalvl->eccperblock);
   harray_copy(arr, ecc, datalen);
   for (i = 0; i < datalen; i++)
   {
     uint8_t lead = ecc[i];
-    for (uint8_t j = 0; j <= ecclen[ver]; j++)
+    for (uint8_t j = 0; j <= finalvl->eccperblock; j++)
     {
       ecc[i + j] ^= alogt[(gen[j] + logt[lead]) % UINT8_MAX];
     }
   }
-  harray_push(arr, &ecc[i], ecclen[ver]);
+  harray_push(arr, &ecc[i], finalvl->eccperblock);
   datalen = harray_length(arr);
 
   if (verbose)
@@ -474,7 +468,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
   for (i = 0; i < datalen; i++)
   {
-    offset = i * 8;
+    size_t offset = i * 8;
     // NOTE: bitstream goes from bit 7 to bit 0
     for (int8_t bit = 7; bit >= 0; bit--)
     {
@@ -576,13 +570,13 @@ qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
     eprintf("invalid image scale: %d", scale);
     return EINVAL;
   }
-  FILE* f = fopen(filename, "wb+");
-  if (f == NULL)
+  FILE* f = NULL;
+  errno_t err = fopen_s(&f, filename, "wb+");
+  if (err)
   {
     eprintf("cannot create file: %s", filename);
-    return errno;
+    return err;
   }
-  int err = 0;
   switch (fmt)
   {
   case FMT_BMP:
@@ -602,8 +596,8 @@ qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
     eprintf("invalid image format selected: %d", fmt);
     err = EINVAL;
     break;
-  }
-  }
+  } // default
+  } // switch
   fclose(f);
   return err;
 }
