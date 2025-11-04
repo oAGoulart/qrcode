@@ -17,6 +17,7 @@ typedef enum targ_e
   ARG_NOINLINE = 8,
   ARG_INFO     = 0x10,
   ARG_OPTIMIZE = 0x20,
+  ARG_HELP     = 0x40,
   ARG_RESERVED __attribute__((unavailable("bit mask limit"))) = 0x8000,
   ARG_MASK,
   ARG_VER,
@@ -25,18 +26,18 @@ typedef enum targ_e
   ARG_BMP,
   ARG_SVG
 } targ_t;
-#define NUM_ARGS      12
+#define NUM_ARGS      13
 #define NUM_MANDATORY 1
 
 static const char* args_[NUM_ARGS] = {
   "--nocopy", "--verbose", "--raw",
-  "--noinline", "--version", "--optimize",
+  "--noinline", "--version", "--optimize", "--help",
   "-m", "-u", "-l", "-s", "-B", "-K"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
   ARG_NOCOPY, ARG_VERBOSE, ARG_RAW,
-  ARG_NOINLINE, ARG_INFO, ARG_OPTIMIZE,
+  ARG_NOINLINE, ARG_INFO, ARG_OPTIMIZE, ARG_HELP,
   ARG_MASK, ARG_VER, ARG_LEVEL, ARG_SCALE,
   ARG_BMP, ARG_SVG
 };
@@ -46,6 +47,7 @@ phelp_(const char* __restrict__ cmdln)
 {
   fprintf(stderr, "Usage: %s [OPTIONS] <string>" _nl
     "OPTIONS:" _nl
+    "  --help       show this help message" _nl
     "  --nocopy     omit copyright header from inline printing" _nl
     "  --noinline   do not print any inline code, disregards --raw" _nl
     "  --optimize   reduce data size, encode numeric, alphanumeric, byte" _nl
@@ -72,11 +74,6 @@ main(const int argc, char* argv[])
   // NOTE: to allow box-drawing characters
   system("chcp 65001>nul");
 #endif
-  if (argc < NUM_MANDATORY + 1)
-  {
-    eprintf("not enough arguments, provided %d", argc - 1);
-    return phelp_(argv[0]);
-  }
 
   targ_t    options = ARG_NONE;
   imgfmt_t  imgfmt  = FMT_SVG;
@@ -167,10 +164,14 @@ main(const int argc, char* argv[])
          "Built with Clang " __clang_version__ "@ " __DATE__ " " __TIME__);
     return EXIT_SUCCESS;
   }
+  if (options & ARG_HELP)
+  {
+    return phelp_(argv[0]);
+  }
   if (argc - argcount < NUM_MANDATORY + 1)
   {
     eprintf("must provide " _xstr(NUM_MANDATORY) " mandatory argument(s)");
-    return phelp_(argv[0]);
+    return EXIT_FAILURE;
   }
   if (!(options & ARG_NOCOPY))
   {
