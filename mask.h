@@ -9,13 +9,16 @@
 
 typedef enum eclevel_e
 {
-  EC_LOW,      // 7%
-  EC_MEDIUM,   // 15%
-  EC_QUARTILE, // 25%
-  EC_HIGH,     // 30%
+  EC_LOW,      /* 7% */
+  EC_MEDIUM,   /* 15% */
+  EC_QUARTILE, /* 25% */
+  EC_HIGH,     /* 30% */
   EC_COUNT
 } __attribute__((packed)) eclevel_t;
 
+/* Creates QR code XOR mask from Version and selected pattern,
+   allows setting each module and print/output
+*/
 typedef struct qrmask_s qrmask_t;
 
 __attribute__((__nonnull__)) int
@@ -23,6 +26,14 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t pattern);
 __attribute__((__nonnull__)) void
 delete_qrmask(qrmask_t** self);
 
+/* TODO: switch to set/skip method
+         set(self) -> err:
+           if index_ > num_modules: return rterr("invalid index")
+           // set module to 1
+         skip(self) -> err:
+           // same
+           // only increment index
+*/
 __attribute__((__nonnull__)) void
 qrmask_set(qrmask_t* self, uint16_t index, uint8_t module);
 __attribute__((__nonnull__)) uint16_t

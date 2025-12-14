@@ -4,12 +4,16 @@
 #include "mask.h"
 #include "shared.h"
 
+/* Image format */
 typedef enum imgfmt_e
 {
   FMT_BMP,
   FMT_SVG
 } __attribute__((packed)) imgfmt_t;
 
+/* Creates QR code from string,
+   allows print/output of generated image
+*/
 typedef struct qrcode_s qrcode_t;
 
 __attribute__((__nonnull__)) int

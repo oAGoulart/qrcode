@@ -8,6 +8,7 @@
 #include "quickresponse.h"
 #include "shared.h"
 
+/* Terminal argument */
 typedef enum targ_e
 {
   ARG_NONE     = 0,
@@ -59,7 +60,7 @@ phelp_(const char* __restrict__ cmdln)
     "  -m <uint>    force choice of mask <0-7>, regardless of penalty" _nl
     "  -s <uint>    scale image output <1-" _xstr(MAX_SCALE) "> times" _nl
     "  -u <uint>    force use of version <1-" _xstr(MAX_VERSION) "> code"
-                      "(or lower, if" _nl
+                      " (or lower, if" _nl
     "                 used with --optimize)" _nl
     "  -B <string>  create bitmap file with generated code" _nl
     "  -K <string>  create scalable vector image, disregards -s" _nl,
@@ -71,7 +72,7 @@ int
 main(const int argc, char* argv[])
 {
 #if defined(_WIN32)
-  // NOTE: to allow box-drawing characters
+  /* NOTE: to allow box-drawing characters */
   system("chcp 65001>nul");
 #endif
 

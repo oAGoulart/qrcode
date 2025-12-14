@@ -111,7 +111,7 @@ harray_pop(harray_t* self, const size_t size)
     uint8_t* tmp = realloc(self->data_, asize);
     if (tmp != NULL)
     {
-      // NOTE: no error otherwise, since shrinking is optional
+      /* NOTE: no error otherwise, since shrinking is optional */
       self->data_ = tmp;
       self->available_ = asize - self->length_;
     }

@@ -4,8 +4,8 @@
 [![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Objective:** Model 2, from version 1 to 5, byte/num/alpha modes, with EC level L, as specified in
-ISO/IEC 18004:2024. There are no dependencies, generator can be built from code
+**Objective:** Model 2, from version 1 to 5 (so far), byte/num/alpha modes, with EC level L,
+as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code
 on any platform. Output inline (stdout), bitmap, or vectors (svg).
 
 **Available generation:**
@@ -23,7 +23,7 @@ on any platform. Output inline (stdout), bitmap, or vectors (svg).
 **Pre-generated lookup tables:**
 1. Reed-Solomon EC generator polynomials.
 2. Galois field of 256 (285 primitive) log and anti-log table.
-3. Placement index of each data and error correction bit on the encoding region.
+3. Placement index of each data and error correction bit onto the encoding region.
 
 ## Usage
 
@@ -32,6 +32,7 @@ on any platform. Output inline (stdout), bitmap, or vectors (svg).
 ```text
 Usage: qrcode [OPTIONS] <data to encode>
 OPTIONS:
+  --help       show this help message
   --nocopy     omit copyright header from inline printing
   --noinline   do not print any inline code, disregards --raw
   --optimize   reduce data size, encode numeric, alphanumeric, byte

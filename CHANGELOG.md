@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Refactor codebase with `clang-tidy`
+- Add `--help` command to show help message
+- Add redundant data type `redata_t` to generate codeword blocks
+- Change comments from `//` to `/**/`
 - Fix minimum version selection
 - Fix build issue on MSYS environment
+- Refactor codebase with `clang-tidy`
 - Remove deprecated call to `fopen`
 
 ## [1.11.0] - 2025-09-05

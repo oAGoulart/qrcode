@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+/* Creates heap array stream to handle codewords,
+   allows getting from index/search
+*/
 typedef struct harray_s harray_t;
 
 __attribute__((__nonnull__)) int

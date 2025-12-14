@@ -9,8 +9,8 @@
 struct pbits_s
 {
   harray_t* array_;
-  uint8_t buffer_;
-  uint8_t bit_;
+  uint8_t   buffer_;
+  uint8_t   bit_;
 };
 
 int
