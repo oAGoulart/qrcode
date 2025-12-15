@@ -217,7 +217,7 @@ static void __attribute__((__nonnull__))
 module_penalty_(qrmask_t* self)
 {
   static const uint8_t patright[9] = {
-    1, 1, 1, 0, 1, 0, 0, 0, 0
+    0, 0, 0, 0, 1, 0, 1, 1, 1
   };
   static const uint8_t patleft[9] = {
     1, 1, 1, 0, 1, 0, 0, 0, 0

@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Change comments from `//` to `/**/`
 - Fix minimum version selection
 - Fix build issue on MSYS environment
+- Fix module penalty right-pattern
 - Refactor codebase with `clang-tidy`
 - Remove deprecated call to `fopen`
 
