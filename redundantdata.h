@@ -7,7 +7,7 @@
 /* Creates blocks of data/ecc from string,
    allows access to codewords in the correct order group/block
 */
-typedef struct redata_s redata_t;
+typedef struct qrdata_s qrdata_t;
 /*
   - char** datablocks_
   - pbits_t** eccblocks_
@@ -15,8 +15,8 @@ typedef struct redata_s redata_t;
  */
 
 __attribute__((__nonnull__)) int
-create_redata(redata_t** self, const char* __restrict__ str);
+create_qrdata(qrdata_t** self, const char* __restrict__ str);
 __attribute__((__nonnull__)) void
-delete_redata(redata_t** self);
+delete_qrdata(qrdata_t** self);
 
 #endif
