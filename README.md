@@ -131,9 +131,11 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 
 Planned features:
 1. higher EC levels (WIP)
-   - [ ] redundant data type (WIP)
+   - [ ] redundant data type
+      - [ ] split codewords into blocks/group
+      - [ ] generate ECC for each block
+   - [ ] apply XOR masks as iterator
    - [ ] lookup tables
-   - [ ] codewords splitting
 2. higher Version codes (TBD)
 
 ## Disclaimer
