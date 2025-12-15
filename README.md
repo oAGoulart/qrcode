@@ -6,7 +6,7 @@
 
 **Objective:** Model 2, from version 1 to 5 (so far), byte/num/alpha modes, with EC level L,
 as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code
-on any platform. Output inline (stdout), bitmap, or vectors (svg).
+on any platform. Outputs inline (stdout), bitmap, or vectors (svg).
 
 **Available generation:**
 
@@ -15,8 +15,8 @@ on any platform. Output inline (stdout), bitmap, or vectors (svg).
 | **Capacity (codewords)** | 17 | 32 | 53 | 78 | 106 |
 
 > [!NOTE]
-> Generator will auto-select the smallest Version possible. Unless option `-u` specified.
-> Here, codeword refers to a full byte.
+> Generator will auto-select lowest Version possible. Unless option `-u` is specified.
+> Here, **codeword** refers to a full byte.
 > Numeric encoding uses up to 10-bits for 3 digits (~58% reduction).
 > Alphanumeric encoding uses up to 11-bits for each pair of characters (~31% reduction).
 
@@ -24,6 +24,7 @@ on any platform. Output inline (stdout), bitmap, or vectors (svg).
 1. Reed-Solomon EC generator polynomials.
 2. Galois field of 256 (285 primitive) log and anti-log table.
 3. Placement index of each data and error correction bit onto the encoding region.
+4. QR code Version/Level information table.
 
 ## Usage
 
@@ -50,9 +51,9 @@ OPTIONS:
 
 ### Building and binaries
 
-Latest (stable) releases can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases).
+Latest (stable) release can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases).
 To build this project, use `make`. Otherwise, as long as your system has
-Clang and Python, you may run Makefile's build commands manually.
+Clang and Python, you may run Makefile's _build_ commands manually.
 
 > [!CAUTION]
 > This repo's `master` branch may or may not contain uncompilable, unstable code.
@@ -129,7 +130,8 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 ## Roadmap
 
 Planned features:
-1. higher EC levels (TBD)
+1. higher EC levels (WIP)
+   - [ ] redundant data type (WIP)
    - [ ] lookup tables
    - [ ] codewords splitting
 2. higher Version codes (TBD)
@@ -144,7 +146,9 @@ ISO/IEC 2024 – All rights reserved.
 
 ## Further reading
 
-1. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
-2. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+1. [ISO/IEC 18004:2024 documentation (purchase)](https://www.iso.org/standard/83389.html)
+2. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
+3. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
 
