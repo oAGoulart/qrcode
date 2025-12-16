@@ -44,9 +44,7 @@
 #if defined(pinfo)
 #   error "pinfo already defined"
 #endif
-/* NOTE: prints with new-line;
-         please, start sentence in capital letter!
-*/
+/* NOTE: prints with new-line; please, start sentence in capital letter! */
 #define pinfo(format, ...) \
   printf(_c(36, "  INFO ") format _nl, ##__VA_ARGS__)
 

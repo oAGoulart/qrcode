@@ -134,7 +134,7 @@ place_finder_(qrmask_t* self)
       &self->v_[(self->order_ - 7u) * self->order_ + self->order_ * i],
       &finder[i], 7u);
   }
-  /* NOTE: separators are not required here */
+  /* WARNING: assumes separators are not required (zeroed buffer) */
 }
 
 static void __attribute__((__nonnull__))
@@ -291,11 +291,10 @@ symbol_order_(const uint8_t version)
 int
 create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
 {
-  /* TODO: move to lookup */
+  /* TODO: move to lookup, once higher versions available */
   static const uint16_t qr_basedark[MAX_VERSION] = {
     91u, 112u, 114u, 118u, 122u
   };
-  /* TODO: move to lookup */
   static const uint16_t qr_offset[MAX_VERSION] = {
     0, 208u, 567u, 1134u, 1941u
   };
@@ -419,7 +418,7 @@ qrmask_apply(qrmask_t* self)
 void
 qrmask_pbox(const qrmask_t* self)
 {
-  /* TODO: limit versions that can be shown inline */
+  /* TODO: limit versions that can be shown inline (terminal width) */
   puts(_nl);
   uint16_t line = 0;
   for (; line < self->order_ - 1; line += 2)

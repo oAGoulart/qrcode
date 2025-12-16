@@ -26,7 +26,7 @@ create_qrmask(qrmask_t** self, uint8_t version, uint8_t pattern);
 __attribute__((__nonnull__)) void
 delete_qrmask(qrmask_t** self);
 
-/* TODO: switch to set/skip method
+/* OPTIMIZE: switch to set/skip method
          set(self) -> err:
            if index_ > num_modules: return rterr("invalid index")
            // set module to 1
