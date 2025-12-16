@@ -71,70 +71,46 @@ colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
 static void __attribute__((__nonnull__))
 mask_double_(const uint8_t* __restrict__ v, const uint8_t order)
 {
-  char str[(order * sizeof(uint32_t)) + 1];
   uint8_t top = 0;
-  uint16_t i = 0;
+  printf("    ");
   for (uint8_t bottom = order; top < order; top++, bottom++)
   {
     const uint8_t ch_case = (uint8_t)(v[top] << 1) + v[bottom];
     switch (ch_case)
     {
     case 0:
-    {
-      __builtin_strcpy(&str[i], " ");
-      i += 3;
+      printf(" ");
       break;
-    }
     case 1:
-    {
-      __builtin_strcpy(&str[i], "▄");
-      i += 3;
+      printf("▄");
       break;
-    }
     case 2:
-    {
-      __builtin_strcpy(&str[i], "▀");
-      i += 3;
+      printf("▀");
       break;
-    }
     default:
-    {
-      __builtin_strcpy(&str[i], "█");
-      i += 3;
+      printf("█");
       break;
-    } /* default */
     } /* switch */
   }
-  if (i > 0)
-  {
-    str[i + 1] = '\0';
-    printf("    %s    " _nl, str);
-  }
+  printf("    " _nl);
 }
 
 static void __attribute__((__nonnull__))
 mask_single_(const uint8_t* __restrict__ v, const uint8_t order)
 {
-  char str[(order * sizeof(uint32_t)) + 1];
-  uint16_t i = 0;
+  printf("    ");
   for (uint8_t top = 0; top < order; top++)
   {
     if (v[top] == 0)
     {
-      __builtin_strcpy(&str[i], " ");
-      i += 3;
+      printf(" ");
     }
     else
     {
-      __builtin_strcpy(&str[i], "▀");
-      i += 3;
+      printf("▀");
     }
   }
-  if (i > 0)
-  {
-    str[i + 1] = '\0';
-    printf("    %s    " _nl, str);
-  }
+  printf("    " _nl);
 }
 
 static void __attribute__((__nonnull__))
