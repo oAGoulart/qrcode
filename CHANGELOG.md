@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Fix build issue on MSYS environment
 - Fix module penalty right-pattern
 - Refactor codebase with `clang-tidy`
+- Refactor inline printing to reduce stack usage
 - Remove deprecated call to `fopen`
 
 ## [1.11.0] - 2025-09-05

@@ -149,8 +149,6 @@ ISO/IEC 2024 – All rights reserved.
 ## Further reading
 
 1. [ISO/IEC 18004:2024 documentation (purchase)](https://www.iso.org/standard/83389.html)
-2. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
-3. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
-
-
-
+2. [Denso's QR Code FAQ](https://www.qrcode.com/en/faq.html)
+3. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
+4. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)

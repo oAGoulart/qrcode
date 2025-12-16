@@ -122,7 +122,7 @@ maximum_count_(const uint8_t version, const subset_t subset)
 struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
-  pbits_t* bits_; /* TODO: should go to redata_t */
+  pbits_t* bits_; /* TODO: should go to qrdata_t */
   uint8_t selectedmask_;
   uint8_t version_;
 };
@@ -427,7 +427,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   datalen = harray_length(arr);
   const uint8_t* gen = rsgen + finalvl->eccoffset;
 
-  /* TODO: should go to redata_t */
+  /* TODO: should go to qrdata_t */
   pdebug("starting polynomial division (long division)");
   const size_t eccn = datalen + finalvl->eccperblock;
   uint8_t ecc[eccn];
