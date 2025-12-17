@@ -5,6 +5,9 @@
 
 #include "heaparray.h"
 
+/* Creates "packed" bit stream from pushed bits,
+   allows reading result bytes
+*/
 typedef struct pbits_s pbits_t;
 
 __attribute__((__nonnull__)) int

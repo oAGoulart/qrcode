@@ -9,13 +9,16 @@
 
 typedef enum eclevel_e
 {
-  EC_LOW,      // 7%
-  EC_MEDIUM,   // 15%
-  EC_QUARTILE, // 25%
-  EC_HIGH,     // 30%
+  EC_LOW,      /* 7% */
+  EC_MEDIUM,   /* 15% */
+  EC_QUARTILE, /* 25% */
+  EC_HIGH,     /* 30% */
   EC_COUNT
 } __attribute__((packed)) eclevel_t;
 
+/* Creates QR code XOR mask from Version and selected pattern,
+   allows setting each module and print/output
+*/
 typedef struct qrmask_s qrmask_t;
 
 __attribute__((__nonnull__)) int

@@ -27,7 +27,7 @@
 #if defined(eprintf)
 #   error "eprintf already defined"
 #endif
-// NOTE: prints with new-line
+/* NOTE: prints with new-line */
 #define eprintf(format, ...) \
   fprintf(stderr, \
     __FILE_NAME__ ":" _xstr(__LINE__) ": " _c(31, "error: ") format _nl, \
@@ -44,7 +44,7 @@
 #if defined(pinfo)
 #   error "pinfo already defined"
 #endif
-// NOTE: prints with new-line
+/* NOTE: prints with new-line; please, start sentence in capital letter! */
 #define pinfo(format, ...) \
   printf(_c(36, "  INFO ") format _nl, ##__VA_ARGS__)
 

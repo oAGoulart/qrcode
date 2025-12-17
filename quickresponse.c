@@ -122,8 +122,8 @@ maximum_count_(const uint8_t version, const subset_t subset)
 struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
-  pbits_t* bits_;
-  uint8_t chosen_;
+  pbits_t* bits_; /* TODO: should move to qrdata_t */
+  uint8_t selectedmask_;
   uint8_t version_;
 };
 
@@ -160,8 +160,8 @@ frombyte_(const uint8_t b)
     {
       return (b - 65) + 10;
     }
-  } // default
-  } // switch
+  } /* default */
+  } /* switch */
   return UINT8_MAX;
 }
 
@@ -193,7 +193,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   uint8_t ver = (version >= 0 && version < MAX_VERSION) ?
     version - 1 : MAX_VERSION - 1;
   size_t strcount = __builtin_strlen(str);
-  // NOTE: initial version selection
+  /* NOTE: initial version selection */
   size_t i = 0;
   if (version != ver)
   {
@@ -305,8 +305,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           }
         }
         break;
-      } // default
-      } // switch
+      } /* default */
+      } /* switch */
       if (pushseg)
       {
         harray_push(segments, &segment, sizeof(segment_t));
@@ -385,8 +385,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       {
         pbits_push((*self)->bits_, str[k + j], 8);
         break;
-      } // default
-      } // switch
+      } /* default */
+      } /* switch */
     }
     k += segment.count;
   }
@@ -403,7 +403,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     break;
   }
   ver = i;
-  // NOTE: final version
+  /* NOTE: final version */
   (*self)->version_ = ver;
   const qrinfo_t* finalvl = &vlinfo[ver * EC_COUNT + level];
   if (datalen > finalvl->datalen)
@@ -418,16 +418,21 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     pinfo("Data length: %zu", datalen - 2u);
     pinfo("Version selected: %u", ver + 1u);
   }
-  for (i = 0; i < (finalvl->datalen) - datalen; i++)
+  /* NOTE: padding bytes */
+  const size_t padbytes = finalvl->datalen - datalen;
+  const size_t padquads = padbytes - (padbytes % 8);
+  for (i = 0; i < padquads; i += 8)
   {
-    // NOTE: padding bytes
-    // TODO: change to 64bits
+    pbits_push((*self)->bits_, 0, 64);
+  }
+  for (i = 0; i < padbytes - padquads; i++)
+  {
     pbits_push((*self)->bits_, 0, 8);
   }
   datalen = harray_length(arr);
   const uint8_t* gen = rsgen + finalvl->eccoffset;
 
-  // TODO: split data into blocks (for higher EC and Version)
+  /* TODO: should move to qrdata_t */
   pdebug("starting polynomial division (long division)");
   const size_t eccn = datalen + finalvl->eccperblock;
   uint8_t ecc[eccn];
@@ -469,7 +474,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   for (i = 0; i < datalen; i++)
   {
     size_t offset = i * 8;
-    // NOTE: bitstream goes from bit 7 to bit 0
+    /* NOTE: bitstream goes from bit 7 to bit 0 */
     for (int8_t bit = 7; bit >= 0; bit--)
     {
       uint8_t module =
@@ -482,7 +487,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
     }
   }
-  // NOTE: padding bits, MUST check xor
+  /* WARNING: padding bits, MUST check xor */
   if (ver > 0)
   {
     for (i = 0; i < NUM_PADBITS; i++)
@@ -497,7 +502,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   pdebug("calculating masks penalty");
   uint16_t minscore = UINT16_MAX;
-  uint8_t chosen = 0;
+  uint8_t selected = 0;
   for (i = 0; i < NUM_MASKS; i++)
   {
     uint16_t score = qrmask_penalty((*self)->masks_[i]);
@@ -505,17 +510,17 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     if (score < minscore)
     {
       minscore = score;
-      chosen = i;
+      selected = i;
     }
     if (verbose)
     {
       pinfo("Mask [%zu] penalty: %u", i, score);
     }
   }
-  (*self)->chosen_ = chosen;
+  (*self)->selectedmask_ = selected;
   if (verbose)
   {
-    pinfo("Mask chosen: %hhu", chosen);
+    pinfo("Mask selected: %hhu", selected);
   }
   return 0;
 }
@@ -536,12 +541,18 @@ delete_qrcode(qrcode_t** self)
   }
 }
 
+__inline__ uint8_t
+qrcode_version(const qrcode_t *self)
+{
+  return self->version_;
+}
+
 __inline__ int
 qrcode_forcemask(qrcode_t* self, int mask)
 {
   if (mask >= 0 && mask < 8)
   {
-    self->chosen_ = (uint8_t)mask;
+    self->selectedmask_ = (uint8_t)mask;
     return 0;
   }
   return EINVAL;
@@ -552,11 +563,11 @@ qrcode_print(const qrcode_t* self, bool useraw)
 {
   if (useraw)
   {
-    qrmask_praw(self->masks_[self->chosen_]);
+    qrmask_praw(self->masks_[self->selectedmask_]);
   }
   else
   {
-    qrmask_pbox(self->masks_[self->chosen_]);
+    qrmask_pbox(self->masks_[self->selectedmask_]);
   }
 }
 
@@ -582,13 +593,14 @@ qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
   case FMT_BMP:
   {
     pdebug("bitmap image output selected");
-    err = qrmask_outbmp(self->masks_[self->chosen_], scale, f);
+    err = qrmask_outbmp(self->masks_[self->selectedmask_],
+                        scale, f);
     break;
   }
   case FMT_SVG:
   {
     pdebug("vector image output selected");
-    qrmask_outsvg(self->masks_[self->chosen_], f);
+    qrmask_outsvg(self->masks_[self->selectedmask_], f);
     break;
   }
   default:
@@ -596,8 +608,8 @@ qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
     eprintf("invalid image format selected: %d", fmt);
     err = EINVAL;
     break;
-  } // default
-  } // switch
+  } /* default */
+  } /* switch */
   fclose(f);
   return err;
 }

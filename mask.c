@@ -16,7 +16,7 @@ struct qrmask_s
 {
   const uint16_t* i_;
   uint16_t  count_;
-  uint8_t*  v_; // NOTE: cannot be harray_h
+  uint8_t*  v_;
   uint8_t   version_;
   eclevel_t level_;
   uint8_t   order_;
@@ -71,76 +71,51 @@ colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
 static void __attribute__((__nonnull__))
 mask_double_(const uint8_t* __restrict__ v, const uint8_t order)
 {
-  char str[(order * sizeof(uint32_t)) + 1];
   uint8_t top = 0;
-  uint16_t i = 0;
+  printf("    ");
   for (uint8_t bottom = order; top < order; top++, bottom++)
   {
     const uint8_t ch_case = (uint8_t)(v[top] << 1) + v[bottom];
     switch (ch_case)
     {
     case 0:
-    {
-      __builtin_strcpy(&str[i], " ");
-      i += 3;
+      printf(" ");
       break;
-    }
     case 1:
-    {
-      __builtin_strcpy(&str[i], "▄");
-      i += 3;
+      printf("▄");
       break;
-    }
     case 2:
-    {
-      __builtin_strcpy(&str[i], "▀");
-      i += 3;
+      printf("▀");
       break;
-    }
     default:
-    {
-      __builtin_strcpy(&str[i], "█");
-      i += 3;
+      printf("█");
       break;
-    } // default
-    } // switch
+    } /* switch */
   }
-  if (i > 0)
-  {
-    str[i + 1] = '\0';
-    printf("    %s    " _nl, str);
-  }
+  printf("    " _nl);
 }
 
 static void __attribute__((__nonnull__))
 mask_single_(const uint8_t* __restrict__ v, const uint8_t order)
 {
-  char str[(order * sizeof(uint32_t)) + 1];
-  uint16_t i = 0;
+  printf("    ");
   for (uint8_t top = 0; top < order; top++)
   {
     if (v[top] == 0)
     {
-      __builtin_strcpy(&str[i], " ");
-      i += 3;
+      printf(" ");
     }
     else
     {
-      __builtin_strcpy(&str[i], "▀");
-      i += 3;
+      printf("▀");
     }
   }
-  if (i > 0)
-  {
-    str[i + 1] = '\0';
-    printf("    %s    " _nl, str);
-  }
+  printf("    " _nl);
 }
 
 static void __attribute__((__nonnull__))
 place_finder_(qrmask_t* self)
 {
-  // TODO: move to lookup
   static const uint8_t finder[7][7] = {
     { 1, 1, 1, 1, 1, 1, 1 },
     { 1, 0, 0, 0, 0, 0, 1 },
@@ -159,13 +134,12 @@ place_finder_(qrmask_t* self)
       &self->v_[(self->order_ - 7u) * self->order_ + self->order_ * i],
       &finder[i], 7u);
   }
-  // NOTE: separators not required (array is initialized to 0)
+  /* WARNING: assumes separators are not required (zeroed buffer) */
 }
 
 static void __attribute__((__nonnull__))
 place_align_(qrmask_t* self)
 {
-  // TODO: move to lookup
   static const uint8_t align[5][5] = {
     { 1, 1, 1, 1, 1 },
     { 1, 0, 0, 0, 1 },
@@ -218,25 +192,23 @@ percentage_penalty_(qrmask_t* self)
 static void __attribute__((__nonnull__))
 module_penalty_(qrmask_t* self)
 {
-  // TODO: move to lookup
   static const uint8_t patright[9] = {
-    1, 1, 1, 0, 1, 0, 0, 0, 0
+    0, 0, 0, 0, 1, 0, 1, 1, 1
   };
-  // TODO: move to lookup
   static const uint8_t patleft[9] = {
     1, 1, 1, 0, 1, 0, 0, 0, 0
   };
   for (uint8_t i = 0; i < self->order_; i++)
   {
     const uint16_t row = i * self->order_;
-    // Step 1: row direction >>>
+    /* NOTE: row direction >>> */
     for (uint8_t j = 0; j < self->order_ - 1; j++)
     {
       uint8_t* module = &self->v_[row + j];
       const uint8_t* next = &self->v_[row + j + 1];
       if (*module == *next)
       {
-        // NOTE: square penalty
+        /* NOTE: square penalty */
         if (i < self->order_ - 1) {
           if (*(module + self->order_) == *module &&
               *(next + self->order_) == *module)
@@ -244,7 +216,7 @@ module_penalty_(qrmask_t* self)
             self->penalty_ += 3;
           }
         }
-        // NOTE: sequential line penalty (row)
+        /* NOTE: sequential line penalty (row) */
         if (j < self->order_ - 4)
         {
           uint8_t count = j;
@@ -262,7 +234,7 @@ module_penalty_(qrmask_t* self)
           }
         }
       }
-      // NOTE: pattern penalty (row)
+      /* NOTE: pattern penalty (row) */
       if (j < self->order_ - 10 && *next == MASK_LIGHT)
       {
         const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
@@ -272,7 +244,7 @@ module_penalty_(qrmask_t* self)
         }
       }
     }
-    // Step 2: column direction vvv
+    /* NOTE: column direction vvv */
     for (uint32_t k = 0;
       k < self->count_ - (4u * self->order_); k += self->order_)
     {
@@ -280,7 +252,7 @@ module_penalty_(qrmask_t* self)
       const uint8_t* next = &self->v_[i + k + self->order_];
       if (*module == *next)
       {
-        // NOTE: sequential line penalty (column)
+        /* NOTE: sequential line penalty (column) */
         uint16_t count = k;
         for (; next + k < self->v_ + self->count_; k += self->order_)
         {
@@ -296,7 +268,7 @@ module_penalty_(qrmask_t* self)
           self->penalty_ += (count - 5) + 3;
         }
       }
-      // NOTE: pattern penalty (column)
+      /* NOTE: pattern penalty (column) */
       if (k < self->count_ - (10 * self->order_) && *next == MASK_LIGHT)
       {
         const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
@@ -319,11 +291,10 @@ symbol_order_(const uint8_t version)
 int
 create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
 {
-  // TODO: move to lookup
+  /* TODO: move to lookup, once higher versions available */
   static const uint16_t qr_basedark[MAX_VERSION] = {
     91u, 112u, 114u, 118u, 122u
   };
-  // TODO: move to lookup
   static const uint16_t qr_offset[MAX_VERSION] = {
     0, 208u, 567u, 1134u, 1941u
   };
@@ -389,7 +360,7 @@ qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
   const uint16_t idx = self->i_[index];
   if (should_xor_(self->order_, idx, self->pattern_))
   {
-    module = (module == MASK_DARK) ? MASK_LIGHT : MASK_DARK;
+    module = !module;
   }
   self->v_[idx] = module;
   if (module == MASK_DARK)
@@ -412,7 +383,6 @@ qrmask_penalty(qrmask_t* self)
 void
 qrmask_apply(qrmask_t* self)
 {
-  // TODO: move to lookup
   static const uint16_t maskinfo[NUM_MASKS] = {
     30660u, 29427u, 32170u, 30877u,
     26159u, 25368u, 27713u, 26998u
@@ -542,7 +512,7 @@ qrmask_outbmp(const qrmask_t* self,
     {
       bytes[j] = 0;
     }
-    // NOTE: left padding
+    /* NOTE: left padding */
     for (int j = 0; j < 8 - rest; j++)
     {
       if (scount == 0)

@@ -4,9 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Refactor codebase with `clang-tidy`
+- Add `--help` command to show help message
+- Add redundant data type `redata_t` to generate codeword blocks
+- Add Version limit to inline printing
+- Add command `--nolimit` to print any Version inline
+- Change comments from `//` to `/**/`
 - Fix minimum version selection
 - Fix build issue on MSYS environment
+- Fix module penalty right-pattern
+- Optimize pad bytes push
+- Refactor codebase with `clang-tidy`
+- Refactor inline printing to reduce stack usage
 - Remove deprecated call to `fopen`
 
 ## [1.11.0] - 2025-09-05
