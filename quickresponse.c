@@ -16,15 +16,6 @@
 
 #define NUM_PADBITS 7
 
-typedef struct __attribute__((packed)) qrinfo_s
-{
-  uint16_t datalen;
-  uint8_t eccperblock;
-  uint8_t numblocks[2];
-  uint8_t dataperblock[2];
-  uint8_t eccoffset;
-} qrinfo_t;
-
 extern const qrinfo_t vlinfo[];
 extern const uint8_t logt[];
 extern const uint8_t alogt[];
@@ -199,7 +190,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     for (; i <= ver; i++)
     {
-      if (strcount <= vlinfo[i * EC_COUNT + level].datalen - 2)
+      if (strcount <= vlinfo[i * EC_COUNT + level].len - 2)
       {
         ver = i;
         break;
@@ -396,7 +387,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t datalen = harray_length(arr);
   for (i = ver; i > 0; i--)
   {
-    if (datalen <= vlinfo[(i - 1) * EC_COUNT + level].datalen)
+    if (datalen <= vlinfo[(i - 1) * EC_COUNT + level].len)
     {
       continue;
     }
@@ -406,9 +397,9 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   /* NOTE: final version */
   (*self)->version_ = ver;
   const qrinfo_t* finalvl = &vlinfo[ver * EC_COUNT + level];
-  if (datalen > finalvl->datalen)
+  if (datalen > finalvl->len)
   {
-    eprintf("data must be less than %u characters long", finalvl->datalen - 2u);
+    eprintf("data must be less than %u characters long", finalvl->len - 2u);
     delete_qrcode(self);
     return EINVAL;
   }
@@ -419,7 +410,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     pinfo("Version selected: %u", ver + 1u);
   }
   /* NOTE: padding bytes */
-  const size_t padbytes = finalvl->datalen - datalen;
+  const size_t padbytes = finalvl->len - datalen;
   const size_t padquads = padbytes - (padbytes % 8);
   for (i = 0; i < padquads; i += 8)
   {
@@ -430,23 +421,23 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     pbits_push((*self)->bits_, 0, 8);
   }
   datalen = harray_length(arr);
-  const uint8_t* gen = rsgen + finalvl->eccoffset;
+  const uint8_t* gen = rsgen + finalvl->offset;
 
   /* TODO: should move to qrdata_t */
   pdebug("starting polynomial division (long division)");
-  const size_t eccn = datalen + finalvl->eccperblock;
+  const size_t eccn = datalen + finalvl->eccpb;
   uint8_t ecc[eccn];
-  __builtin_memset(ecc + datalen, 0, finalvl->eccperblock);
+  __builtin_memset(ecc + datalen, 0, finalvl->eccpb);
   harray_copy(arr, ecc, datalen);
   for (i = 0; i < datalen; i++)
   {
     uint8_t lead = ecc[i];
-    for (uint8_t j = 0; j <= finalvl->eccperblock; j++)
+    for (uint8_t j = 0; j <= finalvl->eccpb; j++)
     {
       ecc[i + j] ^= alogt[(gen[j] + logt[lead]) % UINT8_MAX];
     }
   }
-  harray_push(arr, &ecc[i], finalvl->eccperblock);
+  harray_push(arr, &ecc[i], finalvl->eccpb);
   datalen = harray_length(arr);
 
   if (verbose)

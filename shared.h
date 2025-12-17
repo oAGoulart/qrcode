@@ -12,6 +12,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #define _nl "\n"
 #define _str(s) #s
@@ -109,5 +110,14 @@
 #define MAX_VERSION 5
 #define MAX_SCALE   30
 #define NUM_MASKS   8
+
+typedef struct __attribute__((packed)) qrinfo_s
+{
+  uint16_t len;      /* qr data length */
+  uint8_t eccpb;     /* ec codewords per block */
+  uint8_t blocks[2]; /* number of blocks per group (2) */
+  uint8_t datapb[2]; /* data codewords per block, per group (2) */
+  uint8_t offset;    /* rsgen table ecc generator offset */
+} qrinfo_t;
 
 #endif
