@@ -360,7 +360,7 @@ qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
   const uint16_t idx = self->i_[index];
   if (should_xor_(self->order_, idx, self->pattern_))
   {
-    module = (module == MASK_DARK) ? MASK_LIGHT : MASK_DARK;
+    module = !module;
   }
   self->v_[idx] = module;
   if (module == MASK_DARK)

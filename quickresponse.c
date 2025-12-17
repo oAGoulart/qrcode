@@ -418,10 +418,15 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     pinfo("Data length: %zu", datalen - 2u);
     pinfo("Version selected: %u", ver + 1u);
   }
-  for (i = 0; i < (finalvl->datalen) - datalen; i++)
+  /* NOTE: padding bytes */
+  const size_t padbytes = finalvl->datalen - datalen;
+  const size_t padquads = padbytes - (padbytes % 8);
+  for (i = 0; i < padquads; i += 8)
   {
-    /* NOTE: padding bytes */
-    /* OPTIMIZE: change to 64bits */
+    pbits_push((*self)->bits_, 0, 64);
+  }
+  for (i = 0; i < padbytes - padquads; i++)
+  {
     pbits_push((*self)->bits_, 0, 8);
   }
   datalen = harray_length(arr);
