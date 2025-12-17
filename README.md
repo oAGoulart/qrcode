@@ -24,7 +24,7 @@ on any platform. Outputs inline (stdout), bitmap, or vectors (svg).
 1. Reed-Solomon EC generator polynomials.
 2. Galois field of 256 (285 primitive) log and anti-log table.
 3. Placement index of each data and error correction bit onto the encoding region.
-4. QR code Version/Level information table.
+4. QR Code Version/Level information table.
 
 ## Usage
 
@@ -36,6 +36,7 @@ OPTIONS:
   --help       show this help message
   --nocopy     omit copyright header from inline printing
   --noinline   do not print any inline code, disregards --raw
+  --nolimit    ignore inline Version limit (for large terminal windows)
   --optimize   reduce data size, encode numeric, alphanumeric, byte
                  segments separately (if any)
   --raw        print generated code with chars 1, 0 (no box-chars)
