@@ -8,14 +8,10 @@
    allows access to codewords in the correct order group/block
 */
 typedef struct qrdata_s qrdata_t;
-/*
-  - char** datablocks_
-  - pbits_t** eccblocks_
-  - qrinfo_t* info_
- */
 
 __attribute__((__nonnull__)) int
-create_qrdata(qrdata_t** self, const char* __restrict__ str);
+create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
+              const qrinfo_t* __restrict__ info);
 __attribute__((__nonnull__)) void
 delete_qrdata(qrdata_t** self);
 
