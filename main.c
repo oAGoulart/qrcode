@@ -8,6 +8,9 @@
 #include "quickresponse.h"
 #include "shared.h"
 
+/* NOTE: not to be confused with MAX_VERSION */
+#define VERSION_LIMIT 5
+
 /* Terminal argument */
 typedef enum targ_e
 {
@@ -19,6 +22,7 @@ typedef enum targ_e
   ARG_INFO     = 0x10,
   ARG_OPTIMIZE = 0x20,
   ARG_HELP     = 0x40,
+  ARG_NOLIMIT  = 0x80,
   ARG_RESERVED __attribute__((unavailable("bit mask limit"))) = 0x8000,
   ARG_MASK,
   ARG_VER,
@@ -27,18 +31,18 @@ typedef enum targ_e
   ARG_BMP,
   ARG_SVG
 } targ_t;
-#define NUM_ARGS      13
+#define NUM_ARGS      14
 #define NUM_MANDATORY 1
 
 static const char* args_[NUM_ARGS] = {
-  "--nocopy", "--verbose", "--raw",
-  "--noinline", "--version", "--optimize", "--help",
+  "--nocopy", "--verbose", "--raw", "--noinline",
+  "--version", "--optimize", "--help", "--nolimit",
   "-m", "-u", "-l", "-s", "-B", "-K"
 };
 
 static const targ_t arge_[NUM_ARGS] = {
-  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW,
-  ARG_NOINLINE, ARG_INFO, ARG_OPTIMIZE, ARG_HELP,
+  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE,
+  ARG_INFO, ARG_OPTIMIZE, ARG_HELP, ARG_NOLIMIT,
   ARG_MASK, ARG_VER, ARG_LEVEL, ARG_SCALE,
   ARG_BMP, ARG_SVG
 };
@@ -207,8 +211,17 @@ main(const int argc, char* argv[])
     }
     if (!(options & ARG_NOINLINE))
     {
-      pdebug("printing inline qrcode");
-      qrcode_print(qr, options & ARG_RAW);
+      const uint8_t version = qrcode_version(qr);
+      if (version > VERSION_LIMIT && !(options & ARG_NOLIMIT))
+      {
+        eprintf("could not print inline qrcode, version %d too high,"
+                "use --nolimit and try again", version);
+      }
+      else
+      {
+        pdebug("printing inline qrcode");
+        qrcode_print(qr, options & ARG_RAW);
+      }
     }
     if (imgout != NULL)
     {

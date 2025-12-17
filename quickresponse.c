@@ -541,6 +541,12 @@ delete_qrcode(qrcode_t** self)
   }
 }
 
+__inline__ uint8_t
+qrcode_version(const qrcode_t *self)
+{
+  return self->version_;
+}
+
 __inline__ int
 qrcode_forcemask(qrcode_t* self, int mask)
 {

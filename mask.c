@@ -418,7 +418,6 @@ qrmask_apply(qrmask_t* self)
 void
 qrmask_pbox(const qrmask_t* self)
 {
-  /* TODO: limit versions that can be shown inline (terminal width) */
   puts(_nl);
   uint16_t line = 0;
   for (; line < self->order_ - 1; line += 2)
