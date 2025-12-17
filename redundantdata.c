@@ -14,7 +14,7 @@ struct qrdata_s
 
 int
 create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
-              const qrinfo_t* __restrict__ info)
+              const qrinfo_t* const __restrict__ info)
 {
   if (*self != NULL)
   {
