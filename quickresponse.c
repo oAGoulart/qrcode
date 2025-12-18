@@ -113,7 +113,7 @@ maximum_count_(const uint8_t version, const subset_t subset)
 struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
-  pbits_t* bits_; /* TODO: should move to qrdata_t */
+  pbits_t* bits_;
   uint8_t selectedmask_;
   uint8_t version_;
 };
@@ -175,7 +175,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   int err = create_pbits(&(*self)->bits_);
   if (err)
   {
-    eprintf("cannot create pbits member of qrcode");
+    eprintf("cannot create bits_ member of qrcode");
     free(*self);
     *self = NULL;
     return err;

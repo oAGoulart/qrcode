@@ -1,4 +1,5 @@
 #include "redundantdata.h"
+#include "heaparray.h"
 #include "packedbits.h"
 
 #include <stddef.h>
@@ -6,9 +7,8 @@
 
 struct qrdata_s
 {
-  pbits_t** data_;
-  pbits_t** ecc_;
-  size_t separator;
+  harray_t* data_;
+  harray_t* ecc_;
   const qrinfo_t* info_;
 };
 
@@ -27,12 +27,33 @@ create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
     eprintf("cannot allocate %zu bytes", sizeof(qrdata_t));
     return ENOMEM;
   }
-  (*self)->info_ = info;
+  (*self)->info_ = info; /* OPTIMIZE: verify this is necessary */
+  const size_t totalblocks = info->blocks[0] + info->blocks[1];
+  (*self)->data_ = NULL;
+  int err = create_harray(
+    &(*self)->data_,
+    totalblocks * sizeof(pbits_t*));
+  if (err)
+  {
+    eprintf("cannot create data_ member of qrdata");
+    delete_qrdata(self);
+    return err;
+  }
+  (*self)->ecc_ = NULL;
+  err = create_harray(
+    &(*self)->ecc_,
+    totalblocks * sizeof(pbits_t*));
+  if (err)
+  {
+    eprintf("cannot create ecc_ member of qrdata");
+    delete_qrdata(self);
+    return err;
+  }
   /* TODO:
-    1. instanciate array of data/ecc blocks
-    2. delimit group separator index
-    3. split bits into data blocks
-    4. generate ecc for each data block */
+    1. instantiate each data block's pbits_t, while:
+       split `bits` into data blocks
+    2. instantiate each ecc block's pbits_t, while:
+       generate ecc for each data block */
   return 0;
 }
 
@@ -41,6 +62,8 @@ delete_qrdata(qrdata_t** self)
 {
   if (*self != NULL)
   {
+    delete_harray(&(*self)->data_);
+    delete_harray(&(*self)->ecc_);
     free(*self);
   }
 }

@@ -36,7 +36,7 @@ OPTIONS:
   --help       show this help message
   --nocopy     omit copyright header from inline printing
   --noinline   do not print any inline code, disregards --raw
-  --nolimit    ignore inline Version limit (for large terminal windows)
+  --nolimit    ignore inline Version limit (for larger terminals)
   --optimize   reduce data size, encode numeric, alphanumeric, byte
                  segments separately (if any)
   --raw        print generated code with chars 1, 0 (no box-chars)

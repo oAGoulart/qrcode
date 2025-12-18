@@ -18,7 +18,7 @@ struct qrmask_s
   uint16_t  count_;
   uint8_t*  v_;
   uint8_t   version_;
-  eclevel_t level_;
+  eclevel_t level_; /* TODO: move to qrdata_t */
   uint8_t   order_;
   uint8_t   pattern_;
   uint16_t  dark_;
@@ -314,7 +314,7 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
     eprintf("cannot allocate %zu bytes", sizeof(qrmask_t));
     return ENOMEM;
   }
-  (*self)->version_ = version;
+  (*self)->version_ = version; /* OPTIMIZE: verify this is necessary */
   (*self)->order_ = symbol_order_(version);
   (*self)->count_ = (*self)->order_ * (*self)->order_;
   (*self)->pattern_ = pattern;

@@ -55,6 +55,7 @@ phelp_(const char* __restrict__ cmdln)
     "  --help       show this help message" _nl
     "  --nocopy     omit copyright header from inline printing" _nl
     "  --noinline   do not print any inline code, disregards --raw" _nl
+    "  --nolimit    ignore inline Version limit (for larger terminals)" _nl
     "  --optimize   reduce data size, encode numeric, alphanumeric, byte" _nl
     "                 segments separately (if any)" _nl
     "  --raw        print generated code with chars 1, 0 (no box-chars)" _nl
