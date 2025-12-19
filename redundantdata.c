@@ -1,5 +1,5 @@
 #include "redundantdata.h"
-#include "heaparray.h"
+#include "objectvector.h"
 #include "packedbits.h"
 
 #include <stddef.h>
@@ -7,8 +7,8 @@
 
 struct qrdata_s
 {
-  harray_t* data_;
-  harray_t* ecc_;
+  ovector_t* data_;
+  ovector_t* ecc_;
   const qrinfo_t* info_;
 };
 
@@ -30,9 +30,9 @@ create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
   (*self)->info_ = info; /* OPTIMIZE: verify this is necessary */
   const size_t totalblocks = info->blocks[0] + info->blocks[1];
   (*self)->data_ = NULL;
-  int err = create_harray(
+  int err = create_ovector(
     &(*self)->data_,
-    totalblocks * sizeof(pbits_t*));
+    (void (*)(void**))delete_pbits);
   if (err)
   {
     eprintf("cannot create data_ member of qrdata");
@@ -40,9 +40,9 @@ create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
     return err;
   }
   (*self)->ecc_ = NULL;
-  err = create_harray(
+  err = create_ovector(
     &(*self)->ecc_,
-    totalblocks * sizeof(pbits_t*));
+    (void (*)(void**))delete_pbits);
   if (err)
   {
     eprintf("cannot create ecc_ member of qrdata");
@@ -62,8 +62,8 @@ delete_qrdata(qrdata_t** self)
 {
   if (*self != NULL)
   {
-    delete_harray(&(*self)->data_);
-    delete_harray(&(*self)->ecc_);
+    delete_ovector(&(*self)->data_);
+    delete_ovector(&(*self)->ecc_);
     free(*self);
   }
 }
