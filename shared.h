@@ -1,3 +1,4 @@
+#include <stddef.h>
 #ifndef SHARED_H
 #define SHARED_H 1
 
@@ -119,5 +120,12 @@ typedef struct __attribute__((packed)) qrinfo_s
   uint8_t datapb[2]; /* data codewords per block, per group (2) */
   uint8_t offset;    /* rsgen table ecc generator offset */
 } qrinfo_t;
+
+static __inline__ size_t __attribute__((__const__))
+align_memory(const size_t size, const size_t alignment)
+{
+  const size_t remainder = size % alignment;
+  return (remainder > 0) ? (size - remainder) + alignment : size;
+}
 
 #endif

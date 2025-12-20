@@ -8,13 +8,6 @@
 
 #define ARRAY_SIZE 0x20u
 
-static __inline__ size_t __attribute__((__const__))
-align_(const size_t size)
-{
-  const size_t remainder = size % ARRAY_SIZE;
-  return (remainder > 0) ? (size - remainder) + ARRAY_SIZE : size;
-}
-
 struct harray_s
 {
   size_t available_;
@@ -41,8 +34,7 @@ create_harray(harray_t** self, const size_t size)
     eprintf("cannot allocate %zu bytes", sizeof(harray_t));
     return ENOMEM;
   }
-  (*self)->available_ = align_(size);
-  (*self)->length_ = 0;
+  (*self)->available_ = align_memory(size, ARRAY_SIZE);
   (*self)->data_ = (uint8_t*)malloc((*self)->available_);
   if ((*self)->data_ == NULL)
   {
@@ -51,6 +43,7 @@ create_harray(harray_t** self, const size_t size)
     *self = NULL;
     return ENOMEM;
   }
+  (*self)->length_ = 0;
   return 0;
 }
 
@@ -73,7 +66,8 @@ harray_push(harray_t* self, const void* __restrict__ obj, size_t size)
 {
   if (self->available_ < size)
   {
-    const size_t asize = align_(self->length_ + size);
+    const size_t asize = align_memory(
+      self->length_ + size, ARRAY_SIZE);
     uint8_t* tmp = realloc(self->data_, asize);
     if (tmp == NULL)
     {
@@ -81,16 +75,11 @@ harray_push(harray_t* self, const void* __restrict__ obj, size_t size)
       return ENOMEM;
     }
     self->data_ = tmp;
-    __builtin_memcpy(&self->data_[self->length_], obj, size);
-    self->length_ += size;
     self->available_ = asize - self->length_;
   }
-  else
-  {
-    __builtin_memcpy(&self->data_[self->length_], obj, size);
-    self->length_ += size;
-    self->available_ -= size;
-  }
+  __builtin_memcpy(&self->data_[self->length_], obj, size);
+  self->length_ += size;
+  self->available_ -= size;
   return 0;
 }
 
@@ -107,7 +96,8 @@ harray_pop(harray_t* self, const size_t size)
   self->available_ += size;
   if (self->available_ > ARRAY_SIZE)
   {
-    const size_t asize = align_(self->length_);
+    const size_t asize = align_memory(
+      self->length_, ARRAY_SIZE);
     uint8_t* tmp = realloc(self->data_, asize);
     if (tmp != NULL)
     {
