@@ -10,9 +10,9 @@
 
 struct harray_s
 {
-  size_t available_;
   uint8_t* data_;
-  size_t length_;
+  size_t   available_;
+  size_t   length_;
 };
 
 int
@@ -67,7 +67,8 @@ harray_push(harray_t* self, const void* __restrict__ obj, size_t size)
   if (self->available_ < size)
   {
     const size_t asize = align_memory(
-      self->length_ + size, ARRAY_SIZE);
+      self->length_ + size, ARRAY_SIZE
+    );
     uint8_t* tmp = realloc(self->data_, asize);
     if (tmp == NULL)
     {
@@ -97,7 +98,8 @@ harray_pop(harray_t* self, const size_t size)
   if (self->available_ > ARRAY_SIZE)
   {
     const size_t asize = align_memory(
-      self->length_, ARRAY_SIZE);
+      self->length_, ARRAY_SIZE
+    );
     uint8_t* tmp = realloc(self->data_, asize);
     if (tmp != NULL)
     {
@@ -183,8 +185,9 @@ harray_first(const harray_t* self, const size_t from,
             size, from, self->length_);
     return ERANGE;
   }
-  char* ch = __builtin_char_memchr((char*)self->data_,
-                                   *(char*)obj, self->length_ - size);
+  char* ch = __builtin_char_memchr(
+    (char*)self->data_, *(char*)obj, self->length_ - size
+  );
   while (ch != NULL)
   {
     const ptrdiff_t diff = (ptrdiff_t)(ch - (uintptr_t)self->data_);
@@ -192,8 +195,9 @@ harray_first(const harray_t* self, const size_t from,
     {
       return diff;
     }
-    ch = __builtin_char_memchr(ch + 1, *(char*)obj,
-                               self->length_ - diff - size);
+    ch = __builtin_char_memchr(
+      ch + 1, *(char*)obj, self->length_ - diff - size
+    );
   }
   return -1;
 }

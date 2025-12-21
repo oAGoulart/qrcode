@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Add redundant data type `redata_t` to generate codeword blocks
 - Add Version limit to inline printing
 - Add command `--nolimit` to print any Version inline
+- Add object vector with cleanup on deletion
 - Change comments from `//` to `/**/`
 - Fix minimum version selection
 - Fix build issue on MSYS environment

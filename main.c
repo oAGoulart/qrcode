@@ -50,7 +50,8 @@ static const targ_t arge_[NUM_ARGS] = {
 static __inline__ int
 phelp_(const char* __restrict__ cmdln)
 {
-  fprintf(stderr, "Usage: %s [OPTIONS] <string>" _nl
+  fprintf(stderr,
+    "Usage: %s [OPTIONS] <string>" _nl
     "OPTIONS:" _nl
     "  --help       show this help message" _nl
     "  --nocopy     omit copyright header from inline printing" _nl
@@ -69,7 +70,8 @@ phelp_(const char* __restrict__ cmdln)
     "                 used with --optimize)" _nl
     "  -B <string>  create bitmap file with generated code" _nl
     "  -K <string>  create scalable vector image, disregards -s" _nl,
-    cmdln);
+    cmdln
+  );
   return EINVAL;
 }
 
@@ -84,33 +86,33 @@ main(const int argc, char* argv[])
   targ_t    options = ARG_NONE;
   imgfmt_t  imgfmt  = FMT_SVG;
   eclevel_t level   = EC_LOW;
-  int mask     = -1;
-  int ver      = -1;
-  int scale    = -1;
-  int argcount =  0;
-  char* imgout = NULL;
+  int mask       = -1;
+  int version    = -1;
+  int scale      = -1;
+  int arg_count  =  0;
+  char* filename = NULL;
 
   pdebug("started parsing cmdln arguments");
-  for (int i = 1; i < argc; i++)
+  for (int arg = 1; arg < argc; arg++)
   {
-    if (argv[i][0] == '-')
+    if (argv[arg][0] == '-')
     {
       for (size_t j = 0; j < NUM_ARGS; j++)
       {
-        if (!__builtin_strcmp(argv[i], args_[j]))
+        if (!__builtin_strcmp(argv[arg], args_[j]))
         {
-          argcount++;
-          bool xarg = true;
+          arg_count++;
+          bool exclusive_arg = true;
           switch (arge_[j])
           {
           case ARG_MASK:
-            mask = strtol(argv[i + 1], NULL, 0);
+            mask = strtol(argv[arg + 1], NULL, 0);
             break;
           case ARG_LEVEL:
           {
-            if (__builtin_strlen(argv[i + 1]) == 1)
+            if (__builtin_strlen(argv[arg + 1]) == 1)
             {
-              const char lvl = argv[i + 1][0];
+              const char lvl = argv[arg + 1][0];
               if (lvl == 'l' || lvl == 'L')
               {
                 level = EC_LOW;
@@ -137,26 +139,26 @@ main(const int argc, char* argv[])
             return EINVAL;
           }
           case ARG_VER:
-            ver = strtol(argv[i + 1], NULL, 0) - 1;
+            version = strtol(argv[arg + 1], NULL, 0) - 1;
             break;
           case ARG_SCALE:
-            scale = strtol(argv[i + 1], NULL, 0);
+            scale = strtol(argv[arg + 1], NULL, 0);
             break;
           case ARG_BMP:
             imgfmt = FMT_BMP;
             __attribute__((fallthrough));
           case ARG_SVG:
-            imgout = argv[i + 1];
+            filename = argv[arg + 1];
             break;
           default:
             options |= arge_[j];
-            xarg = false;
+            exclusive_arg = false;
             break;
-          }
-          if (xarg)
+          } /* switch */
+          if (exclusive_arg)
           {
-            argcount++;
-            i++;
+            arg_count++;
+            arg++;
           }
           break;
         }
@@ -174,7 +176,7 @@ main(const int argc, char* argv[])
   {
     return phelp_(argv[0]);
   }
-  if (argc - argcount < NUM_MANDATORY + 1)
+  if (argc - arg_count < NUM_MANDATORY + 1)
   {
     eprintf("must provide " _xstr(NUM_MANDATORY) " mandatory argument(s)");
     return EXIT_FAILURE;
@@ -188,7 +190,7 @@ main(const int argc, char* argv[])
   pdebug("creating qrcode object");
   qrcode_t* qr = NULL;
   int err = create_qrcode(&qr,
-    argv[argc - 1], ver, level,
+    argv[argc - 1], version, level,
     options & ARG_OPTIMIZE,
     options & ARG_VERBOSE);
   if (err != 0)
@@ -212,11 +214,11 @@ main(const int argc, char* argv[])
     }
     if (!(options & ARG_NOINLINE))
     {
-      const uint8_t version = qrcode_version(qr);
-      if (version > VERSION_LIMIT && !(options & ARG_NOLIMIT))
+      const uint8_t vers = qrcode_version(qr);
+      if (vers > VERSION_LIMIT && !(options & ARG_NOLIMIT))
       {
-        eprintf("could not print inline qrcode, version %d too high,"
-                "use --nolimit and try again", version);
+        eprintf("could not print inline qrcode, version %uhh too high,"
+                "use --nolimit and try again", vers);
       }
       else
       {
@@ -224,16 +226,16 @@ main(const int argc, char* argv[])
         qrcode_print(qr, options & ARG_RAW);
       }
     }
-    if (imgout != NULL)
+    if (filename != NULL)
     {
-      err = qrcode_output(qr, imgfmt, scale, imgout);
+      err = qrcode_output(qr, imgfmt, scale, filename);
       if (err != 0)
       {
         eprintf("could not output qrcode image");
       }
       else if (options & ARG_VERBOSE)
       {
-        pinfo("Image saved to: %s", imgout);
+        pinfo("Image saved to: %s", filename);
       }
     }
   }

@@ -128,11 +128,14 @@ place_finder_(qrmask_t* self)
   for (size_t i = 0; i < 7; i++)
   {
     __builtin_memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
-    __builtin_memcpy(&self->v_[(self->order_ - 7u) + self->order_ * i],
-                     &finder[i], 7u);
+    __builtin_memcpy(
+      &self->v_[(self->order_ - 7u) + self->order_ * i],
+      &finder[i], 7u
+    );
     __builtin_memcpy(
       &self->v_[(self->order_ - 7u) * self->order_ + self->order_ * i],
-      &finder[i], 7u);
+      &finder[i], 7u
+    );
   }
   /* WARNING: assumes separators are not required (zeroed buffer) */
 }
@@ -245,8 +248,11 @@ module_penalty_(qrmask_t* self)
       }
     }
     /* NOTE: column direction vvv */
-    for (uint32_t k = 0;
-      k < self->count_ - (4u * self->order_); k += self->order_)
+    for (
+      uint32_t k = 0;
+      k < self->count_ - (4u * self->order_);
+      k += self->order_
+    )
     {
       const uint8_t* module = &self->v_[i + k];
       const uint8_t* next = &self->v_[i + k + self->order_];
@@ -387,8 +393,7 @@ qrmask_apply(qrmask_t* self)
     30660u, 29427u, 32170u, 30877u,
     26159u, 25368u, 27713u, 26998u
   };
-  uint8_t i = 0;
-  for (; i < MASKINFO_LEN; i++)
+  for (uint8_t i = 0; i < MASKINFO_LEN; i++)
   {
     int idx1 = 0;
     int idx2 = 0;
@@ -419,8 +424,7 @@ void
 qrmask_pbox(const qrmask_t* self)
 {
   puts(_nl);
-  uint16_t line = 0;
-  for (; line < self->order_ - 1; line += 2)
+  for (uint16_t line = 0; line < self->order_ - 1; line += 2)
   {
     mask_double_(&self->v_[line * self->order_], self->order_);
   }
@@ -435,8 +439,7 @@ qrmask_pbox(const qrmask_t* self)
 void
 qrmask_praw(const qrmask_t* self)
 {
-  size_t row = 0;
-  for (; row < self->order_; row++)
+  for (size_t row = 0; row < self->order_; row++)
   {
     printf("%hhu", self->v_[row * self->order_]);
     size_t col = 1;
@@ -585,7 +588,8 @@ qrmask_outsvg(const qrmask_t* self, FILE* __restrict__ file)
       "<rect fill=\"white\" width=\"%u\" height=\"%u\" x=\"0\" y=\"0\"/>"
     "</g>" _nl
     "<g id=\"modules\" transform=\"translate(4 4)\">" _nl,
-    nmods, nmods, nmods, nmods, nmods, nmods);
+    nmods, nmods, nmods, nmods, nmods, nmods
+  );
 
   for (uint32_t row = 0; row < self->order_; row++)
   {
