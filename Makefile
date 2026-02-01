@@ -8,7 +8,7 @@ CCFLAGS := -DNDEBUG -g0 -O3
 LDFLAGS := -lm
 
 BUILD_DIR := ./bin
-SRCS := packedbits.c heaparray.c mask.c quickresponse.c main.c
+SRCS := packedbits.c bytes.c mask.c quickresponse.c main.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
