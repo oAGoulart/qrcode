@@ -8,9 +8,9 @@
 
 struct pbits_s
 {
-  harray_t* array_;
-  uint8_t   buffer_;
-  uint8_t   bit_;
+  bytes_t* data_;
+  uint8_t  buffer_;
+  uint8_t  bit_;
 };
 
 int
@@ -27,8 +27,8 @@ create_pbits(pbits_t** self)
     eprintf("cannot allocate %zu bytes", sizeof(pbits_t));
     return ENOMEM;
   }
-  (*self)->array_ = NULL;
-  const int err = create_harray(&(*self)->array_, 1);
+  (*self)->data_ = NULL;
+  const int err = create_bytes(&(*self)->data_, 1);
   if (err)
   {
     eprintf("cannot create heaparray member of packedbits");
@@ -46,7 +46,7 @@ delete_pbits(pbits_t** self)
 {
   if (*self != NULL)
   {
-    delete_harray(&(*self)->array_);
+    delete_bytes(&(*self)->data_);
     free(*self);
     *self = NULL;
   }
@@ -65,7 +65,7 @@ pbits_push(pbits_t* self, const uint64_t value, uint8_t count)
     count -= n;
     if (self->bit_ == CHAR_BIT)
     {
-      const int err = harray_push(self->array_, &self->buffer_, 1);
+      const int err = bytes_push(self->data_, &self->buffer_, 1);
       if (err)
       {
         eprintf("could not push byte into array");
@@ -79,7 +79,7 @@ pbits_push(pbits_t* self, const uint64_t value, uint8_t count)
   while (count >= CHAR_BIT)
   {
     uint8_t byte = (uint8_t)(value >> offset);
-    const int err = harray_push(self->array_, &byte, 1);
+    const int err = bytes_push(self->data_, &byte, 1);
     if (err)
     {
       eprintf("could not push byte into array");
@@ -102,7 +102,7 @@ pbits_flush(pbits_t* self)
 {
   if (self->bit_ > 0)
   {
-    const int err = harray_push(self->array_, &self->buffer_, 1);
+    const int err = bytes_push(self->data_, &self->buffer_, 1);
     if (err)
     {
       eprintf("could not push byte into array");
@@ -114,8 +114,8 @@ pbits_flush(pbits_t* self)
   return 0;
 }
 
-__inline__ harray_t*
+__inline__ bytes_t*
 pbits_bytes(const pbits_t* self)
 {
-  return self->array_;
+  return self->data_;
 }

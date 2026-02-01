@@ -1,12 +1,12 @@
-#include "objectvector.h"
+#include "vector.h"
 
 #include <stddef.h>
 #include <stdlib.h>
 #include "shared.h"
 
-#define VECTOR_SIZE 0x20u
+#define MINIMUM_VECTOR_COUNT 0x20u
 
-struct ovector_s
+struct vector_s
 {
   void** v_;
   size_t count_;
@@ -15,20 +15,20 @@ struct ovector_s
 };
 
 int
-ovector_create(ovector_t** self, void (*deleter)(void**))
+vector_create(vector_t** self, void (*deleter)(void**))
 {
   if (*self != NULL)
   {
     eprintf("pointer to garbage in *self");
     return EINVAL;
   }
-  *self = (ovector_t*)malloc(sizeof(ovector_t));
+  *self = (vector_t*)malloc(sizeof(vector_t));
   if (*self == NULL)
   {
-    eprintf("cannot allocate %zu bytes", sizeof(ovector_t));
+    eprintf("cannot allocate %zu bytes", sizeof(vector_t));
     return ENOMEM;
   }
-  (*self)->available_ = VECTOR_SIZE;
+  (*self)->available_ = MINIMUM_VECTOR_COUNT;
   (*self)->v_ = malloc((*self)->available_ * sizeof(void*));
   if ((*self)->v_ == NULL)
   {
@@ -43,7 +43,7 @@ ovector_create(ovector_t** self, void (*deleter)(void**))
 }
 
 void
-ovector_delete(ovector_t** self)
+vector_delete(vector_t** self)
 {
   if (*self != NULL)
   {
@@ -57,11 +57,11 @@ ovector_delete(ovector_t** self)
 }
 
 int
-ovector_push(ovector_t* self, void* obj)
+vector_push(vector_t* self, void* obj)
 {
   if (self->available_ == 0)
   {
-    const size_t asize = self->count_ + VECTOR_SIZE;
+    const size_t asize = self->count_ + MINIMUM_VECTOR_COUNT;
     void** tmp = realloc(self->v_, asize * sizeof(void*));
     if (tmp == NULL)
     {
@@ -69,7 +69,7 @@ ovector_push(ovector_t* self, void* obj)
       return ENOMEM;
     }
     self->v_ = tmp;
-    self->available_ = VECTOR_SIZE;
+    self->available_ = MINIMUM_VECTOR_COUNT;
   }
   self->v_[self->count_] = obj;
   self->count_++;
@@ -78,19 +78,19 @@ ovector_push(ovector_t* self, void* obj)
 }
 
 __inline__ size_t
-ovector_count(ovector_t* self)
+vector_count(vector_t* self)
 {
   return self->count_;
 }
 
 __inline__ void**
-ovector_begin(ovector_t* self)
+vector_begin(vector_t* self)
 {
   return self->v_;
 }
 
 __inline__ void**
-ovector_end(ovector_t* self)
+vector_end(vector_t* self)
 {
   return self->v_ + self->available_;
 }

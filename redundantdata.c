@@ -1,5 +1,5 @@
 #include "redundantdata.h"
-#include "objectvector.h"
+#include "vector.h"
 #include "packedbits.h"
 
 #include <stddef.h>
@@ -7,8 +7,8 @@
 
 struct qrdata_s
 {
-  ovector_t* data_;
-  ovector_t* ecc_;
+  vector_t* data_;
+  vector_t* ecc_;
   const qrinfo_t* info_;
 };
 
@@ -30,9 +30,10 @@ create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
   (*self)->info_ = info; /* OPTIMIZE: verify this is necessary */
   const size_t totalblocks = info->blocks[0] + info->blocks[1];
   (*self)->data_ = NULL;
-  int err = create_ovector(
+  int err = create_vector(
     &(*self)->data_,
-    (void (*)(void**))delete_pbits);
+    (void (*)(void**))delete_pbits
+  );
   if (err)
   {
     eprintf("cannot create data_ member of qrdata");
@@ -40,9 +41,10 @@ create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
     return err;
   }
   (*self)->ecc_ = NULL;
-  err = create_ovector(
+  err = create_vector(
     &(*self)->ecc_,
-    (void (*)(void**))delete_pbits);
+    (void (*)(void**))delete_pbits
+  );
   if (err)
   {
     eprintf("cannot create ecc_ member of qrdata");
@@ -62,8 +64,8 @@ delete_qrdata(qrdata_t** self)
 {
   if (*self != NULL)
   {
-    delete_ovector(&(*self)->data_);
-    delete_ovector(&(*self)->ecc_);
+    delete_vector(&(*self)->data_);
+    delete_vector(&(*self)->ecc_);
     free(*self);
   }
 }

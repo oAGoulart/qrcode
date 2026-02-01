@@ -9,10 +9,10 @@
 #include "shared.h"
 
 /* NOTE: not to be confused with MAX_VERSION */
-#define VERSION_LIMIT 5
+#define INLINE_VERSION_LIMIT 5
 
 /* Terminal argument */
-typedef enum targ_e
+typedef enum cli_argument_e
 {
   ARG_NONE     = 0,
   ARG_NOCOPY   = 1,
@@ -30,17 +30,17 @@ typedef enum targ_e
   ARG_SCALE,
   ARG_BMP,
   ARG_SVG
-} targ_t;
-#define NUM_ARGS      14
-#define NUM_MANDATORY 1
+} cli_argument_t;
+#define NUM_CLI_ARGS       14
+#define NUM_MANDATORY_ARGS 1
 
-static const char* args_[NUM_ARGS] = {
+static const char* args_[NUM_CLI_ARGS] = {
   "--nocopy", "--verbose", "--raw", "--noinline",
   "--version", "--optimize", "--help", "--nolimit",
   "-m", "-u", "-l", "-s", "-B", "-K"
 };
 
-static const targ_t arge_[NUM_ARGS] = {
+static const cli_argument_t arge_[NUM_CLI_ARGS] = {
   ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE,
   ARG_INFO, ARG_OPTIMIZE, ARG_HELP, ARG_NOLIMIT,
   ARG_MASK, ARG_VER, ARG_LEVEL, ARG_SCALE,
@@ -48,7 +48,7 @@ static const targ_t arge_[NUM_ARGS] = {
 };
 
 static __inline__ int
-phelp_(const char* __restrict__ cmdln)
+print_help_(const char* __restrict__ cmdln)
 {
   fprintf(stderr,
     "Usage: %s [OPTIONS] <string>" _nl
@@ -83,9 +83,9 @@ main(const int argc, char* argv[])
   system("chcp 65001>nul");
 #endif
 
-  targ_t    options = ARG_NONE;
-  imgfmt_t  imgfmt  = FMT_SVG;
-  eclevel_t level   = EC_LOW;
+  cli_argument_t options = ARG_NONE;
+  imgfmt_t       imgfmt  = FMT_SVG;
+  eclevel_t      level   = EC_LOW;
   int mask       = -1;
   int version    = -1;
   int scale      = -1;
@@ -97,7 +97,7 @@ main(const int argc, char* argv[])
   {
     if (argv[arg][0] == '-')
     {
-      for (size_t j = 0; j < NUM_ARGS; j++)
+      for (size_t j = 0; j < NUM_CLI_ARGS; j++)
       {
         if (!__builtin_strcmp(argv[arg], args_[j]))
         {
@@ -174,11 +174,11 @@ main(const int argc, char* argv[])
   }
   if (options & ARG_HELP)
   {
-    return phelp_(argv[0]);
+    return print_help_(argv[0]);
   }
-  if (argc - arg_count < NUM_MANDATORY + 1)
+  if (argc - arg_count < NUM_MANDATORY_ARGS + 1)
   {
-    eprintf("must provide " _xstr(NUM_MANDATORY) " mandatory argument(s)");
+    eprintf("must provide " _xstr(NUM_MANDATORY_ARGS) " mandatory argument(s)");
     return EXIT_FAILURE;
   }
   if (!(options & ARG_NOCOPY))
@@ -192,7 +192,8 @@ main(const int argc, char* argv[])
   int err = create_qrcode(&qr,
     argv[argc - 1], version, level,
     options & ARG_OPTIMIZE,
-    options & ARG_VERBOSE);
+    options & ARG_VERBOSE
+  );
   if (err != 0)
   {
     eprintf("could not create qrcode");
@@ -215,7 +216,7 @@ main(const int argc, char* argv[])
     if (!(options & ARG_NOINLINE))
     {
       const uint8_t vers = qrcode_version(qr);
-      if (vers > VERSION_LIMIT && !(options & ARG_NOLIMIT))
+      if (vers > INLINE_VERSION_LIMIT && !(options & ARG_NOLIMIT))
       {
         eprintf("could not print inline qrcode, version %uhh too high,"
                 "use --nolimit and try again", vers);

@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "heaparray.h"
+#include "bytes.h"
 #include "mask.h"
 #include "packedbits.h"
 #include "shared.h"
@@ -31,7 +31,7 @@ typedef enum subset_e
 typedef struct segment_s
 {
   subset_t type;
-  size_t count;
+  size_t   count;
 } segment_t;
 
 static __inline__ subset_t __attribute__((__const__))
@@ -113,9 +113,9 @@ maximum_count_(const uint8_t version, const subset_t subset)
 struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
-  pbits_t* bits_;
-  uint8_t selectedmask_;
-  uint8_t version_;
+  pbits_t*  bits_;
+  uint8_t   selected_mask_;
+  uint8_t   version_;
 };
 
 static __inline__ uint8_t
@@ -180,7 +180,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     *self = NULL;
     return err;
   }
-  harray_t* arr = pbits_bytes((*self)->bits_);
+  bytes_t* arr = pbits_bytes((*self)->bits_);
   uint8_t ver = (version >= 0 && version < MAX_VERSION) ?
     version - 1 : MAX_VERSION - 1;
   size_t strcount = __builtin_strlen(str);
@@ -202,8 +202,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     pinfo("Queuing subset segments");
   }
-  harray_t* segments = NULL;
-  err = create_harray(&segments, sizeof(segment_t));
+  bytes_t* segments = NULL;
+  err = create_bytes(&segments, sizeof(segment_t));
   if (err)
   {
     eprintf("cannot create heaparray for subset segments");
@@ -300,7 +300,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       } /* switch */
       if (pushseg)
       {
-        harray_push(segments, &segment, sizeof(segment_t));
+        bytes_push(segments, &segment, sizeof(segment_t));
         segment = seg;
         i += seg.count - 1;
         pushseg = false;
@@ -310,23 +310,23 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
         segment.count++;
       }
     }
-    harray_push(segments, &segment, sizeof(segment_t));
+    bytes_push(segments, &segment, sizeof(segment_t));
   }
   else
   {
     segment.count = strcount;
-    harray_push(segments, &segment, sizeof(segment_t));
+    bytes_push(segments, &segment, sizeof(segment_t));
   }
 
   if (verbose)
   {
     pinfo("Encoding data bits");
   }
-  const size_t seglen = harray_length(segments) / sizeof(segment_t);
+  const size_t seglen = bytes_length(segments) / sizeof(segment_t);
   size_t k = 0;
   for (i = 0; i < seglen; i++)
   {
-    harray_at(segments, i, sizeof(segment_t), &segment);
+    bytes_at(segments, i, sizeof(segment_t), &segment);
     pbits_push((*self)->bits_, segment.type, 4);
     const uint8_t max = maximum_count_((*self)->version_,
                                        segment.type);
@@ -382,9 +382,9 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     k += segment.count;
   }
   pbits_flush((*self)->bits_);
-  delete_harray(&segments);
+  delete_bytes(&segments);
 
-  size_t datalen = harray_length(arr);
+  size_t datalen = bytes_length(arr);
   for (i = ver; i > 0; i--)
   {
     if (datalen <= vlinfo[(i - 1) * EC_COUNT + level].len)
@@ -420,7 +420,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     pbits_push((*self)->bits_, 0, 8);
   }
-  datalen = harray_length(arr);
+  datalen = bytes_length(arr);
   const uint8_t* gen = rsgen + finalvl->offset;
 
   /* TODO: should move to qrdata_t */
@@ -428,7 +428,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   const size_t eccn = datalen + finalvl->eccpb;
   uint8_t ecc[eccn];
   __builtin_memset(ecc + datalen, 0, finalvl->eccpb);
-  harray_copy(arr, ecc, datalen);
+  bytes_copy(arr, ecc, datalen);
   for (i = 0; i < datalen; i++)
   {
     uint8_t lead = ecc[i];
@@ -437,16 +437,16 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       ecc[i + j] ^= alogt[(gen[j] + logt[lead]) % UINT8_MAX];
     }
   }
-  harray_push(arr, &ecc[i], finalvl->eccpb);
-  datalen = harray_length(arr);
+  bytes_push(arr, &ecc[i], finalvl->eccpb);
+  datalen = bytes_length(arr);
 
   if (verbose)
   {
     pinfo("Calculated codewords (%zu):", datalen);
-    printf("0x%x", harray_byte(arr, 0));
+    printf("0x%x", bytes_byte(arr, 0));
     for (i = 1; i < datalen; i++)
     {
-      printf(", 0x%x", harray_byte(arr, i));
+      printf(", 0x%x", bytes_byte(arr, i));
     }
     puts("");
   }
@@ -469,7 +469,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     for (int8_t bit = 7; bit >= 0; bit--)
     {
       uint8_t module =
-        (harray_byte(arr, i) & 1 << bit) >> bit & 1;
+        (bytes_byte(arr, i) & 1 << bit) >> bit & 1;
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
@@ -508,7 +508,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       pinfo("Mask [%zu] penalty: %u", i, score);
     }
   }
-  (*self)->selectedmask_ = selected;
+  (*self)->selected_mask_ = selected;
   if (verbose)
   {
     pinfo("Mask selected: %hhu", selected);
@@ -543,7 +543,7 @@ qrcode_forcemask(qrcode_t* self, int mask)
 {
   if (mask >= 0 && mask < 8)
   {
-    self->selectedmask_ = (uint8_t)mask;
+    self->selected_mask_ = (uint8_t)mask;
     return 0;
   }
   return EINVAL;
@@ -554,11 +554,11 @@ qrcode_print(const qrcode_t* self, bool useraw)
 {
   if (useraw)
   {
-    qrmask_praw(self->masks_[self->selectedmask_]);
+    qrmask_praw(self->masks_[self->selected_mask_]);
   }
   else
   {
-    qrmask_pbox(self->masks_[self->selectedmask_]);
+    qrmask_pbox(self->masks_[self->selected_mask_]);
   }
 }
 
@@ -584,14 +584,14 @@ qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
   case FMT_BMP:
   {
     pdebug("bitmap image output selected");
-    err = qrmask_outbmp(self->masks_[self->selectedmask_],
+    err = qrmask_outbmp(self->masks_[self->selected_mask_],
                         scale, f);
     break;
   }
   case FMT_SVG:
   {
     pdebug("vector image output selected");
-    qrmask_outsvg(self->masks_[self->selectedmask_], f);
+    qrmask_outsvg(self->masks_[self->selected_mask_], f);
     break;
   }
   default:

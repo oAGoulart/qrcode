@@ -1,4 +1,4 @@
-#include "heaparray.h"
+#include "bytes.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -6,9 +6,9 @@
 
 #include "shared.h"
 
-#define ARRAY_SIZE 0x20u
+#define MINIMUM_BYTES_COUNT 0x20u
 
-struct harray_s
+struct bytes_s
 {
   uint8_t* data_;
   size_t   available_;
@@ -16,7 +16,7 @@ struct harray_s
 };
 
 int
-create_harray(harray_t** self, const size_t size)
+create_bytes(bytes_t** self, const size_t size)
 {
   if (*self != NULL)
   {
@@ -28,13 +28,13 @@ create_harray(harray_t** self, const size_t size)
     eprintf("cannot create zero-size array");
     return EINVAL;
   }
-  *self = (harray_t*)malloc(sizeof(harray_t));
+  *self = (bytes_t*)malloc(sizeof(bytes_t));
   if (*self == NULL)
   {
-    eprintf("cannot allocate %zu bytes", sizeof(harray_t));
+    eprintf("cannot allocate %zu bytes", sizeof(bytes_t));
     return ENOMEM;
   }
-  (*self)->available_ = align_memory(size, ARRAY_SIZE);
+  (*self)->available_ = align_memory(size, MINIMUM_BYTES_COUNT);
   (*self)->data_ = (uint8_t*)malloc((*self)->available_);
   if ((*self)->data_ == NULL)
   {
@@ -48,7 +48,7 @@ create_harray(harray_t** self, const size_t size)
 }
 
 void
-delete_harray(harray_t** self)
+delete_bytes(bytes_t** self)
 {
   if (*self != NULL)
   {
@@ -62,12 +62,12 @@ delete_harray(harray_t** self)
 }
 
 int
-harray_push(harray_t* self, const void* __restrict__ obj, size_t size)
+bytes_push(bytes_t* self, const void* __restrict__ obj, size_t size)
 {
   if (self->available_ < size)
   {
     const size_t asize = align_memory(
-      self->length_ + size, ARRAY_SIZE
+      self->length_ + size, MINIMUM_BYTES_COUNT
     );
     uint8_t* tmp = realloc(self->data_, asize);
     if (tmp == NULL)
@@ -85,7 +85,7 @@ harray_push(harray_t* self, const void* __restrict__ obj, size_t size)
 }
 
 int
-harray_pop(harray_t* self, const size_t size)
+bytes_pop(bytes_t* self, const size_t size)
 {
   if (size > self->length_)
   {
@@ -95,10 +95,10 @@ harray_pop(harray_t* self, const size_t size)
   }
   self->length_ -= size;
   self->available_ += size;
-  if (self->available_ > ARRAY_SIZE)
+  if (self->available_ > MINIMUM_BYTES_COUNT)
   {
     const size_t asize = align_memory(
-      self->length_, ARRAY_SIZE
+      self->length_, MINIMUM_BYTES_COUNT
     );
     uint8_t* tmp = realloc(self->data_, asize);
     if (tmp != NULL)
@@ -112,7 +112,7 @@ harray_pop(harray_t* self, const size_t size)
 }
 
 int
-harray_at(const harray_t* self, const size_t index,
+bytes_at(const bytes_t* self, const size_t index,
           size_t size, void* out)
 {
   if (index * size > self->length_)
@@ -125,20 +125,20 @@ harray_at(const harray_t* self, const size_t index,
 }
 
 __inline__ size_t
-harray_length(const harray_t* self)
+bytes_length(const bytes_t* self)
 {
   return self->length_;
 }
 
 __inline__ void
-harray_copy(const harray_t* self, void* dst, const size_t dstlen)
+bytes_copy(const bytes_t* self, void* dst, const size_t dstlen)
 {
   size_t n = (dstlen < self->length_) ? dstlen : self->length_;
   __builtin_memcpy(dst, self->data_, n);
 }
 
 int
-harray_replace(harray_t* self, const size_t at,
+bytes_replace(bytes_t* self, const size_t at,
                const void* __restrict obj, size_t size)
 {
   if (at + size > self->length_)
@@ -152,31 +152,31 @@ harray_replace(harray_t* self, const size_t at,
 }
 
 __inline__ uint8_t
-harray_byte(const harray_t* self, const size_t index)
+bytes_byte(const bytes_t* self, const size_t index)
 {
   return self->data_[index];
 }
 
 __inline__ uint16_t
-harray_short(const harray_t* self, const size_t index)
+bytes_short(const bytes_t* self, const size_t index)
 {
   return *(uint16_t*)&self->data_[index];
 }
 
 __inline__ uint32_t
-harray_long(const harray_t* self, const size_t index)
+bytes_long(const bytes_t* self, const size_t index)
 {
   return *(uint32_t*)&self->data_[index];
 }
 
 __inline__ uint64_t
-harray_quad(const harray_t* self, const size_t index)
+bytes_quad(const bytes_t* self, const size_t index)
 {
   return *(uint64_t*)&self->data_[index];
 }
 
 size_t
-harray_first(const harray_t* self, const size_t from,
+bytes_first(const bytes_t* self, const size_t from,
              void* __restrict__ obj, size_t size)
 {
   if (from + size > self->length_)
