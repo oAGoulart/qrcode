@@ -1,4 +1,3 @@
-#include <stddef.h>
 #ifndef SHARED_H
 #define SHARED_H 1
 

@@ -1,6 +1,7 @@
-#include <stdint.h>
 #ifndef QUICKRESPONSE_H
 #define QUICKRESPONSE_H 1
+
+#include <stdint.h>
 
 #include "mask.h"
 #include "shared.h"
