@@ -10,7 +10,8 @@ All notable changes to this project will be documented in this file.
 - Add command `--nolimit` to print any Version inline
 - Add object vector with cleanup on deletion
 - Change comments from `//` to `/**/`
-- Change name of types `heaparray` and `objectvector`
+- Change name of types `heaparray`, `objectvector`, `packedbits`
+- Change name of files `quickresponse`, `redundantdata`
 - Fix minimum version selection
 - Fix build issue on MSYS environment
 - Fix module penalty right-pattern

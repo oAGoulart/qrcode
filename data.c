@@ -1,6 +1,6 @@
-#include "redundantdata.h"
+#include "data.h"
 #include "vector.h"
-#include "packedbits.h"
+#include "bits.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@ struct qrdata_s
 };
 
 int
-create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
+create_qrdata(qrdata_t** self, const bits_t* __restrict__ bits,
               const qrinfo_t* const __restrict__ info)
 {
   if (*self != NULL)
@@ -32,7 +32,7 @@ create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
   (*self)->data_ = NULL;
   int err = create_vector(
     &(*self)->data_,
-    (void (*)(void**))delete_pbits
+    (void (*)(void**))delete_bits
   );
   if (err)
   {
@@ -43,7 +43,7 @@ create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
   (*self)->ecc_ = NULL;
   err = create_vector(
     &(*self)->ecc_,
-    (void (*)(void**))delete_pbits
+    (void (*)(void**))delete_bits
   );
   if (err)
   {
@@ -52,9 +52,9 @@ create_qrdata(qrdata_t** self, const pbits_t* __restrict__ bits,
     return err;
   }
   /* TODO:
-    1. instantiate each data block's pbits_t, while:
+    1. instantiate each data block's bits_t, while:
        split `bits` into data blocks
-    2. instantiate each ecc block's pbits_t, while:
+    2. instantiate each ecc block's bits_t, while:
        generate ecc for each data block */
   return 0;
 }

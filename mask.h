@@ -1,5 +1,5 @@
-#ifndef MASK_H
-#define MASK_H 1
+#ifndef QR_MASK_H
+#define QR_MASK_H 1
 
 #include <stdint.h>
 #include <stdio.h>

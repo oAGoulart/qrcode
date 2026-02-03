@@ -1,5 +1,5 @@
-#ifndef VECTOR_H
-#define VECTOR_H 1
+#ifndef QR_VECTOR_H
+#define QR_VECTOR_H 1
 
 #include <stddef.h>
 

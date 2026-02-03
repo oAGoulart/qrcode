@@ -1,5 +1,5 @@
-#ifndef SHARED_H
-#define SHARED_H 1
+#ifndef QR_SHARED_H
+#define QR_SHARED_H 1
 
 #if !defined(__clang__)
 #   error "must be compiled with clang"

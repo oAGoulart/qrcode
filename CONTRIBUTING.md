@@ -11,7 +11,8 @@ How to contribute with **testing**:
 How to contribute with **code**:
 1. Before opening any PR, create an issue discussing your proposed changes and why they are necessary (e.g. better design pattern);
 2. Before commiting code, make sure to run it through [Valgrind](https://valgrind.org) and [Cppcheck](https://cppcheck.sourceforge.io);
-3. Compile on Windows and Linux (must compile on `amd64`, others are optional) before pushing the code.
+3. Unless requiring change, use `clang` with `gnu11` standard (i.e. `c11` with GNU extensions).
+4. Compile on Windows and Linux (must compile on `amd64`, others are optional) before pushing the code.
 
 ### Maintainer's notes
 

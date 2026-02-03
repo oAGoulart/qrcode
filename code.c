@@ -1,4 +1,4 @@
-#include "quickresponse.h"
+#include "code.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -11,7 +11,7 @@
 
 #include "bytes.h"
 #include "mask.h"
-#include "packedbits.h"
+#include "bits.h"
 #include "shared.h"
 
 #define NUM_PADBITS 7
@@ -113,7 +113,7 @@ maximum_count_(const uint8_t version, const subset_t subset)
 struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
-  pbits_t*  bits_;
+  bits_t*  bits_;
   uint8_t   selected_mask_;
   uint8_t   version_;
 };
@@ -172,7 +172,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     return ENOMEM;
   }
   (*self)->bits_ = NULL;
-  int err = create_pbits(&(*self)->bits_);
+  int err = create_bits(&(*self)->bits_);
   if (err)
   {
     eprintf("cannot create bits_ member of qrcode");
@@ -180,7 +180,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     *self = NULL;
     return err;
   }
-  bytes_t* arr = pbits_bytes((*self)->bits_);
+  bytes_t* arr = bits_bytes((*self)->bits_);
   uint8_t ver = (version >= 0 && version < MAX_VERSION) ?
     version - 1 : MAX_VERSION - 1;
   size_t strcount = __builtin_strlen(str);
@@ -327,10 +327,10 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   for (i = 0; i < seglen; i++)
   {
     bytes_at(segments, i, sizeof(segment_t), &segment);
-    pbits_push((*self)->bits_, segment.type, 4);
+    bits_push((*self)->bits_, segment.type, 4);
     const uint8_t max = maximum_count_((*self)->version_,
                                        segment.type);
-    pbits_push((*self)->bits_, segment.count, max);
+    bits_push((*self)->bits_, segment.count, max);
     char bseg[4] = { '\0', '\0', '\0', '\0' };
     uint8_t blen = 0;
     for (size_t j = 0; j < segment.count; j++)
@@ -346,7 +346,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           const uint8_t maxb[3] = { 4, 7, 10 };
           bseg[blen] = '\0';
           int numch = atoi(bseg);
-          pbits_push((*self)->bits_, numch, maxb[blen - 1]);
+          bits_push((*self)->bits_, numch, maxb[blen - 1]);
           blen = 0;
         }
         break;
@@ -361,12 +361,12 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           {
             uint16_t value = (uint16_t)frombyte_(bseg[0]) * 45 +
                              (uint16_t)frombyte_(bseg[1]);
-            pbits_push((*self)->bits_, value, 11);
+            bits_push((*self)->bits_, value, 11);
           }
           else
           {
             uint8_t value = frombyte_(bseg[0]);
-            pbits_push((*self)->bits_, value, 6);
+            bits_push((*self)->bits_, value, 6);
           }
           blen = 0;
         }
@@ -374,14 +374,14 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       default:
       {
-        pbits_push((*self)->bits_, str[k + j], 8);
+        bits_push((*self)->bits_, str[k + j], 8);
         break;
       } /* default */
       } /* switch */
     }
     k += segment.count;
   }
-  pbits_flush((*self)->bits_);
+  bits_flush((*self)->bits_);
   delete_bytes(&segments);
 
   size_t datalen = bytes_length(arr);
@@ -414,11 +414,11 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   const size_t padquads = padbytes - (padbytes % 8);
   for (i = 0; i < padquads; i += 8)
   {
-    pbits_push((*self)->bits_, 0, 64);
+    bits_push((*self)->bits_, 0, 64);
   }
   for (i = 0; i < padbytes - padquads; i++)
   {
-    pbits_push((*self)->bits_, 0, 8);
+    bits_push((*self)->bits_, 0, 8);
   }
   datalen = bytes_length(arr);
   const uint8_t* gen = rsgen + finalvl->offset;
@@ -521,7 +521,7 @@ delete_qrcode(qrcode_t** self)
 {
   if (*self != NULL)
   {
-    delete_pbits(&(*self)->bits_);
+    delete_bits(&(*self)->bits_);
     uint8_t i = 0;
     for (; i < NUM_MASKS; i++)
     {

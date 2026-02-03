@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+
 #include "shared.h"
 
 #define MINIMUM_VECTOR_COUNT 0x20u

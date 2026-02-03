@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "mask.h"
-#include "quickresponse.h"
+#include "code.h"
 #include "shared.h"
 
 /* NOTE: not to be confused with MAX_VERSION */

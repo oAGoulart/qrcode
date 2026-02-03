@@ -1,4 +1,4 @@
-#include "packedbits.h"
+#include "bits.h"
 
 #include <limits.h>
 #include <stdint.h>
@@ -6,7 +6,7 @@
 
 #include "shared.h"
 
-struct pbits_s
+struct bits_s
 {
   bytes_t* data_;
   uint8_t  buffer_;
@@ -14,17 +14,17 @@ struct pbits_s
 };
 
 int
-create_pbits(pbits_t** self)
+create_bits(bits_t** self)
 {
   if (*self != NULL)
   {
     eprintf("pointer to garbage in *self");
     return EINVAL;
   }
-  *self = (pbits_t*)malloc(sizeof(pbits_t));
+  *self = (bits_t*)malloc(sizeof(bits_t));
   if (*self == NULL)
   {
-    eprintf("cannot allocate %zu bytes", sizeof(pbits_t));
+    eprintf("cannot allocate %zu bytes", sizeof(bits_t));
     return ENOMEM;
   }
   (*self)->data_ = NULL;
@@ -42,7 +42,7 @@ create_pbits(pbits_t** self)
 }
 
 void
-delete_pbits(pbits_t** self)
+delete_bits(bits_t** self)
 {
   if (*self != NULL)
   {
@@ -53,7 +53,7 @@ delete_pbits(pbits_t** self)
 }
 
 int
-pbits_push(pbits_t* self, const uint64_t value, uint8_t count)
+bits_push(bits_t* self, const uint64_t value, uint8_t count)
 {
   if (self->bit_ > 0)
   {
@@ -98,7 +98,7 @@ pbits_push(pbits_t* self, const uint64_t value, uint8_t count)
 }
 
 int
-pbits_flush(pbits_t* self)
+bits_flush(bits_t* self)
 {
   if (self->bit_ > 0)
   {
@@ -115,7 +115,7 @@ pbits_flush(pbits_t* self)
 }
 
 __inline__ bytes_t*
-pbits_bytes(const pbits_t* self)
+bits_bytes(const bits_t* self)
 {
   return self->data_;
 }

@@ -8,7 +8,11 @@ CCFLAGS := -DNDEBUG -g0 -O3
 LDFLAGS := -lm
 
 BUILD_DIR := ./bin
-SRCS := packedbits.c bytes.c mask.c quickresponse.c main.c
+SCRIPT_DIR := ./scripts
+
+SCRS := indexes.py
+
+SRCS := bits.c bytes.c mask.c code.c main.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
@@ -35,10 +39,9 @@ lookup.o: lookup.S
 	$(CC) -c lookup.S -o $(BUILD_DIR)/lookup.o -save-temps
 
 lookup.S:
-	chmod 777 scripts/lookup.sh  ; \
-	chmod 777 scripts/indexes.py ; \
-	rm -f lookup.S               ; \
-	bash -c scripts/lookup.sh
+	chmod 777 $(SCRIPT_DIR)/lookup.sh $(SRCS:%=$(SCRIPT_DIR)/%) ; \
+	rm -f lookup.S ; \
+	bash -c $(SCRIPT_DIR)/lookup.sh
 
 .PHONY: clean
 clean:

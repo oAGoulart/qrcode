@@ -1,5 +1,5 @@
-#ifndef QUICKRESPONSE_H
-#define QUICKRESPONSE_H 1
+#ifndef QR_CODE_H
+#define QR_CODE_H 1
 
 #include <stdint.h>
 

@@ -1,5 +1,5 @@
-#ifndef BYTES_H
-#define BYTES_H 1
+#ifndef QR_BYTES_H
+#define QR_BYTES_H 1
 
 #include <stdint.h>
 #include <stddef.h>
