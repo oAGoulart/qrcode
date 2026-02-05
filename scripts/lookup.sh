@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 OUT_FILE="lookup.S"
+CSV_FILE="qrinfo.csv"
 SCRIPT_DIR="$(dirname "$0")"
 MAX_VERSION=5
 
@@ -22,10 +23,15 @@ generate_indexes() {
   done
 }
 
+generate_info() {
+  declare_global "qrinfo"
+  echo -e "$(python3 "$SCRIPT_DIR"/info.py "$SCRIPT_DIR"/"$CSV_FILE")"
+}
+
 create_lookup() {
   cp "$SCRIPT_DIR"/lookup.template "$OUT_FILE"
-  generate_indexes
   #generate_info
+  generate_indexes
 }
 
 create_lookup >> "$OUT_FILE"
