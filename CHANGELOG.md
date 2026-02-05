@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 - Add `--help` command to show help message
-- Add redundant data type `redata_t` to generate codeword blocks
+- Add redundant data type `data_t` to generate codeword blocks
 - Add Version limit to inline printing
 - Add command `--nolimit` to print any Version inline
 - Add object vector with cleanup on deletion
@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Refactor codebase with `clang-tidy`
 - Refactor inline printing to reduce stack usage
 - Remove deprecated call to `fopen`
+- Update lookup table build script
 
 ## [1.11.0] - 2025-09-05
 

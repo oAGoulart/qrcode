@@ -111,11 +111,3 @@ rsgen:
   156,164,212,212,188,190
   .byte 0,173,125,158,2,103,182,118,17,145,201,111,28,165,\
   53,161,21,245,142,13,102,48,227,153,145,218,70
-
-#if defined(__APPLE__)
-.globl _qrindex
-_qrindex:
-#else
-.globl qrindex
-qrindex:
-#endif
