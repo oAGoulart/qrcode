@@ -117,7 +117,6 @@ typedef struct __attribute__((packed)) qrinfo_s
   uint8_t eccpb;     /* ec codewords per block */
   uint8_t blocks[2]; /* number of blocks per group (2) */
   uint8_t datapb[2]; /* data codewords per block, per group (2) */
-  uint8_t offset;    /* rsgen table ecc generator offset */
 } qrinfo_t;
 
 static __inline__ size_t __attribute__((__const__))

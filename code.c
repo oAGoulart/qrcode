@@ -1,5 +1,6 @@
 #include "code.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -16,7 +17,7 @@
 
 #define NUM_PADBITS 7
 
-extern const qrinfo_t vlinfo[];
+extern const qrinfo_t qrinfo[];
 extern const uint8_t logt[];
 extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
@@ -33,6 +34,19 @@ typedef struct segment_s
   subset_t type;
   size_t   count;
 } segment_t;
+
+static __inline__ uint16_t __attribute__((__const__))
+generator_offset(const uint8_t length)
+{
+  assert(length < 32); // FIXME: use enum
+  static const uint16_t offset[32] = {
+    0,0,0,0,0,0,0,0,0,
+    0,8,0,0,0,0,19,0,
+    0,0,0,35,0,0,0,0,
+    0,56,0,0,0,0,0
+  };
+  return offset[length];
+}
 
 static __inline__ subset_t __attribute__((__const__))
 which_subset_(const uint8_t c)
@@ -68,6 +82,7 @@ count_segment_(const char* str)
 static __inline__ uint8_t __attribute__((__const__))
 minimum_segment_(const uint8_t version, const uint8_t iteration)
 {
+  assert(iteration < 7); // FIXME: use enum
   static const uint8_t lengths[7][3] = {
     { 6, 7, 8 },
     { 4, 4, 5 },
@@ -190,7 +205,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     for (; i <= ver; i++)
     {
-      if (strcount <= vlinfo[i * EC_COUNT + level].len - 2)
+      if (strcount <= qrinfo[i * EC_COUNT + level].len - 2)
       {
         ver = i;
         break;
@@ -387,7 +402,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t datalen = bytes_length(arr);
   for (i = ver; i > 0; i--)
   {
-    if (datalen <= vlinfo[(i - 1) * EC_COUNT + level].len)
+    if (datalen <= qrinfo[(i - 1) * EC_COUNT + level].len)
     {
       continue;
     }
@@ -396,7 +411,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   ver = i;
   /* NOTE: final version */
   (*self)->version_ = ver;
-  const qrinfo_t* finalvl = &vlinfo[ver * EC_COUNT + level];
+  const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT + level];
   if (datalen > finalvl->len)
   {
     eprintf("data must be less than %u characters long", finalvl->len - 2u);
@@ -421,7 +436,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     bits_push((*self)->bits_, 0, 8);
   }
   datalen = bytes_length(arr);
-  const uint8_t* gen = rsgen + finalvl->offset;
+  const uint8_t* gen = rsgen + generator_offset(finalvl->eccpb);
 
   /* TODO: should move to qrdata_t */
   pdebug("starting polynomial division (long division)");

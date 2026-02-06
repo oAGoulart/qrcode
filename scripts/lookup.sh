@@ -30,7 +30,7 @@ generate_info() {
 
 create_lookup() {
   cp "$SCRIPT_DIR"/lookup.template "$OUT_FILE"
-  #generate_info
+  generate_info
   generate_indexes
 }
 

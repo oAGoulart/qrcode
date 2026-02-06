@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Add Version limit to inline printing
 - Add command `--nolimit` to print any Version inline
 - Add object vector with cleanup on deletion
+- Add version/level info lookup table generator
 - Change comments from `//` to `/**/`
 - Change name of types `heaparray`, `objectvector`, `packedbits`
 - Change name of files `quickresponse`, `redundantdata`

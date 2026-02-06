@@ -50,54 +50,6 @@ alogt:
   27,54,108,216,173,71,142,1
 
 #if defined(__APPLE__)
-.globl _vlinfo
-_vlinfo:
-#else
-.global vlinfo
-vlinfo:
-#endif
-  .short 19
-  .byte 7, 1, 0, 19, 0, 0
-  .short 16
-  .byte 10, 1, 0, 16, 0, 8
-  .short 13
-  .byte 13, 1, 0, 13, 0, 0
-  .short 9
-  .byte 17, 1, 0, 9, 0, 0
-  .short 34
-  .byte 10, 1, 0, 34, 0, 8
-  .short 28
-  .byte 16, 1, 0, 28, 0, 0
-  .short 22
-  .byte 22, 1, 0, 22, 0, 0
-  .short 16
-  .byte 28, 1, 0, 16, 0, 0
-  .short 55
-  .byte 15, 1, 0, 55, 0, 19
-  .short 44
-  .byte 26, 1, 0, 44, 0, 56
-  .short 34
-  .byte 18, 2, 0, 17, 0, 0
-  .short 26
-  .byte 22, 2, 0, 13, 0, 0
-  .short 80
-  .byte 20, 1, 0, 80, 0, 35
-  .short 64
-  .byte 18, 2, 0, 32, 0, 0
-  .short 48
-  .byte 26, 2, 0, 24, 0, 56
-  .short 36
-  .byte 16, 4, 0, 9, 0, 0
-  .short 108
-  .byte 26, 1, 0, 108, 0, 56
-  .short 86
-  .byte 24, 2, 0, 43, 0, 0
-  .short 62
-  .byte 18, 2, 2, 15, 16, 0
-  .short 46
-  .byte 22, 2, 2, 11, 12, 0
-
-#if defined(__APPLE__)
 .globl _rsgen
 _rsgen:
 #else
