@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -121,25 +122,10 @@ main(const int argc, char* argv[])
           {
             if (strlen(argv[arg + 1]) == 1)
             {
-              const char lvl = argv[arg + 1][0];
-              if (lvl == 'l' || lvl == 'L')
+              const char lvl = (char)tolower(argv[arg + 1][0]);
+              if (strchr("lmqh", lvl) != NULL)
               {
-                level = EC_LOW;
-                break;
-              }
-              if (lvl == 'm' || lvl == 'M')
-              {
-                level = EC_MEDIUM;
-                break;
-              }
-              if (lvl == 'q' || lvl == 'Q')
-              {
-                level = EC_QUARTILE;
-                break;
-              }
-              if (lvl == 'h' || lvl == 'H')
-              {
-                level = EC_HIGH;
+                level = lvl - 'h';
                 break;
               }
             }

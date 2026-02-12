@@ -9,11 +9,10 @@
 
 typedef enum eclevel_e
 {
-  EC_LOW,      /* 7% */
-  EC_MEDIUM,   /* 15% */
-  EC_QUARTILE, /* 25% */
-  EC_HIGH,     /* 30% */
-  EC_COUNT
+  EC_LOW       = 4, /* 7% */
+  EC_MEDIUM    = 5, /* 15% */
+  EC_QUARTILE  = 9, /* 25% */
+  EC_HIGH      = 0  /* 30% */
 } __attribute__((packed)) eclevel_t;
 
 typedef struct qrmask_s qrmask_t;
