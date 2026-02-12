@@ -43,8 +43,8 @@ OPTIONS:
   --verbose    print runtime information for generated values
   --version    show generator's version and build information
   -m <uint>    force choice of mask <0-7>, regardless of penalty
-  -u <uint>    scale image output <1-30> times
-  -s <uint>    force use of version <1-5> code (or lower, if
+  -s <uint>    scale image output <1-30> times
+  -u <uint>    force use of version <1-5> code (or lower, if
                  used with --optimize)
   -B <string>  create bitmap file with generated code
   -K <string>  create scalable vector image, disregards -s
@@ -153,3 +153,4 @@ ISO/IEC 2024 – All rights reserved.
 2. [Denso's QR Code FAQ](https://www.qrcode.com/en/faq.html)
 3. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 4. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
