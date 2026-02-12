@@ -10,7 +10,7 @@ LDFLAGS := -lm
 BUILD_DIR := ./bin
 SCRIPT_DIR := ./scripts
 
-SCRS := indexes.py
+SCPT := indexes.py
 
 SRCS := bits.c bytes.c mask.c code.c main.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
@@ -39,7 +39,7 @@ lookup.o: lookup.S
 	$(CC) -c lookup.S -o $(BUILD_DIR)/lookup.o -save-temps
 
 lookup.S:
-	chmod 777 $(SCRIPT_DIR)/lookup.sh $(SRCS:%=$(SCRIPT_DIR)/%) ; \
+	chmod 777 $(SCRIPT_DIR)/lookup.sh $(SCPT:%=$(SCRIPT_DIR)/%) ; \
 	rm -f lookup.S ; \
 	bash -c $(SCRIPT_DIR)/lookup.sh
 

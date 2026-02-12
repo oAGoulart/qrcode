@@ -46,6 +46,7 @@ OPTIONS:
   -s <uint>    scale image output <1-30> times
   -u <uint>    force use of version <1-5> code (or lower, if
                  used with --optimize)
+  -w <uint>    number of concurrent workers to use
   -B <string>  create bitmap file with generated code
   -K <string>  create scalable vector image, disregards -s
 ```
