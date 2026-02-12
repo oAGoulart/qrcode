@@ -110,6 +110,7 @@
 #define MAX_VERSION 5
 #define MAX_SCALE   30
 #define NUM_MASKS   8
+#define EC_COUNT    4
 
 typedef struct __attribute__((packed)) qrinfo_s
 {
