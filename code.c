@@ -85,7 +85,8 @@ typedef struct segment_s
 static __inline__ uint16_t __attribute__((__const__))
 generator_offset(const uint8_t length)
 {
-  assert(length < 32); // FIXME: use enum
+  assert(length < 32);
+  //length &= 0x1F;
   static const uint16_t offset[32] = {
     0,0,0,0,0,0,0,0,0,
     0,8,0,0,0,0,19,0,
@@ -121,15 +122,17 @@ count_segment_(const char* str)
 static __inline__ uint8_t __attribute__((__const__))
 minimum_segment_(const uint8_t version, const uint8_t iteration)
 {
-  assert(iteration < 7); // FIXME: use enum
-  static const uint8_t lengths[7][3] = {
+  assert(iteration < 8);
+  //iteration &= 0x7;
+  static const uint8_t lengths[8][3] = {
     { 6, 7, 8 },
     { 4, 4, 5 },
     { 7, 8, 9 },
     { 13, 15, 17 },
     { 6, 8, 9 },
     { 6, 7, 8 },
-    { 11, 15, 16 }
+    { 11, 15, 16 },
+    { 0, 0, 0 }
   };
   const uint8_t colidx = (version >= 10) + (version >= 27);
   return lengths[iteration][colidx];
@@ -139,10 +142,10 @@ static __inline__ uint8_t __attribute__((__const__))
 maximum_count_(const uint8_t version, const subset_t subset)
 {
   assert(SUBSET_LIMIT == 5);
-  static const uint8_t lengths[3][5] = {
-    { 10, 10, 9, 10, 8 },
-    { 12, 12, 11, 12, 16 },
-    { 14, 14, 13, 14, 16 }
+  static const uint8_t lengths[3][SUBSET_LIMIT] = {
+    { 0, 10, 9, 0, 8 },
+    { 0, 12, 11, 0, 16 },
+    { 0, 14, 13, 0, 16 }
   };
   const uint8_t colidx = (version >= 10) + (version >= 27);
   return lengths[colidx][subset];

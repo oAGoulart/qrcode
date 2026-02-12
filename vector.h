@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-/* Object vector,
-   allows deletion of its elements when calling delete */
 typedef struct vector_s vector_t;
 
 __attribute__((__nonnull__)) int
