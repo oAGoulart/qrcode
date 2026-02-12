@@ -100,8 +100,8 @@
 #endif
 
 #define PROJECT_TITLE     "Command-line QR Code generator"
-#define PROJECT_VERSION   "(v1.11.0:" PROJECT_TARGET ":" PROJECT_ARCH ")"
-#define PROJECT_COPYRIGHT "Copyright (C) 2025 Augusto Goulart."
+#define PROJECT_VERSION   "(v1.20.0:" PROJECT_TARGET ":" PROJECT_ARCH ")"
+#define PROJECT_COPYRIGHT "Copyright (C) 2025-2026 Augusto Goulart."
 #define PROJECT_LICENSE \
   "Licensed under Microsoft Reciprocal License (Ms-RL)." _nl \
   "QR Code is a registered trademark of DENSO WAVE" _nl \
@@ -119,7 +119,7 @@ typedef struct __attribute__((packed)) qrinfo_s
   uint8_t datapb[2]; /* data codewords per block, per group (2) */
 } qrinfo_t;
 
-static __inline__ size_t __attribute__((__const__))
+__inline__ size_t __attribute__((__const__))
 align_memory(const size_t size, const size_t alignment)
 {
   const size_t remainder = size % alignment;

@@ -26,8 +26,55 @@ typedef enum subset_e
 {
   SUBSET_NUMERIC = 1,
   SUBSET_ALPHA   = 2,
-  SUBSET_BYTE    = 4
+  SUBSET_BYTE    = 4,
+  SUBSET_LIMIT
 } __attribute__((packed)) subset_t;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winitializer-overrides"
+static const subset_t subset_lut_[256] = {
+  // NOTE: default all entries to SUBSET_BYTE
+  [0 ... 255]   = SUBSET_BYTE,
+  ['0' ... '9'] = SUBSET_NUMERIC,
+  ['A' ... 'Z'] = SUBSET_ALPHA,
+  [' '] = SUBSET_ALPHA,
+  ['$'] = SUBSET_ALPHA,
+  ['%'] = SUBSET_ALPHA,
+  ['*'] = SUBSET_ALPHA,
+  ['+'] = SUBSET_ALPHA,
+  ['-'] = SUBSET_ALPHA,
+  ['.'] = SUBSET_ALPHA,
+  ['/'] = SUBSET_ALPHA,
+  [':'] = SUBSET_ALPHA
+};
+
+#define SUBSET_SYMBOLS(X) \
+  X(' ', 36) X('$', 37) X('%', 38) X('*', 39) \
+  X('+', 40) X('-', 41) X('.', 42) X('/', 43) X(':', 44)
+
+#define SUBSET_NUMBERS(X) \
+  X('0') X('1') X('2') X('3') X('4') X('5') \
+  X('6') X('7') X('8') X('9')
+
+#define SUBSET_LETTERS(X) \
+  X('A') X('B') X('C') X('D') X('E') X('F') \
+  X('G') X('H') X('I') X('J') X('K') X('L') \
+  X('M') X('N') X('O') X('P') X('Q') X('R') \
+  X('S') X('T') X('U') X('V') X('W') X('X') \
+  X('Y') X('Z')
+
+#define ENTRY_SYM(c, v) [c] = v,
+#define ENTRY_NUM(c)    [c] = (c - '0'),
+#define ENTRY_ALPHA(c)  [c] = (c - 'A' + 10),
+
+static const uint8_t frombyte_lut_[256] = {
+  // NOTE: default all entries to invalid
+  [0 ... 255] = UINT8_MAX,
+  SUBSET_SYMBOLS(ENTRY_SYM)
+  SUBSET_NUMBERS(ENTRY_NUM)
+  SUBSET_LETTERS(ENTRY_ALPHA)
+};
+#pragma clang diagnostic pop
 
 typedef struct segment_s
 {
@@ -51,15 +98,7 @@ generator_offset(const uint8_t length)
 static __inline__ subset_t __attribute__((__const__))
 which_subset_(const uint8_t c)
 {
-  if (c >= 0x30 && c <= 0x39)
-  {
-    return SUBSET_NUMERIC;
-  }
-  if ((c >= 0x41 && c <= 0x5A) || __builtin_strchr(" $%*+-./:", c) != NULL)
-  {
-    return SUBSET_ALPHA;
-  }
-  return SUBSET_BYTE;
+  return subset_lut_[c];
 }
 
 static __inline__ segment_t __attribute__((__nonnull__))
@@ -92,37 +131,21 @@ minimum_segment_(const uint8_t version, const uint8_t iteration)
     { 6, 7, 8 },
     { 11, 15, 16 }
   };
-  uint8_t colidx = 0;
-  if (version >= 10 && version < 27)
-  {
-    colidx = 1;
-  }
-  else if (version >= 27)
-  {
-    colidx = 2;
-  }
+  const uint8_t colidx = (version >= 10) + (version >= 27);
   return lengths[iteration][colidx];
 }
 
 static __inline__ uint8_t __attribute__((__const__))
 maximum_count_(const uint8_t version, const subset_t subset)
 {
-  static const uint8_t lengths[3][3] = {
-    { 10, 9, 8 },
-    { 12, 11, 16 },
-    { 14, 13, 16 }
+  assert(SUBSET_LIMIT == 5);
+  static const uint8_t lengths[3][5] = {
+    { 10, 10, 9, 10, 8 },
+    { 12, 12, 11, 12, 16 },
+    { 14, 14, 13, 14, 16 }
   };
-  static const uint8_t subidx[5] = { 0, 0, 1, 0, 2 };
-  uint8_t colidx = 0;
-  if (version >= 10 && version < 27)
-  {
-    colidx = 1;
-  }
-  else if (version >= 27)
-  {
-    colidx = 2;
-  }
-  return lengths[colidx][subidx[subset]];
+  const uint8_t colidx = (version >= 10) + (version >= 27);
+  return lengths[colidx][subset];
 }
 
 struct qrcode_s
@@ -133,42 +156,10 @@ struct qrcode_s
   uint8_t   version_;
 };
 
-static __inline__ uint8_t
+static __inline__ uint8_t __attribute__((__const__))
 frombyte_(const uint8_t b)
 {
-  switch (b)
-  {
-  case ' ':
-    return 36;
-  case '$':
-    return 37;
-  case '%':
-    return 38;
-  case '*':
-    return 39;
-  case '+':
-    return 40;
-  case '-':
-    return 41;
-  case '.':
-    return 42;
-  case '/':
-    return 43;
-  case ':':
-    return 44;
-  default:
-  {
-    if (b >= 48 && b <= 57)
-    {
-      return b - 48;
-    }
-    if (b >= 65 && b <= 90)
-    {
-      return (b - 65) + 10;
-    }
-  } /* default */
-  } /* switch */
-  return UINT8_MAX;
+  return frombyte_lut_[b];
 }
 
 int
@@ -198,7 +189,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   bytes_t* arr = bits_bytes((*self)->bits_);
   uint8_t ver = (version >= 0 && version < MAX_VERSION) ?
     version - 1 : MAX_VERSION - 1;
-  size_t strcount = __builtin_strlen(str);
+  size_t strcount = strlen(str);
   /* NOTE: initial version selection */
   size_t i = 0;
   if (version != ver)
@@ -343,8 +334,10 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     bytes_at(segments, i, sizeof(segment_t), &segment);
     bits_push((*self)->bits_, segment.type, 4);
-    const uint8_t max = maximum_count_((*self)->version_,
-                                       segment.type);
+    const uint8_t max = maximum_count_(
+      (*self)->version_,
+      segment.type
+    );
     bits_push((*self)->bits_, segment.count, max);
     char bseg[4] = { '\0', '\0', '\0', '\0' };
     uint8_t blen = 0;
@@ -442,7 +435,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   pdebug("starting polynomial division (long division)");
   const size_t eccn = datalen + finalvl->eccpb;
   uint8_t ecc[eccn];
-  __builtin_memset(ecc + datalen, 0, finalvl->eccpb);
+  memset(ecc + datalen, 0, finalvl->eccpb);
   bytes_copy(arr, ecc, datalen);
   for (i = 0; i < datalen; i++)
   {
@@ -467,7 +460,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
 
   pdebug("applying XOR masks");
-  __builtin_memset((*self)->masks_, 0, sizeof((*self)->masks_));
+  memset((*self)->masks_, 0, sizeof((*self)->masks_));
   for (i = 0; i < NUM_MASKS; i++)
   {
     err = create_qrmask(&(*self)->masks_[i], ver, i);

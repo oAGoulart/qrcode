@@ -16,6 +16,6 @@ How to contribute with **code**:
 
 ### Maintainer's notes
 
-- Bitmap and SVG will be the only output formats supported. Monochrome bitmaps are packed (not compressed) into bits, but rows are padded to 32-bit longs, still it keeps the raster data quite small while avoiding compression. SVGs can be modified to change background/foreground color (and scaling beyond `-s` option for bitmaps).
+- Bitmap and SVG will be the only output formats supported. Monochrome bitmaps are packed (not compressed) into bits, but rows are padded to 32-bit longs. Still, it keeps the raster data quite small while avoiding compression. SVGs can be modified to change background/foreground color (and scaling beyond `-s` option compared to bitmaps).
 - Higher Versions and EC levels are planned in the near future. Those require (a) codewords to be woven; and (b) additional version information to be placed on code.
 - Kanji encoding is not likely to be supported in the future, even though it is part of the ISO standard.

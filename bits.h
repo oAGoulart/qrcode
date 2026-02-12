@@ -5,9 +5,6 @@
 
 #include "bytes.h"
 
-/* Creates "packed" bit stream from pushed bits,
-   allows reading resulting bytes
-*/
 typedef struct bits_s bits_t;
 
 __attribute__((__nonnull__)) int

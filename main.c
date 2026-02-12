@@ -11,7 +11,6 @@
 /* NOTE: not to be confused with MAX_VERSION */
 #define INLINE_VERSION_LIMIT 5
 
-/* Terminal argument */
 typedef enum cli_argument_e
 {
   ARG_NONE     = 0,
@@ -31,21 +30,31 @@ typedef enum cli_argument_e
   ARG_BMP,
   ARG_SVG
 } cli_argument_t;
-#define NUM_CLI_ARGS       14
+
+typedef struct cli_option_s
+{
+  const char*    flag;
+  cli_argument_t type;
+} cli_option_t;
+
+static const cli_option_t cli_options_[] = {
+  { "--nocopy", ARG_NOCOPY },
+  { "--verbose", ARG_VERBOSE },
+  { "--raw", ARG_RAW },
+  { "--noinline", ARG_NOINLINE },
+  { "--version", ARG_INFO },
+  { "--optimize", ARG_OPTIMIZE },
+  { "--help", ARG_HELP },
+  { "--nolimit", ARG_NOLIMIT },
+  { "-m", ARG_MASK },
+  { "-u", ARG_VER },
+  { "-l", ARG_LEVEL },
+  { "-s", ARG_SCALE },
+  { "-B", ARG_BMP },
+  { "-K", ARG_SVG }
+};
+#define NUM_CLI_ARGS (sizeof(cli_options_) / sizeof(cli_options_[0]))
 #define NUM_MANDATORY_ARGS 1
-
-static const char* args_[NUM_CLI_ARGS] = {
-  "--nocopy", "--verbose", "--raw", "--noinline",
-  "--version", "--optimize", "--help", "--nolimit",
-  "-m", "-u", "-l", "-s", "-B", "-K"
-};
-
-static const cli_argument_t arge_[NUM_CLI_ARGS] = {
-  ARG_NOCOPY, ARG_VERBOSE, ARG_RAW, ARG_NOINLINE,
-  ARG_INFO, ARG_OPTIMIZE, ARG_HELP, ARG_NOLIMIT,
-  ARG_MASK, ARG_VER, ARG_LEVEL, ARG_SCALE,
-  ARG_BMP, ARG_SVG
-};
 
 static __inline__ int
 print_help_(const char* __restrict__ cmdln)
@@ -99,18 +108,18 @@ main(const int argc, char* argv[])
     {
       for (size_t j = 0; j < NUM_CLI_ARGS; j++)
       {
-        if (!__builtin_strcmp(argv[arg], args_[j]))
+        if (!strcmp(argv[arg], cli_options_[j].flag))
         {
           arg_count++;
           bool exclusive_arg = true;
-          switch (arge_[j])
+          switch (cli_options_[j].type)
           {
           case ARG_MASK:
             mask = strtol(argv[arg + 1], NULL, 0);
             break;
           case ARG_LEVEL:
           {
-            if (__builtin_strlen(argv[arg + 1]) == 1)
+            if (strlen(argv[arg + 1]) == 1)
             {
               const char lvl = argv[arg + 1][0];
               if (lvl == 'l' || lvl == 'L')
@@ -151,7 +160,7 @@ main(const int argc, char* argv[])
             filename = argv[arg + 1];
             break;
           default:
-            options |= arge_[j];
+            options |= cli_options_[j].type;
             exclusive_arg = false;
             break;
           } /* switch */

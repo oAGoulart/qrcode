@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Refactor inline printing to reduce stack usage
 - Remove deprecated call to `fopen`
 - Update lookup table build script
+- Update command-line options parser
 
 ## [1.11.0] - 2025-09-05
 

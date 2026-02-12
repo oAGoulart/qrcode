@@ -78,7 +78,7 @@ bytes_push(bytes_t* self, const void* __restrict__ obj, size_t size)
     self->data_ = tmp;
     self->available_ = asize - self->length_;
   }
-  __builtin_memcpy(&self->data_[self->length_], obj, size);
+  memcpy(&self->data_[self->length_], obj, size);
   self->length_ += size;
   self->available_ -= size;
   return 0;
@@ -120,7 +120,7 @@ bytes_at(const bytes_t* self, const size_t index,
     eprintf("out of bonds index %zu", index);
     return EINVAL;
   }
-  __builtin_memcpy(out, self->data_ + index * size, size);
+  memcpy(out, self->data_ + index * size, size);
   return 0;
 }
 
@@ -134,7 +134,7 @@ __inline__ void
 bytes_copy(const bytes_t* self, void* dst, const size_t dstlen)
 {
   size_t n = (dstlen < self->length_) ? dstlen : self->length_;
-  __builtin_memcpy(dst, self->data_, n);
+  memcpy(dst, self->data_, n);
 }
 
 int
@@ -147,7 +147,7 @@ bytes_replace(bytes_t* self, const size_t at,
             size, at, self->length_);
     return ERANGE;
   }
-  __builtin_memcpy(&self->data_[at], obj, size);
+  memcpy(&self->data_[at], obj, size);
   return 0;
 }
 
@@ -191,7 +191,7 @@ bytes_first(const bytes_t* self, const size_t from,
   while (ch != NULL)
   {
     const ptrdiff_t diff = (ptrdiff_t)(ch - (uintptr_t)self->data_);
-    if (__builtin_memcmp(ch, obj, size) == 0)
+    if (memcmp(ch, obj, size) == 0)
     {
       return diff;
     }

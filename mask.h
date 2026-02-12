@@ -16,9 +16,6 @@ typedef enum eclevel_e
   EC_COUNT
 } __attribute__((packed)) eclevel_t;
 
-/* Creates QR code XOR mask from Version and selected pattern,
-   allows setting each module and print/output
-*/
 typedef struct qrmask_s qrmask_t;
 
 __attribute__((__nonnull__)) int

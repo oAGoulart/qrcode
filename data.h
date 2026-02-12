@@ -4,9 +4,6 @@
 #include "bits.h"
 #include "shared.h"
 
-/* Creates blocks of data/ecc from string,
-   allows access to codewords in the correct order group/block
-*/
 typedef struct qrdata_s qrdata_t;
 
 __attribute__((__nonnull__)) int

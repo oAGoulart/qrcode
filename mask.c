@@ -127,17 +127,17 @@ place_finder_(qrmask_t* self)
   };
   for (size_t i = 0; i < 7; i++)
   {
-    __builtin_memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
-    __builtin_memcpy(
+    memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
+    memcpy(
       &self->v_[(self->order_ - 7u) + self->order_ * i],
       &finder[i], 7u
     );
-    __builtin_memcpy(
+    memcpy(
       &self->v_[(self->order_ - 7u) * self->order_ + self->order_ * i],
       &finder[i], 7u
     );
   }
-  /* WARNING: assumes separators are not required (zeroed buffer) */
+  /* WARNING: assumes separators are not required (zero-ed buffer) */
 }
 
 static void __attribute__((__nonnull__))
@@ -150,11 +150,12 @@ place_align_(qrmask_t* self)
     { 1, 0, 0, 0, 1 },
     { 1, 1, 1, 1, 1 }
   };
+  /* FIXME: add align patterns for v>5 */
   const size_t index = (self->order_ - 9u) *
                        self->order_ + self->order_ - 9u;
   for (size_t i = 0; i < 5; i++)
   {
-    __builtin_memcpy(&self->v_[index + i * self->order_], &align[i], 5u);
+    memcpy(&self->v_[index + i * self->order_], &align[i], 5u);
   }
 }
 
@@ -241,7 +242,7 @@ module_penalty_(qrmask_t* self)
       if (j < self->order_ - 10 && *next == MASK_LIGHT)
       {
         const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
-        if (!__builtin_memcmp(module + 2, pattern, 9))
+        if (!memcmp(module + 2, pattern, 9))
         {
           self->penalty_ += 40;
         }
@@ -333,7 +334,7 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
     *self = NULL;
     return ENOMEM;
   }
-  __builtin_memset((*self)->v_, 0, (*self)->count_);
+  memset((*self)->v_, 0, (*self)->count_);
   (*self)->dark_ = qr_basedark[version];
   (*self)->penalty_ = 0;
   place_finder_(*self);
@@ -369,10 +370,7 @@ qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
     module = !module;
   }
   self->v_[idx] = module;
-  if (module == MASK_DARK)
-  {
-    self->dark_++;
-  }
+  self->dark_ += (module == MASK_DARK);
 }
 
 uint16_t
@@ -430,8 +428,10 @@ qrmask_pbox(const qrmask_t* self)
   }
   if (self->order_ % 2 != 0)
   {
-    mask_single_(&self->v_[(self->order_ - 1) * self->order_],
-      self->order_);
+    mask_single_(
+      &self->v_[(self->order_ - 1) * self->order_],
+      self->order_
+    );
   }
   puts(_nl);
 }

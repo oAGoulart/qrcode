@@ -51,11 +51,7 @@ create_qrdata(qrdata_t** self, const bits_t* __restrict__ bits,
     delete_qrdata(self);
     return err;
   }
-  /* TODO:
-    1. instantiate each data block's bits_t, while:
-       split `bits` into data blocks
-    2. instantiate each ecc block's bits_t, while:
-       generate ecc for each data block */
+  /* TODO: split codewords into blocks, generate ecc */
   return 0;
 }
 

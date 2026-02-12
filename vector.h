@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-/* Create object vector,
+/* Object vector,
    allows deletion of its elements when calling delete */
 typedef struct vector_s vector_t;
 

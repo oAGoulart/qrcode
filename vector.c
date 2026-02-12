@@ -12,7 +12,7 @@ struct vector_s
   void** v_;
   size_t count_;
   size_t available_;
-  void (*deleter_)(void**);
+  void   (*deleter_)(void**);
 };
 
 int

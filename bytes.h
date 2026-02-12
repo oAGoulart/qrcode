@@ -4,9 +4,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-/* Creates bytes stream to handle codewords,
-   allows getting from index/search
-*/
 typedef struct bytes_s bytes_t;
 
 __attribute__((__nonnull__)) int

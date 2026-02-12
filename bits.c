@@ -31,7 +31,7 @@ create_bits(bits_t** self)
   const int err = create_bytes(&(*self)->data_, 1);
   if (err)
   {
-    eprintf("cannot create heaparray member of packedbits");
+    eprintf("cannot create data_ member of bits_t");
     free(*self);
     *self = NULL;
     return err;
