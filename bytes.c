@@ -112,8 +112,7 @@ bytes_pop(bytes_t* self, const size_t size)
 }
 
 int
-bytes_at(const bytes_t* self, const size_t index,
-          size_t size, void* out)
+bytes_at(const bytes_t* self, const size_t index, size_t size, void* out)
 {
   if (index * size > self->length_)
   {
@@ -135,20 +134,6 @@ bytes_copy(const bytes_t* self, void* dst, const size_t dstlen)
 {
   size_t n = (dstlen < self->length_) ? dstlen : self->length_;
   memcpy(dst, self->data_, n);
-}
-
-int
-bytes_replace(bytes_t* self, const size_t at,
-               const void* __restrict obj, size_t size)
-{
-  if (at + size > self->length_)
-  {
-    eprintf("cannot replace length %zu from index %zu, array length is %zu",
-            size, at, self->length_);
-    return ERANGE;
-  }
-  memcpy(&self->data_[at], obj, size);
-  return 0;
 }
 
 __inline__ uint8_t
@@ -175,29 +160,8 @@ bytes_quad(const bytes_t* self, const size_t index)
   return *(uint64_t*)&self->data_[index];
 }
 
-size_t
-bytes_first(const bytes_t* self, const size_t from,
-             void* __restrict__ obj, size_t size)
+__inline__ const uint8_t* const
+bytes_span(const bytes_t* self, const size_t index)
 {
-  if (from + size > self->length_)
-  {
-    eprintf("cannot find length %zu from index %zu, array length is %zu",
-            size, from, self->length_);
-    return ERANGE;
-  }
-  char* ch = __builtin_char_memchr(
-    (char*)self->data_, *(char*)obj, self->length_ - size
-  );
-  while (ch != NULL)
-  {
-    const ptrdiff_t diff = (ptrdiff_t)(ch - (uintptr_t)self->data_);
-    if (memcmp(ch, obj, size) == 0)
-    {
-      return diff;
-    }
-    ch = __builtin_char_memchr(
-      ch + 1, *(char*)obj, self->length_ - diff - size
-    );
-  }
-  return -1;
+  return &self->data_[index];
 }
