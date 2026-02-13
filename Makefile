@@ -18,9 +18,9 @@ DEPS := $(OBJS:.o=.d)
 
 lint: lint_clang lint_cppcheck
 lint_clang:
-	clang-tidy main.c
+	clang-tidy $(SRCS) -checks=-*,performance-*,portability-* -- -D__clang__
 lint_cppcheck:
-	cppcheck main.c
+	cppcheck $(SRCS) -D__clang__ --force --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction
 
 debug: debug_build
 debug_build: CCFLAGS ::= -g3 -O0

@@ -493,13 +493,13 @@ qrmask_outbmp(const qrmask_t* self,
     }
   };
   pdebug("writing bitmap header");
-  if (!fwrite(&bm, sizeof(bitmap_t), 1, file))
+  if (fwrite(&bm, sizeof(bitmap_t), 1, file) != sizeof(bitmap_t))
   {
     eprintf("corrupted bitmap format");
     return EIO;
   }
   pdebug("writing bitmap raster data");
-  for (size_t i = 0; i < nbytes * 4 * scale; i++)
+  for (size_t i = 0; i < (nbytes * 4 * scale); i++)
   {
     fputc('\0', file);
   }

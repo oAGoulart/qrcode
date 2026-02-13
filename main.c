@@ -91,12 +91,12 @@ main(const int argc, char* argv[])
   cli_argument_t options = ARG_NONE;
   imgfmt_t       imgfmt  = FMT_SVG;
   eclevel_t      level   = EC_LOW;
-  int verbose    = 1;
-  int mask       = -1;
-  int version    = -1;
-  int scale      = -1;
-  int arg_count  =  0;
-  char* filename = NULL;
+  int verbose     = 1;
+  int mask        = -1;
+  int version     = -1;
+  int scale       = -1;
+  long arg_count  =  0;
+  char* filename  = NULL;
 
   pdebug("started parsing cmdln arguments");
   for (int arg = 1; arg < argc; arg++)
@@ -112,10 +112,10 @@ main(const int argc, char* argv[])
           switch (cli_options_[j].type)
           {
           case ARG_VERBOSE:
-            verbose = strtol(argv[arg + 1], NULL, 0);
+            verbose = (int)strtol(argv[arg + 1], NULL, 0);
             break;
           case ARG_MASK:
-            mask = strtol(argv[arg + 1], NULL, 0);
+            mask = (int)strtol(argv[arg + 1], NULL, 0);
             break;
           case ARG_LEVEL:
           {
@@ -133,10 +133,10 @@ main(const int argc, char* argv[])
             return EINVAL;
           }
           case ARG_VERSION:
-            version = strtol(argv[arg + 1], NULL, 0) - 1;
+            version = (int)strtol(argv[arg + 1], NULL, 0) - 1;
             break;
           case ARG_SCALE:
-            scale = strtol(argv[arg + 1], NULL, 0);
+            scale = (int)strtol(argv[arg + 1], NULL, 0);
             break;
           case ARG_BMP:
             imgfmt = FMT_BMP;
@@ -182,8 +182,8 @@ main(const int argc, char* argv[])
   }
 
   pdebug("creating qrcode object");
-  qrcode_t* qr = NULL;
-  int err = create_qrcode(&qr,
+  qrcode_t* qrcode = NULL;
+  int err = create_qrcode(&qrcode,
     argv[argc - 1], version, level,
     options & ARG_OPTIMIZE,
     verbose > 1
@@ -197,7 +197,7 @@ main(const int argc, char* argv[])
   {
     if (mask != -1)
     {
-      err = qrcode_forcemask(qr, mask);
+      err = qrcode_forcemask(qrcode, mask);
       if (err != 0)
       {
         eprintf("could not force qrcode mask choice");
@@ -209,7 +209,7 @@ main(const int argc, char* argv[])
     }
     if (verbose > 0)
     {
-      const uint8_t vers = qrcode_version(qr);
+      const uint8_t vers = qrcode_version(qrcode);
       if (vers > INLINE_VERSION_LIMIT && !(options & ARG_NOLIMIT))
       {
         eprintf("could not print inline qrcode, version %uhh too high,"
@@ -218,12 +218,12 @@ main(const int argc, char* argv[])
       else
       {
         pdebug("printing inline qrcode");
-        qrcode_print(qr, options & ARG_RAW);
+        qrcode_print(qrcode, options & ARG_RAW);
       }
     }
     if (filename != NULL)
     {
-      err = qrcode_output(qr, imgfmt, scale, filename);
+      err = qrcode_output(qrcode, imgfmt, scale, filename);
       if (err != 0)
       {
         eprintf("could not output qrcode image");
@@ -235,6 +235,6 @@ main(const int argc, char* argv[])
     }
   }
   pdebug("resources clean-up");
-  delete_qrcode(&qr);
+  delete_qrcode(&qrcode);
   return err;
 }

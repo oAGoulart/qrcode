@@ -63,9 +63,9 @@ static const subset_t subset_lut_[256] = {
   X('S') X('T') X('U') X('V') X('W') X('X') \
   X('Y') X('Z')
 
-#define ENTRY_SYM(c, v) [c] = v,
-#define ENTRY_NUM(c)    [c] = (c - '0'),
-#define ENTRY_ALPHA(c)  [c] = (c - 'A' + 10),
+#define ENTRY_SYM(c, v) [c] = (v),
+#define ENTRY_NUM(c)    [c] = ((c) - '0'),
+#define ENTRY_ALPHA(c)  [c] = ((c) - 'A' + 10),
 
 static const uint8_t frombyte_lut_[256] = {
   // NOTE: default all entries to invalid
