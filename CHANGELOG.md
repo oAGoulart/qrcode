@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Add `--help` command to show help message
+- Add `--help`, `-h` command to show help message
 - Add redundant data type `data_t` to generate codeword blocks
 - Add Version limit to inline printing
 - Add command `--nolimit` to print any Version inline
@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Change comments from `//` to `/**/`
 - Change name of types `heaparray`, `objectvector`, `packedbits`
 - Change name of files `quickresponse`, `redundantdata`
+- Change cmdln option `--verbose` to `-g`
 - Fix minimum version selection
 - Fix build issue on MSYS environment
 - Fix module penalty right-pattern
@@ -20,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Refactor codebase with `clang-tidy`
 - Refactor inline printing to reduce stack usage
 - Remove deprecated call to `fopen`
+- Remove cmdln options `--nocopy`, `--noinline`
 - Update lookup table build script
 - Update command-line options parser
 
