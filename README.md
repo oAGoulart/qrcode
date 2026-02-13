@@ -33,20 +33,18 @@ on any platform. Outputs inline (stdout), bitmap, or vectors (svg).
 ```text
 Usage: qrcode [OPTIONS] <data to encode>
 OPTIONS:
-  --help       show this help message
-  --nocopy     omit copyright header from inline printing
-  --noinline   do not print any inline code, disregards --raw
-  --nolimit    ignore inline Version limit (for larger terminals)
-  --optimize   reduce data size, encode numeric, alphanumeric, byte
-                 segments separately (if any)
-  --raw        print generated code with chars 1, 0 (no box-chars)
-  --verbose    print runtime information for generated values
-  --version    show generator's version and build information
-  -m <uint>    force choice of mask <0-7>, regardless of penalty
-  -s <uint>    scale image output <1-30> times
-  -u <uint>    force use of version <1-5> code (or lower, if
-                 used with --optimize)
-  -w <uint>    number of concurrent workers to use
+  -h, --help     show this help message
+  --nolimit      ignore inline Version limit (for larger terminals)
+  --optimize     reduce data size, encode numeric, alphanumeric, byte
+                   segments separately (if any)
+  --raw          print generated code with chars 1, 0 (no box-chars)
+  -v, --version  show generator's version and build information
+  -g <uint>      level of on-screen information <0-3>
+  -l <char>      use a specific error correction level (l, m, q, or h)
+  -m <uint>      force use of mask <0-7>, regardless of penalty
+  -s <uint>      scale image output <1-30> times
+  -V <uint>      force use of version <1-5> code (or lower, if
+                   used with --optimize)
   -B <string>  create bitmap file with generated code
   -K <string>  create scalable vector image, disregards -s
 ```

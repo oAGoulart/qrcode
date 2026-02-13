@@ -15,17 +15,15 @@
 typedef enum cli_argument_e
 {
   ARG_NONE     = 0,
-  ARG_NOCOPY   = 1,
-  ARG_VERBOSE  = 2,
-  ARG_RAW      = 4,
-  ARG_NOINLINE = 8,
-  ARG_INFO     = 0x10,
-  ARG_OPTIMIZE = 0x20,
-  ARG_HELP     = 0x40,
-  ARG_NOLIMIT  = 0x80,
+  ARG_RAW      = 1,
+  ARG_INFO     = 2,
+  ARG_OPTIMIZE = 4,
+  ARG_HELP     = 8,
+  ARG_NOLIMIT  = 0x10,
   ARG_RESERVED __attribute__((unavailable("bit mask limit"))) = 0x8000,
+  ARG_VERBOSE,
   ARG_MASK,
-  ARG_VER,
+  ARG_VERSION,
   ARG_LEVEL,
   ARG_SCALE,
   ARG_BMP,
@@ -39,18 +37,18 @@ typedef struct cli_option_s
 } cli_option_t;
 
 static const cli_option_t cli_options_[] = {
-  { "--nocopy", ARG_NOCOPY },
-  { "--verbose", ARG_VERBOSE },
   { "--raw", ARG_RAW },
-  { "--noinline", ARG_NOINLINE },
   { "--version", ARG_INFO },
+  { "-v", ARG_INFO },
   { "--optimize", ARG_OPTIMIZE },
   { "--help", ARG_HELP },
+  { "-h", ARG_HELP },
   { "--nolimit", ARG_NOLIMIT },
+  { "-g", ARG_VERBOSE },
   { "-m", ARG_MASK },
-  { "-u", ARG_VER },
   { "-l", ARG_LEVEL },
   { "-s", ARG_SCALE },
+  { "-V", ARG_VERSION },
   { "-B", ARG_BMP },
   { "-K", ARG_SVG }
 };
@@ -61,23 +59,21 @@ static __inline__ int
 print_help_(const char* __restrict__ cmdln)
 {
   fprintf(stderr,
-    "Usage: %s [OPTIONS] <string>" _nl
+    "Usage: %s [OPTIONS] <data to encode>" _nl
     "OPTIONS:" _nl
-    "  --help       show this help message" _nl
-    "  --nocopy     omit copyright header from inline printing" _nl
-    "  --noinline   do not print any inline code, disregards --raw" _nl
-    "  --nolimit    ignore inline Version limit (for larger terminals)" _nl
-    "  --optimize   reduce data size, encode numeric, alphanumeric, byte" _nl
-    "                 segments separately (if any)" _nl
-    "  --raw        print generated code with chars 1, 0 (no box-chars)" _nl
-    "  --verbose    print runtime information for generated values" _nl
-    "  --version    show generator's version and build information" _nl
-    "  -l <char>    use a specific error correction level (l, m, q, or h)" _nl
-    "  -m <uint>    force choice of mask <0-7>, regardless of penalty" _nl
-    "  -s <uint>    scale image output <1-" _xstr(MAX_SCALE) "> times" _nl
-    "  -u <uint>    force use of version <1-" _xstr(MAX_VERSION) "> code"
+    "  -h, --help     show this help message" _nl
+    "  --nolimit      ignore inline Version limit (for larger terminals)" _nl
+    "  --optimize     reduce data size, encode numeric, alphanumeric, byte" _nl
+    "                   segments separately (if any)" _nl
+    "  --raw          print generated code with chars 1, 0 (no box-chars)" _nl
+    "  -v, --version  show generator's version and build information" _nl
+    "  -g <uint>      level of on-screen information <0-3>" _nl
+    "  -l <char>      use a specific error correction level (l, m, q, or h)" _nl
+    "  -m <uint>      force use of mask <0-7>, regardless of penalty" _nl
+    "  -s <uint>      scale image output <1-" _xstr(MAX_SCALE) "> times" _nl
+    "  -V <uint>      force use of version <1-" _xstr(MAX_VERSION) "> code"
                       " (or lower, if" _nl
-    "                 used with --optimize)" _nl
+    "                   used with --optimize)" _nl
     "  -B <string>  create bitmap file with generated code" _nl
     "  -K <string>  create scalable vector image, disregards -s" _nl,
     cmdln
@@ -96,6 +92,7 @@ main(const int argc, char* argv[])
   cli_argument_t options = ARG_NONE;
   imgfmt_t       imgfmt  = FMT_SVG;
   eclevel_t      level   = EC_LOW;
+  int verbose    = 1;
   int mask       = -1;
   int version    = -1;
   int scale      = -1;
@@ -115,6 +112,9 @@ main(const int argc, char* argv[])
           bool exclusive_arg = true;
           switch (cli_options_[j].type)
           {
+          case ARG_VERBOSE:
+            verbose = strtol(argv[arg + 1], NULL, 0);
+            break;
           case ARG_MASK:
             mask = strtol(argv[arg + 1], NULL, 0);
             break;
@@ -133,7 +133,7 @@ main(const int argc, char* argv[])
             perrno(EINVAL);
             return EINVAL;
           }
-          case ARG_VER:
+          case ARG_VERSION:
             version = strtol(argv[arg + 1], NULL, 0) - 1;
             break;
           case ARG_SCALE:
@@ -176,7 +176,7 @@ main(const int argc, char* argv[])
     eprintf("must provide " _xstr(NUM_MANDATORY_ARGS) " mandatory argument(s)");
     return EXIT_FAILURE;
   }
-  if (!(options & ARG_NOCOPY))
+  if (verbose > 0)
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION _nl
          PROJECT_COPYRIGHT _nl PROJECT_LICENSE _nl);
@@ -187,7 +187,7 @@ main(const int argc, char* argv[])
   int err = create_qrcode(&qr,
     argv[argc - 1], version, level,
     options & ARG_OPTIMIZE,
-    options & ARG_VERBOSE
+    verbose > 1
   );
   if (err != 0)
   {
@@ -203,12 +203,12 @@ main(const int argc, char* argv[])
       {
         eprintf("could not force qrcode mask choice");
       }
-      else if (options & ARG_VERBOSE)
+      else if (verbose > 1)
       {
         pinfo("Forced mask: %d", mask);
       }
     }
-    if (!(options & ARG_NOINLINE))
+    if (verbose > 0)
     {
       const uint8_t vers = qrcode_version(qr);
       if (vers > INLINE_VERSION_LIMIT && !(options & ARG_NOLIMIT))
@@ -229,7 +229,7 @@ main(const int argc, char* argv[])
       {
         eprintf("could not output qrcode image");
       }
-      else if (options & ARG_VERBOSE)
+      else if (verbose > 1)
       {
         pinfo("Image saved to: %s", filename);
       }
