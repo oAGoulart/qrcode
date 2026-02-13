@@ -46,8 +46,8 @@ OPTIONS:
   -s <uint>      scale image output <1-30> times
   -V <uint>      force use of version <1-5> code (or lower, if
                    used with --optimize)
-  -B <string>  create bitmap file with generated code
-  -K <string>  create scalable vector image, disregards -s
+  -B <string>    create bitmap file with generated code
+  -K <string>    create scalable vector image, disregards -s
 ```
 
 ### Building and binaries

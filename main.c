@@ -1,5 +1,4 @@
 #include <ctype.h>
-#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,8 +73,8 @@ print_help_(const char* __restrict__ cmdln)
     "  -V <uint>      force use of version <1-" _xstr(MAX_VERSION) "> code"
                       " (or lower, if" _nl
     "                   used with --optimize)" _nl
-    "  -B <string>  create bitmap file with generated code" _nl
-    "  -K <string>  create scalable vector image, disregards -s" _nl,
+    "  -B <string>    create bitmap file with generated code" _nl
+    "  -K <string>    create scalable vector image, disregards -s" _nl,
     cmdln
   );
   return EINVAL;
@@ -84,7 +83,7 @@ print_help_(const char* __restrict__ cmdln)
 int
 main(const int argc, char* argv[])
 {
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   /* NOTE: to allow box-drawing characters */
   system("chcp 65001>nul");
 #endif
