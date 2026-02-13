@@ -10,8 +10,9 @@ on any platform. Outputs inline (stdout), bitmap, or vectors (svg).
 
 **Available generation:**
 
-|              **Version** | 1  | 2  | 3  | 4  | 5   |
-|-------------------------:|----|----|----|----|-----|
+|              **Version** | 1  | 2  | 3  | 4  | 5  |
+|-------------------------:|:--:|:--:|:--:|:--:|:--:|
+|             **EC Level** | **L**  | **L**  | **L**  | **L**  |  **L** |
 | **Capacity (codewords)** | 17 | 32 | 53 | 78 | 106 |
 
 > [!NOTE]
@@ -152,4 +153,5 @@ ISO/IEC 2024 – All rights reserved.
 2. [Denso's QR Code FAQ](https://www.qrcode.com/en/faq.html)
 3. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 4. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
