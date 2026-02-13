@@ -1,7 +1,6 @@
 #include "code.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -32,6 +31,7 @@ typedef enum subset_e
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winitializer-overrides"
+#pragma clang diagnostic ignored "-Wgnu-designator"
 static const subset_t subset_lut_[256] = {
   // NOTE: default all entries to SUBSET_BYTE
   [0 ... 255]   = SUBSET_BYTE,
@@ -583,9 +583,9 @@ qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
     eprintf("invalid image scale: %d", scale);
     return EINVAL;
   }
-  FILE* f = NULL;
-  errno_t err = fopen_s(&f, filename, "wb+");
-  if (err)
+  int err = EIO;
+  FILE* f = fopen(filename, "wb+");
+  if (f == NULL)
   {
     eprintf("cannot create file: %s", filename);
     return err;
