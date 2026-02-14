@@ -62,7 +62,7 @@ delete_bytes(bytes_t** self)
 }
 
 int
-bytes_push(bytes_t* self, const void* __restrict__ obj, size_t size)
+bytes_push(bytes_t* self, const void* __restrict__ obj, const size_t size)
 {
   if (self->available_ < size)
   {
@@ -112,7 +112,7 @@ bytes_pop(bytes_t* self, const size_t size)
 }
 
 int
-bytes_at(const bytes_t* self, const size_t index, size_t size, void* out)
+bytes_at(const bytes_t* self, const size_t index, const size_t size, void* out)
 {
   if (index * size > self->length_)
   {
@@ -123,7 +123,7 @@ bytes_at(const bytes_t* self, const size_t index, size_t size, void* out)
   return 0;
 }
 
-__inline__ size_t
+__inline__ size_t __attribute__((__const__))
 bytes_length(const bytes_t* self)
 {
   return self->length_;
@@ -136,31 +136,31 @@ bytes_copy(const bytes_t* self, void* dst, const size_t dstlen)
   memcpy(dst, self->data_, n);
 }
 
-__inline__ uint8_t
+__inline__ uint8_t __attribute__((__const__))
 bytes_byte(const bytes_t* self, const size_t index)
 {
   return self->data_[index];
 }
 
-__inline__ uint16_t
+__inline__ uint16_t __attribute__((__const__))
 bytes_short(const bytes_t* self, const size_t index)
 {
   return *(uint16_t*)&self->data_[index];
 }
 
-__inline__ uint32_t
+__inline__ uint32_t __attribute__((__const__))
 bytes_long(const bytes_t* self, const size_t index)
 {
   return *(uint32_t*)&self->data_[index];
 }
 
-__inline__ uint64_t
+__inline__ uint64_t __attribute__((__const__))
 bytes_quad(const bytes_t* self, const size_t index)
 {
   return *(uint64_t*)&self->data_[index];
 }
 
-__inline__ const uint8_t* const
+__inline__ const uint8_t* const __attribute__((__const__))
 bytes_span(const bytes_t* self, const size_t index)
 {
   return &self->data_[index];

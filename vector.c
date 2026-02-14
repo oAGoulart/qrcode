@@ -78,20 +78,20 @@ vector_push(vector_t* self, void* obj)
   return 0;
 }
 
-__inline__ size_t
-vector_count(vector_t* self)
+__inline__ size_t __attribute__((__const__))
+vector_count(const vector_t* self)
 {
   return self->count_;
 }
 
-__inline__ void**
-vector_begin(vector_t* self)
+__inline__ void** __attribute__((__const__))
+vector_begin(const vector_t* self)
 {
   return self->v_;
 }
 
-__inline__ void**
-vector_end(vector_t* self)
+__inline__ void** __attribute__((__const__))
+vector_end(const vector_t* self)
 {
   return self->v_ + self->available_;
 }

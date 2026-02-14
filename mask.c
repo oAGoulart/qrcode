@@ -362,7 +362,7 @@ delete_qrmask(qrmask_t** self)
 }
 
 void
-qrmask_set(qrmask_t* self, uint16_t index, uint8_t module)
+qrmask_set(qrmask_t* self, const uint16_t index, uint8_t module)
 {
   const uint16_t idx = self->i_[index];
   if (should_xor_(self->order_, idx, self->pattern_))
@@ -473,8 +473,7 @@ typedef struct __attribute__((packed)) bitmap_s
 
 int
 qrmask_outbmp(const qrmask_t* self,
-              const uint8_t scale,
-              FILE* __restrict__ file)
+              const uint8_t scale, FILE* __restrict__ file)
 {
   const uint32_t nbits = (8 + self->order_) * scale;
   uint32_t remain = nbits % 32u;

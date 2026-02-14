@@ -13,11 +13,11 @@ delete_vector(vector_t** self);
 __attribute__((__nonnull__(1))) int
 vector_push(vector_t* self, void* obj);
 __attribute__((__nonnull__)) size_t
-vector_count(vector_t* self);
+vector_count(const vector_t* self);
 
 __attribute__((__nonnull__)) void**
-vector_begin(vector_t* self);
+vector_begin(const vector_t* self);
 __attribute__((__nonnull__)) void**
-vector_end(vector_t* self);
+vector_end(const vector_t* self);
 
 #endif

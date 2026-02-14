@@ -114,7 +114,7 @@ bits_flush(bits_t* self)
   return 0;
 }
 
-__inline__ bytes_t*
+__inline__ bytes_t* __attribute__((__const__))
 bits_bytes(const bits_t* self)
 {
   return self->data_;

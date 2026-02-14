@@ -35,7 +35,8 @@ __attribute__((__nonnull__)) void
 qrmask_praw(const qrmask_t* self);
 
 __attribute__((__nonnull__)) int
-qrmask_outbmp(const qrmask_t* self, uint8_t scale, FILE* __restrict__ file);
+qrmask_outbmp(const qrmask_t* self,
+              uint8_t scale, FILE* __restrict__ file);
 __attribute__((__nonnull__)) void
 qrmask_outsvg(const qrmask_t* self, FILE* __restrict__ file);
 

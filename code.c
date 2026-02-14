@@ -167,7 +167,8 @@ frombyte_(const uint8_t b)
 
 int
 create_qrcode(qrcode_t** self, const char* __restrict__ str,
-              int version, eclevel_t level, bool optimize, bool verbose)
+              const int version, const eclevel_t level,
+              const bool optimize, const bool verbose)
 {
   if (*self != NULL)
   {
