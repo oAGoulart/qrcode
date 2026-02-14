@@ -91,7 +91,7 @@ main(const int argc, char* argv[])
   cli_argument_t options = ARG_NONE;
   imgfmt_t       imgfmt  = FMT_SVG;
   eclevel_t      level   = EC_LOW;
-  int verbose     = 1;
+  int verbose     = 2;
   int mask        = -1;
   int version     = -1;
   int scale       = -1;
@@ -163,7 +163,7 @@ main(const int argc, char* argv[])
   if (options & ARG_INFO)
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION _nl
-         "Built with Clang " __clang_version__ "@ " __DATE__ " " __TIME__);
+         "Built with Clang " __clang_version__ " @ " __DATE__ " " __TIME__);
     return EXIT_SUCCESS;
   }
   if (options & ARG_HELP)
@@ -175,7 +175,7 @@ main(const int argc, char* argv[])
     eprintf("must provide " _xstr(NUM_MANDATORY_ARGS) " mandatory argument(s)");
     return EXIT_FAILURE;
   }
-  if (verbose > 0)
+  if (verbose > 1)
   {
     puts(PROJECT_TITLE " " PROJECT_VERSION _nl
          PROJECT_COPYRIGHT _nl PROJECT_LICENSE _nl);
@@ -186,7 +186,7 @@ main(const int argc, char* argv[])
   int err = create_qrcode(&qrcode,
     argv[argc - 1], version, level,
     options & ARG_OPTIMIZE,
-    verbose > 1
+    verbose > 2
   );
   if (err != 0)
   {
@@ -202,7 +202,7 @@ main(const int argc, char* argv[])
       {
         eprintf("could not force qrcode mask choice");
       }
-      else if (verbose > 1)
+      else if (verbose > 2)
       {
         pinfo("Forced mask: %d", mask);
       }
@@ -228,7 +228,7 @@ main(const int argc, char* argv[])
       {
         eprintf("could not output qrcode image");
       }
-      else if (verbose > 1)
+      else if (verbose > 2)
       {
         pinfo("Image saved to: %s", filename);
       }
