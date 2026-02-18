@@ -8,17 +8,16 @@
 as specified in ISO/IEC 18004:2024. There are no dependencies, generator can be built from code
 on any platform. Outputs inline (stdout), bitmap, or vectors (svg).
 
-**Available generation:**
+**Available generation and capacity (codewords):**
 
 |              **Version** | 1  | 2  | 3  | 4  | 5  |
 |-------------------------:|:--:|:--:|:--:|:--:|:--:|
-|             **EC Level** | **L**  | **L**  | **L**  | **L**  |  **L** |
-| **Capacity (codewords)** | 17 | 32 | 53 | 78 | 106 |
+|   EC Level **Low** (7%) | 17 | 32 | 53 | 78 | 106 |
 
 > [!NOTE]
 > Generator will auto-select lowest Version possible. Unless option `-u` is specified.
-> Here, **codeword** refers to a full byte.
-> Numeric encoding uses up to 10-bits for 3 digits (~58% reduction).
+> Here, **codeword** refers to a full byte.\
+> Numeric encoding uses up to 10-bits for 3 digits (~58% reduction).\
 > Alphanumeric encoding uses up to 11-bits for each pair of characters (~31% reduction).
 
 **Pre-generated lookup tables:**
