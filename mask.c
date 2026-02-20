@@ -326,7 +326,7 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
   (*self)->count_ = (*self)->order_ * (*self)->order_;
   (*self)->pattern_ = pattern;
   (*self)->i_ = qrindex + qr_offset[version];
-  (*self)->v_ = (uint8_t*)malloc((*self)->count_);
+  (*self)->v_ = (uint8_t*)calloc((*self)->count_, 1);
   if ((*self)->v_ == NULL)
   {
     eprintf("cannot allocate %hu bytes", (*self)->count_);
@@ -334,7 +334,6 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
     *self = NULL;
     return ENOMEM;
   }
-  memset((*self)->v_, 0, (*self)->count_);
   (*self)->dark_ = qr_basedark[version];
   (*self)->penalty_ = 0;
   place_finder_(*self);

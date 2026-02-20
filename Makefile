@@ -12,7 +12,7 @@ SCRIPT_DIR := ./scripts
 
 SCPT := indexes.py
 
-SRCS := bits.c bytes.c mask.c code.c main.c
+SRCS := bits.c bytes.c mask.c data.c code.c main.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 

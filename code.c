@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "bytes.h"
+#include "data.h"
 #include "mask.h"
 #include "bits.h"
 #include "shared.h"
@@ -17,9 +18,6 @@
 #define NUM_PADBITS 7
 
 extern const qrinfo_t qrinfo[];
-extern const uint8_t logt[];
-extern const uint8_t alogt[];
-extern const uint8_t rsgen[];
 
 typedef enum subset_e
 {
@@ -82,20 +80,6 @@ typedef struct segment_s
   size_t   count;
 } segment_t;
 
-static __inline__ uint16_t __attribute__((__const__))
-generator_offset(const uint8_t length)
-{
-  assert(length < 32);
-  //length &= 0x1F;
-  static const uint16_t offset[32] = {
-    0,0,0,0,0,0,0,0,0,
-    0,8,0,0,0,0,19,0,
-    0,0,0,35,0,0,0,0,
-    0,56,0,0,0,0,0
-  };
-  return offset[length];
-}
-
 static __inline__ subset_t __attribute__((__const__))
 which_subset_(const uint8_t c)
 {
@@ -154,7 +138,7 @@ maximum_count_(const uint8_t version, const subset_t subset)
 struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
-  bits_t*  bits_;
+  bits_t*   bits_;
   uint8_t   selected_mask_;
   uint8_t   version_;
 };
@@ -433,25 +417,26 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     bits_push((*self)->bits_, 0, 8);
   }
   datalen = bytes_length(arr);
-  const uint8_t* gen = rsgen + generator_offset(finalvl->eccpb);
+  const uint8_t* span = bytes_span(arr, 0);
 
-  /* TODO: should move to qrdata_t */
   pdebug("starting polynomial division (long division)");
-  const size_t eccn = datalen + finalvl->eccpb;
-  uint8_t ecc[eccn];
-  memset(ecc + datalen, 0, finalvl->eccpb);
-  bytes_copy(arr, ecc, datalen);
-  for (i = 0; i < datalen; i++)
+  qrdata_t* qrdata = NULL;
+  err = create_qrdata(&qrdata,
+    span, datalen, finalvl->eccpb
+  );
+  if (err != 0)
   {
-    uint8_t lead = ecc[i];
-    for (uint8_t j = 0; j <= finalvl->eccpb; j++)
-    {
-      ecc[i + j] ^= alogt[(gen[j] + logt[lead]) % UINT8_MAX];
-    }
+    eprintf("could not create qrdata type");
+    delete_qrcode(self);
+    return err;
   }
-  bytes_push(arr, &ecc[i], finalvl->eccpb);
+  /* TODO: empty bytes_t */
+  bytes_push(arr, 
+    &qrdata_codewords(qrdata)[datalen], 
+    finalvl->eccpb
+  );
+  delete_qrdata(&qrdata);
   datalen = bytes_length(arr);
-
   if (verbose)
   {
     pinfo("Calculated codewords (%zu):", datalen);

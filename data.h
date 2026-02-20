@@ -9,12 +9,12 @@
 typedef struct qrdata_s qrdata_t;
 
 __attribute__((__nonnull__)) int
-create_qrdata(qrdata_t** self, const char* __restrict__ block,
+create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
               size_t length, uint8_t eclen);
 __attribute__((__nonnull__)) void
 delete_qrdata(qrdata_t** self);
 
-__attribute__((__nonnull__)) int
-qrdata_next(qrdata_t* self, bool ecc, uint8_t* out);
+__attribute__((__nonnull__)) const uint8_t* const
+qrdata_codewords(qrdata_t* self);
 
 #endif
