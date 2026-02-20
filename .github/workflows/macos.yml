@@ -17,4 +17,4 @@ jobs:
     - name: make
       run: gmake debug
     - name: test output
-      run: bin/qrcode --verbose oagoulart.github.io/rambles/keep-thyself-credible
+      run: bin/qrcode -g 3 oagoulart.github.io/rambles/keep-thyself-credible

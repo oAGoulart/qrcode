@@ -15,7 +15,8 @@ on any platform. Outputs inline (stdout), bitmap, or vectors (svg).
 |   EC Level **Low** (7%) | 17 | 32 | 53 | 78 | 106 |
 
 > [!NOTE]
-> Generator will auto-select lowest Version possible. Unless option `-u` is specified.
+> Generator will auto-select lowest Version possible.
+> Unless option `-V` is specified.\
 > Each **codeword** refers to a full byte (8 bits).\
 > Numeric encoding uses up to 10-bits for 3 digits (~58% reduction).\
 > Alphanumeric encoding uses up to 11-bits for each pair of characters (~31% reduction).
