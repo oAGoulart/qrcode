@@ -10,8 +10,22 @@ extern const uint8_t logt[];
 extern const uint8_t alogt[];
 extern const uint8_t rsgen[];
 
-static __inline__ uint16_t __attribute__((__const__))
-generator_offset(const uint8_t length)
+static __inline__ uint8_t
+log_(const uint8_t num)
+{
+  /* NOTE: length 256 */
+  return logt[num];
+}
+
+static __inline__ uint8_t
+alog_(const uint16_t num)
+{
+  /* NOTE: length 512 */
+  return alogt[num];
+}
+
+static __inline__ const uint8_t*
+reedsolomon_(const uint8_t length)
 {
   assert(length < 32);
   /*length &= 0x1F;*/
@@ -22,13 +36,13 @@ generator_offset(const uint8_t length)
     66,84,0,103,0,124,0,147,
     0,172,0,199,0,228,0
   };
-  return offset[length];
+  return rsgen + offset[length];
 }
 
 struct qrdata_s
 {
-  size_t length_;
-  uint8_t eclen_;
+  size_t   length_;
+  uint8_t  eclen_;
   uint8_t* ecc_;
 };
 
@@ -60,13 +74,13 @@ create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
   }
   memcpy((*self)->ecc_, codewords, length);
   memset(&(*self)->ecc_[length], 0, eclen);
-  const uint8_t* gen = rsgen + generator_offset(eclen);
+  const uint8_t* gen = reedsolomon_(eclen);
   for (size_t i = 0; i < length; i++)
   {
     uint8_t lead = (*self)->ecc_[i];
     for (uint8_t j = 0; j <= eclen; j++)
     {
-      (*self)->ecc_[i + j] ^= alogt[gen[j] + logt[lead]];
+      (*self)->ecc_[i + j] ^= alog_(gen[j] + log_(lead));
     }
   }
   memcpy((*self)->ecc_, codewords, length);
