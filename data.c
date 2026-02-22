@@ -14,12 +14,13 @@ static __inline__ uint16_t __attribute__((__const__))
 generator_offset(const uint8_t length)
 {
   assert(length < 32);
-  //length &= 0x1F;
+  /*length &= 0x1F;*/
+  /* A = {7,10,13,17,16,22,28,15,26,18,20,24,30} */
   static const uint16_t offset[32] = {
     0,0,0,0,0,0,0,0,0,
-    0,8,0,0,0,0,19,0,
-    0,0,0,35,0,0,0,0,
-    0,56,0,0,0,0,0
+    0,8,0,0,19,0,33,49,
+    66,84,0,103,0,124,0,147,
+    0,172,0,199,0,228,0
   };
   return offset[length];
 }
@@ -65,7 +66,7 @@ create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
     uint8_t lead = (*self)->ecc_[i];
     for (uint8_t j = 0; j <= eclen; j++)
     {
-      (*self)->ecc_[i + j] ^= alogt[(gen[j] + logt[lead]) % UINT8_MAX];
+      (*self)->ecc_[i + j] ^= alogt[gen[j] + logt[lead]];
     }
   }
   memcpy((*self)->ecc_, codewords, length);
