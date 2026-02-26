@@ -95,12 +95,23 @@ count_segment_(const char* str)
   return seg;
 }
 
-static __inline__ uint8_t __attribute__((__const__))
-minimum_segment_(const uint8_t version, const uint8_t iteration)
+typedef enum segphase_e
 {
-  assert(iteration < 8);
-  //iteration &= 0x7;
-  static const uint8_t lengths[8][3] = {
+  PHASE_ONE,
+  PHASE_TWO,
+  PHASE_TREE,
+  PHASE_FOUR,
+  PHASE_FIVE,
+  PHASE_SIX,
+  PHASE_SEVEN,
+  PHASE_LIMIT
+} __attribute__((packed)) segphase_t;
+
+static __inline__ uint8_t __attribute__((__const__))
+minimum_segment_(const uint8_t version, const segphase_t phase)
+{
+  assert(PHASE_LIMIT == 7);
+  static const uint8_t lengths[PHASE_LIMIT + 1][3] = {
     { 6, 7, 8 },
     { 4, 4, 5 },
     { 7, 8, 9 },
@@ -111,17 +122,17 @@ minimum_segment_(const uint8_t version, const uint8_t iteration)
     { 0, 0, 0 }
   };
   const uint8_t colidx = (version >= 10) + (version >= 27);
-  return lengths[iteration][colidx];
+  return lengths[phase][colidx];
 }
 
 static __inline__ uint8_t __attribute__((__const__))
 maximum_count_(const uint8_t version, const subset_t subset)
 {
   assert(SUBSET_LIMIT == 5);
-  static const uint8_t lengths[3][SUBSET_LIMIT] = {
-    { 0, 10, 9, 0, 8 },
-    { 0, 12, 11, 0, 16 },
-    { 0, 14, 13, 0, 16 }
+  static const uint8_t lengths[3][SUBSET_LIMIT + 1] = {
+    { 0, 10, 9, 0, 8, 0 },
+    { 0, 12, 11, 0, 16, 0 },
+    { 0, 14, 13, 0, 16, 0 }
   };
   const uint8_t colidx = (version >= 10) + (version >= 27);
   return lengths[colidx][subset];
@@ -205,13 +216,13 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     if (seg.type != SUBSET_BYTE)
     {
       if (seg.type == SUBSET_ALPHA &&
-          seg.count >= minimum_segment_(ver, 0))
+          seg.count >= minimum_segment_(ver, PHASE_ONE))
       {
         segment.type = SUBSET_ALPHA;
       }
       else
       {
-        if (seg.count >= minimum_segment_(ver, 1))
+        if (seg.count >= minimum_segment_(ver, PHASE_TWO))
         {
           segment.type = SUBSET_NUMERIC;
         }
@@ -243,9 +254,9 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
       case SUBSET_ALPHA:
       {
-        if (seg.type == SUBSET_BYTE || (
-            seg.type == SUBSET_NUMERIC &&
-            seg.count > minimum_segment_(ver, 3) &&
+        if (seg.type == SUBSET_BYTE ||
+           (seg.type == SUBSET_NUMERIC &&
+            seg.count > minimum_segment_(ver, PHASE_FOUR) &&
             which_subset_(str[i + 1 + seg.count]) == SUBSET_ALPHA))
         {
           pushseg = true;
@@ -258,12 +269,12 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
         {
           subset_t subset = which_subset_(str[i + 1 + seg.count]);
           if (subset == SUBSET_BYTE &&
-              seg.count >= minimum_segment_(ver, 4))
+              seg.count >= minimum_segment_(ver, PHASE_FIVE))
           {
             pushseg = true;
           }
           if (subset == SUBSET_ALPHA &&
-              seg.count >= minimum_segment_(ver, 5))
+              seg.count >= minimum_segment_(ver, PHASE_SIX))
           {
             pushseg = true;
           }
@@ -276,7 +287,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
           }
           subset_t subset = which_subset_(str[i + 1 + seg.count]);
           if (subset == SUBSET_BYTE &&
-              seg.count >= minimum_segment_(ver, 6))
+              seg.count >= minimum_segment_(ver, PHASE_SEVEN))
           {
             pushseg = true;
           }
