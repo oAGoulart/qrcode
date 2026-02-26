@@ -21,9 +21,11 @@ extern const qrinfo_t qrinfo[];
 
 typedef enum subset_e
 {
-  SUBSET_NUMERIC = 1,
-  SUBSET_ALPHA   = 2,
-  SUBSET_BYTE    = 4,
+  SUBSET_NONE,
+  SUBSET_NUMERIC,
+  SUBSET_ALPHA,
+  SUBSET_KANJI,
+  SUBSET_BYTE,
   SUBSET_LIMIT
 } __attribute__((packed)) subset_t;
 
