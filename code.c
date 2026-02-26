@@ -28,49 +28,41 @@ typedef enum subset_e
 } __attribute__((packed)) subset_t;
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Winitializer-overrides"
 #pragma clang diagnostic ignored "-Wgnu-designator"
 static const subset_t subset_lut_[256] = {
-  // NOTE: default all entries to SUBSET_BYTE
-  [0 ... 255]   = SUBSET_BYTE,
+  [0 ... 31]    = SUBSET_BYTE,
+  [' ']         = SUBSET_ALPHA,
+  [33 ... 35]   = SUBSET_BYTE,
+  ['$']         = SUBSET_ALPHA,
+  ['%']         = SUBSET_ALPHA,
+  [38 ... 41]   = SUBSET_BYTE,
+  ['*']         = SUBSET_ALPHA,
+  ['+']         = SUBSET_ALPHA,
+  [44]          = SUBSET_BYTE,
+  ['-']         = SUBSET_ALPHA,
+  ['.']         = SUBSET_ALPHA,
+  ['/']         = SUBSET_ALPHA,
   ['0' ... '9'] = SUBSET_NUMERIC,
+  [':']         = SUBSET_ALPHA,
+  [59 ... 64]   = SUBSET_BYTE,
   ['A' ... 'Z'] = SUBSET_ALPHA,
-  [' '] = SUBSET_ALPHA,
-  ['$'] = SUBSET_ALPHA,
-  ['%'] = SUBSET_ALPHA,
-  ['*'] = SUBSET_ALPHA,
-  ['+'] = SUBSET_ALPHA,
-  ['-'] = SUBSET_ALPHA,
-  ['.'] = SUBSET_ALPHA,
-  ['/'] = SUBSET_ALPHA,
-  [':'] = SUBSET_ALPHA
+  [91 ... 255]  = SUBSET_BYTE
 };
 
-#define SUBSET_SYMBOLS(X) \
-  X(' ', 36) X('$', 37) X('%', 38) X('*', 39) \
-  X('+', 40) X('-', 41) X('.', 42) X('/', 43) X(':', 44)
-
-#define SUBSET_NUMBERS(X) \
-  X('0') X('1') X('2') X('3') X('4') X('5') \
-  X('6') X('7') X('8') X('9')
-
-#define SUBSET_LETTERS(X) \
-  X('A') X('B') X('C') X('D') X('E') X('F') \
-  X('G') X('H') X('I') X('J') X('K') X('L') \
-  X('M') X('N') X('O') X('P') X('Q') X('R') \
-  X('S') X('T') X('U') X('V') X('W') X('X') \
-  X('Y') X('Z')
-
-#define ENTRY_SYM(c, v) [c] = (v),
-#define ENTRY_NUM(c)    [c] = ((c) - '0'),
-#define ENTRY_ALPHA(c)  [c] = ((c) - 'A' + 10),
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-designator"
 static const uint8_t frombyte_lut_[256] = {
-  // NOTE: default all entries to invalid
-  [0 ... 255] = UINT8_MAX,
-  SUBSET_SYMBOLS(ENTRY_SYM)
-  SUBSET_NUMBERS(ENTRY_NUM)
-  SUBSET_LETTERS(ENTRY_ALPHA)
+  ['0'] = 0, ['1'] = 1, ['2'] = 2, ['3'] = 3, ['4'] = 4, ['5'] = 5,
+  ['6'] = 6, ['7'] = 7, ['8'] = 8, ['9'] = 9,
+  ['A'] = 10, ['B'] = 11, ['C'] = 12, ['D'] = 13, ['E'] = 14,
+  ['F'] = 15, ['G'] = 16, ['H'] = 17, ['I'] = 18, ['J'] = 19,
+  ['K'] = 20, ['L'] = 21, ['M'] = 22, ['N'] = 23, ['O'] = 24,
+  ['P'] = 25, ['Q'] = 26, ['R'] = 27, ['S'] = 28, ['T'] = 29,
+  ['U'] = 30, ['V'] = 31, ['W'] = 32, ['X'] = 33, ['Y'] = 34,
+  ['Z'] = 35,
+  [' '] = 36, ['$'] = 37, ['%'] = 38, ['*'] = 39, ['+'] = 40,
+  ['-'] = 41, ['.'] = 42, ['/'] = 43, [':'] = 44,
+  [45 ... 255] = UINT8_MAX
 };
 #pragma clang diagnostic pop
 
