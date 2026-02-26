@@ -383,17 +383,16 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   bits_flush((*self)->bits_);
   delete_bytes(&segments);
 
+  /* NOTE: final version selection */
   size_t datalen = bytes_length(arr);
   for (i = ver; i > 0; i--)
   {
-    if (datalen <= qrinfo[(i - 1) * EC_COUNT + level].len)
+    if (datalen > qrinfo[(i - 1) * EC_COUNT + level].len)
     {
-      continue;
+      break;
     }
-    break;
   }
   ver = i;
-  /* NOTE: final version */
   (*self)->version_ = ver;
   const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT + level];
   if (datalen > finalvl->len)
