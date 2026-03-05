@@ -63,7 +63,7 @@ Clang and Python, you may run Makefile's _build_ commands manually.
 >
 > **Beware 2:** Whilst building, scripts will generate +2MB of pre-calculated lookup tables. That process should take less than 10s.
 >
-> **Beware 3:** Make sure `pip` is properly installed and can install packages, if needed, activate a virtual envionment before executing `make`
+> **Beware 3:** Make sure `pip` is properly setup and can install packages, if needed, activate a virtual envionment before executing `make`.
 
 **Build tools used for binaries:**
 
@@ -142,9 +142,9 @@ source .venv/bin/activate
 pip install matplotlib
 python scripts/indexes.py 2 True
 ```
-Where `2` is the bar code Version and `True` is the debug flag (default: False).
+Where `2` is the bar code Version and `True` is the debug flag (default: `False`).
 
-![Module path](assets/qrcode2path.svg)
+![Module path](assets/qrcode2path.png)
 
 ## Roadmap
 
