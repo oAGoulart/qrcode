@@ -130,6 +130,18 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 
 ![QR Code](assets/gen.svg)
 
+### Module path visualizer
+
+If you wish to visualize how modules are placed into the bar code matrix, you can use the generator script at `scripts/indexes.py` in debug mode. To do so, create a virtual environment and run it as:
+
+```sh
+python -m venv .venv
+source .venv/bin/activate
+pip install matplotlib
+python scripts/indexes.py 2 True
+```
+Where `2` is the bar code Version and `True` is the debug flag (default: False).
+
 ## Roadmap
 
 Planned features:
@@ -155,6 +167,7 @@ ISO/IEC 2024 – All rights reserved.
 2. [Denso's QR Code FAQ](https://www.qrcode.com/en/faq.html)
 3. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 4. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
 
 
