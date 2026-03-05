@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Add command `--nolimit` to print any Version inline
 - Add object vector with cleanup on deletion
 - Add version/level info lookup table generator
+- Add module path visualizer
 - Change comments from `//` to `/**/`
 - Change name of types `heaparray`, `objectvector`, `packedbits`
 - Change name of files `quickresponse`, `redundantdata`
@@ -22,7 +23,7 @@ All notable changes to this project will be documented in this file.
 - Refactor inline printing to reduce stack usage
 - Remove deprecated call to `fopen`
 - Remove cmdln options `--nocopy`, `--noinline`
-- Update lookup table build script
+- Update lookup table build script to support all Versions
 - Update command-line options parser
 
 ## [1.11.0] - 2025-09-05
