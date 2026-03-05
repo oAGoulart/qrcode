@@ -11,9 +11,9 @@ def visualize_module_path(version: int, indexes: list) -> None:
 
   # NOTE: checks for duplicates
   counts = Counter(indexes)
-  dup_indices = [idx for idx, count in counts.items() if count > 1]
-  dup_x = [idx % order for idx in dup_indices]
-  dup_y = [idx // order for idx in dup_indices]
+  dup_indexes = [idx for idx, count in counts.items() if count > 1]
+  dup_x = [idx % order for idx in dup_indexes]
+  dup_y = [idx // order for idx in dup_indexes]
 
   plt.figure(figsize=(10, 10))
   sequence_numbers = list(range(len(indexes)))
@@ -22,10 +22,10 @@ def visualize_module_path(version: int, indexes: list) -> None:
   plt.colorbar(sc, label='Placement sequence (start to end)', shrink=0.8)
   plt.plot(x_coords, y_coords, color='gray', linewidth=0.5, alpha=0.5)
 
-  if dup_indices:
+  if dup_indexes:
     plt.scatter(dup_x, dup_y, c='red', s=120, marker='X',
-                label=f'Duplicates({len(dup_indices)})')
-    print(f"DEBUG: Found {len(dup_indices)} duplicated modules!")
+                label=f'Duplicates({len(dup_indexes)})')
+    print(f"DEBUG: Found {len(dup_indexes)} duplicated modules!")
   else:
     print("DEBUG: No duplicate indixes found.")
 
@@ -57,7 +57,7 @@ align_patterns = [
   [30,58,86,114,142,170]
 ]
 assert(len(align_patterns) == 39)
-alignment_patterns_coords = [
+align_patterns_coords = [
   [
     (col, row)\
     for col in ([6] + p)\
@@ -71,7 +71,7 @@ def is_pattern(version: int, row: int, col: int) -> bool:
   if not (2 <= version <= 40):
     return False
   version -= 2
-  for coords in alignment_patterns_coords[version]:
+  for coords in align_patterns_coords[version]:
     if (coords[0] - 2 <= col <= coords[0] + 2) and\
        (coords[1] - 2 <= row <= coords[1] + 2):
       return True
