@@ -1,6 +1,49 @@
 import math
 import sys
 
+import matplotlib.pyplot as plt
+from collections import Counter
+
+def visualize_module_path(version: int, indexes: list) -> None:
+  order = 4 * version + 17
+  x_coords = [idx % order for idx in indexes]
+  y_coords = [idx // order for idx in indexes]
+
+  # NOTE: checks for duplicates
+  counts = Counter(indexes)
+  dup_indices = [idx for idx, count in counts.items() if count > 1]
+  dup_x = [idx % order for idx in dup_indices]
+  dup_y = [idx // order for idx in dup_indices]
+
+  plt.figure(figsize=(10, 10))
+  sequence_numbers = list(range(len(indexes)))
+  sc = plt.scatter(x_coords, y_coords, c=sequence_numbers, cmap='viridis', 
+                   s=40, marker='s', label='Modules')
+  plt.colorbar(sc, label='Placement sequence (start to end)', shrink=0.8)
+  plt.plot(x_coords, y_coords, color='gray', linewidth=0.5, alpha=0.5)
+
+  if dup_indices:
+    plt.scatter(dup_x, dup_y, c='red', s=120, marker='X',
+                label=f'Duplicates({len(dup_indices)})')
+    print(f"DEBUG: Found {len(dup_indices)} duplicated modules!")
+  else:
+    print("DEBUG: No duplicate indixes found.")
+
+  plt.title(f"QR Code Version {version} module path\n" +
+            f"Total modules placed: {len(indexes)}")
+  plt.xlim(-1, order)
+  plt.ylim(-1, order)
+  plt.gca().invert_yaxis()
+  plt.gca().set_aspect('equal', adjustable='box')
+  plt.grid(True, linestyle='-', alpha=0.3, color='lightgray')
+  plt.xticks(range(0, order))
+  plt.yticks(range(0, order))
+  plt.tick_params(axis='both', which='both', bottom=False, left=False,
+                  labelbottom=False, labelleft=False)
+  plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+  plt.tight_layout(rect=[0, 0, 1, 0.92])
+  plt.show()
+
 # NOTE: starts at Version 2
 align_patterns = [
   [18],[22],[26],[30],[34],
@@ -14,15 +57,23 @@ align_patterns = [
   [30,58,86,114,142,170]
 ]
 assert(len(align_patterns) == 39)
+alignment_patterns_coords = [
+  [
+    (col, row)\
+    for col in ([6] + p)\
+    for row in ([6] + p)\
+    if (col, row) not in ((6, 6), (6, p[-1]), (p[-1], 6))
+  ]
+  for p in align_patterns
+]
 
 def is_pattern(version: int, row: int, col: int) -> bool:
   if not (2 <= version <= 40):
     return False
   version -= 2
-  # FIXME: must check horizontal and vertical patterns for each index
-  for pattern in align_patterns[version]:
-    if (pattern - 2 <= row <= pattern + 2) and\
-       (pattern - 2 <= col <= pattern + 2):
+  for coords in alignment_patterns_coords[version]:
+    if (coords[0] - 2 <= col <= coords[0] + 2) and\
+       (coords[1] - 2 <= row <= coords[1] + 2):
       return True
   return False
 
@@ -42,7 +93,7 @@ def remaider_bits(version: int) -> int:
     return 4
   return 0
 
-def generate_indexes(version: int) -> None:
+def generate_indexes(version: int, debug: bool = False) -> None:
   if not (1 <= version <= 40):
     raise ValueError("unsupported version.")
   order = 4 * version + 17
@@ -69,7 +120,7 @@ def generate_indexes(version: int) -> None:
   direction = -1 # -1=up 1=down
   idx = (order * order) - 1
   flipped = False
-  print("  .short ", end='')
+  indexes = []
   for i in range(num_bits):
     if flipped:
       flipped = False
@@ -89,10 +140,7 @@ def generate_indexes(version: int) -> None:
       row = math.floor(idx / order)
       column = idx % order
     if should_flip(row, column, direction):
-      if i + 2 == num_bits:
-        print(f"{idx},{idx - 1}")
-        break
-      print(f"{idx},{idx - 1},", end='')
+      indexes.extend([idx, idx - 1])
       flipped = True
       if row == order - 1 and column == 10:
         idx = (order - 9) * order + 8
@@ -100,6 +148,7 @@ def generate_indexes(version: int) -> None:
         idx -= 2
       direction *= -1
       continue
+    # NOTE: makes sure 'i' is not incremented
     while should_skip(row, column):
       if should_flip(row, column, direction):
         idx -= 2
@@ -108,10 +157,19 @@ def generate_indexes(version: int) -> None:
         idx = next_index(idx)
       row = math.floor(idx / order)
       column = idx % order
-    print(f"{idx},", end='')
+    indexes.append(idx)
     idx = next_index(idx)
+  indexes = indexes[:num_bits]
+  if debug:
+    visualize_module_path(version, indexes)
+  else:
+    print("  .short " + ",".join(map(str, indexes)))
 
 if __name__ == "__main__":
-  if len(sys.argv) < 2:
+  count = len(sys.argv)
+  debug = False
+  if count < 2:
     raise ValueError("not enough arguments")
-  generate_indexes(int(sys.argv[1]))
+  if count > 2:
+    debug = bool(sys.argv[2])
+  generate_indexes(int(sys.argv[1]), debug)
