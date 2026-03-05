@@ -19,6 +19,7 @@ def is_pattern(version: int, row: int, col: int) -> bool:
   if not (2 <= version <= 40):
     return False
   version -= 2
+  # FIXME: must check horizontal and vertical patterns for each index
   for pattern in align_patterns[version]:
     if (pattern - 2 <= row <= pattern + 2) and\
        (pattern - 2 <= col <= pattern + 2):
@@ -32,11 +33,26 @@ num_bytes = [
 ]
 assert(len(num_bytes) == 40)
 
+def remaider_bits(version: int) -> int:
+  if 2 <= version <= 6:
+    return 7
+  if 14 <= version <= 20 or 28 <= version <= 34:
+    return 3
+  if 21 <= version <= 27:
+    return 4
+  return 0
+
 def generate_indexes(version: int) -> None:
   if not (1 <= version <= 40):
     raise ValueError("unsupported version.")
   order = 4 * version + 17
-  num_bits = num_bytes[version - 1] * 8 + (7 if version > 1 else 0)
+  num_bits = num_bytes[version - 1] * 8 + remaider_bits(version)
+
+  def is_vinfo(row_: int, col_: int) -> bool:
+    if version < 7:
+      return False
+    return (row_ < 6 and col_ > order - 12) or\
+           (col_ < 6 and row_ > order - 12)
 
   def should_move(col_: int) -> bool:
     return col_ == 6
@@ -47,18 +63,11 @@ def generate_indexes(version: int) -> None:
     else:
       return row_ == order - 1 or (row_ == order - 9 and col_ < 9)
 
-  def is_vinfo(row_: int, col_: int) -> bool:
-    if version < 7:
-      return False
-    return (row_ < 6 and col_ > order - 12) or\
-           (col_ < 6 and row_ > order - 12)
-
   def should_skip(row_: int, col_: int) -> bool:
-    return row_ == 6 or is_pattern(version, row_, col_) or\
-           is_vinfo(row_, col_)
+    return row_ == 6 or is_pattern(version, row_, col_) or is_vinfo(row_, col_)
 
   direction = -1 # -1=up 1=down
-  idx = order * order - 1
+  idx = (order * order) - 1
   flipped = False
   print("  .short ", end='')
   for i in range(num_bits):
@@ -92,7 +101,11 @@ def generate_indexes(version: int) -> None:
       direction *= -1
       continue
     while should_skip(row, column):
-      idx = next_index(idx)
+      if should_flip(row, column, direction):
+        idx -= 2
+        direction *= -1
+      else:
+        idx = next_index(idx)
       row = math.floor(idx / order)
       column = idx % order
     print(f"{idx},", end='')

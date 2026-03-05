@@ -3,7 +3,7 @@
 OUT_FILE="lookup.S"
 CSV_FILE="qrinfo.csv"
 SCRIPT_DIR="$(dirname "$0")"
-MAX_VERSION=5
+MAX_VERSION=40
 
 declare_global() {
   echo ""
@@ -17,15 +17,16 @@ declare_global() {
 }
 
 generate_indexes() {
-  declare_global "qrindex"
+  declare_global "qrindex" >> "$OUT_FILE"
   for ((i = 1 ; i <= MAX_VERSION ; i++)); do
-    echo -e "$(python3 "$SCRIPT_DIR"/indexes.py "$i")"
+    echo "Generating indexes for Version" "$i" "of" "$MAX_VERSION"
+    python3 "$SCRIPT_DIR"/indexes.py "$i" >> "$OUT_FILE"
   done
 }
 
 generate_info() {
-  declare_global "qrinfo"
-  echo -e "$(python3 "$SCRIPT_DIR"/info.py "$SCRIPT_DIR"/"$CSV_FILE")"
+  declare_global "qrinfo" >> "$OUT_FILE"
+  python3 "$SCRIPT_DIR"/info.py "$SCRIPT_DIR"/"$CSV_FILE" >> "$OUT_FILE"
 }
 
 create_lookup() {
@@ -34,4 +35,4 @@ create_lookup() {
   generate_indexes
 }
 
-create_lookup >> "$OUT_FILE"
+create_lookup
