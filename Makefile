@@ -45,6 +45,7 @@ lookup.S:
 
 .PHONY: clean
 clean:
-	rm -r $(BUILD_DIR)
+	rm -f -d -r $(BUILD_DIR)
+	rm -f lookup.S lookup.s
 
 -include $(DEPS)

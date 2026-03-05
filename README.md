@@ -21,9 +21,9 @@ There are no dependencies, generator can be built from code on any platform. Out
 > Alphanumeric encoding uses up to 11-bits for each pair of characters (~31% reduction).
 
 **Pre-generated lookup tables:**
-1. Reed-Solomon EC generator polynomials.
+1. Reed-Solomon error correction generator polynomials.
 2. Galois field of 256 (285 primitive) log and anti-log table.
-3. Placement index of each data and error correction bit onto the encoding region.
+3. Placement index of each module onto the encoding region.
 4. QR Code Version/Level information table.
 
 ## Usage
@@ -53,16 +53,16 @@ OPTIONS:
 
 Latest (stable) release can be found at this repo's [Releases](https://github.com/oAGoulart/qrcode/releases).
 To build this project, use `make`. Otherwise, as long as your system has
-Clang and Python, you may run Makefile's _build_ commands manually.
+Clang and Python, you may run Makefile's `build` commands manually.
 
 > [!CAUTION]
-> **Beware 1:** this repo's `master` branch may or may not contain uncompilable, unstable code.
+> **Beware 1:** This repo's `master` branch may or may not contain uncompilable, unstable code.
 > It's recommended that you select the latest tag release,
 > unless you wish to collaborate with code.
 >
 > **Beware 2:** Whilst building, scripts will generate +2MB of pre-calculated lookup tables. That process should take less than 10s.
 >
-> **Beware 3:** Make sure `pip` is properly setup and can install packages, if needed, activate a virtual envionment before executing `make`.
+> **Beware 3:** If building LUT in debug, make sure `pip` is properly setup and can install packages, if needed, activate a virtual envionment before executing `make`.
 
 **Build tools used for binaries:**
 
@@ -133,12 +133,12 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 
 ### Module path visualizer
 
-If you wish to visualize how modules are placed into the bar code matrix, you can use the generator script at `scripts/indexes.py` in debug mode. To do so, create a virtual environment and run it as:
+If you wish to visualize how modules are placed onto the encoding region, you can use the generator script at `scripts/indexes.py` in debug mode. An usage example is:
 
 ```sh
-python -m venv .venv
-source .venv/bin/activate
-pip install matplotlib
+python -m venv .venv               # create venv
+source .venv/bin/activate          # activate it
+pip install matplotlib             # install deps
 python scripts/indexes.py 2 True
 ```
 Where `2` is the bar code Version and `True` is the debug flag (default: `False`).
@@ -147,14 +147,14 @@ Where `2` is the bar code Version and `True` is the debug flag (default: `False`
 
 ## Roadmap
 
-Planned features:
-1. higher EC levels (WIP)
-   - [ ] redundant data type
-      - [ ] split codewords into blocks/group
-      - [ ] generate ECC for each block
-   - [ ] apply XOR masks as iterator
-   - [ ] lookup tables
-2. higher Version codes (TBD)
+Work-in-progress:
+1. higher EC levels
+   - [x] redundant data type
+   - [ ] split codewords into blocks/group
+   - [x] lookup tables
+2. higher Version codes
+   - [ ] higher EC levels (see above)
+   - [x] lookup tables
 
 ## Disclaimer
 QR Code, iQR Code SQRC and FrameQR are registered trademarks

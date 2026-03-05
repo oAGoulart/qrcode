@@ -1,10 +1,11 @@
 import math
 import sys
 
-import matplotlib.pyplot as plt
-from collections import Counter
-
 def visualize_module_path(version: int, indexes: list) -> None:
+  # NOTE: keep imports here to use only in debug mode
+  import matplotlib.pyplot as plt
+  from collections import Counter
+
   order = 4 * version + 17
   x_coords = [idx % order for idx in indexes]
   y_coords = [idx // order for idx in indexes]

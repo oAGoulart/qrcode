@@ -37,5 +37,4 @@ create_lookup() {
   generate_indexes
 }
 
-pip install matplotlib
 create_lookup
