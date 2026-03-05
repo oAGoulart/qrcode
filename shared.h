@@ -14,6 +14,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
+#pragma clang diagnostic ignored "-Wgnu-designator"
+
 #define _nl "\n"
 #define _str(s) #s
 #define _xstr(s) _str(s)
@@ -120,6 +123,9 @@ typedef struct __attribute__((packed)) qrinfo_s
   uint8_t  datapb[2]; /* data codewords per block, per group (2) */
 } qrinfo_t;
 
+#ifndef NDEBUG
+static
+#endif
 __inline__ size_t __attribute__((__const__))
 align_memory(const size_t size, const size_t alignment)
 {

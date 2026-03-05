@@ -4,7 +4,7 @@ default: build
 TARGET_EXEC := qrcode
 
 CC := clang
-CCFLAGS := -DNDEBUG -g0 -O3
+CCFLAGS := -DNDEBUG -g0 -O3 -Wno-ignored-qualifiers -Wno-gnu-designator
 LDFLAGS := -lm
 
 BUILD_DIR := ./bin
