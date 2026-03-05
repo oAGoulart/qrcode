@@ -84,7 +84,7 @@ num_bytes = [
 ]
 assert(len(num_bytes) == 40)
 
-def remaider_bits(version: int) -> int:
+def remainder_bits(version: int) -> int:
   if 2 <= version <= 6:
     return 7
   if 14 <= version <= 20 or 28 <= version <= 34:
@@ -97,7 +97,7 @@ def generate_indexes(version: int, debug: bool = False) -> None:
   if not (1 <= version <= 40):
     raise ValueError("unsupported version.")
   order = 4 * version + 17
-  num_bits = num_bytes[version - 1] * 8 + remaider_bits(version)
+  num_bits = num_bytes[version - 1] * 8 + remainder_bits(version)
 
   def is_vinfo(row_: int, col_: int) -> bool:
     if version < 7:
