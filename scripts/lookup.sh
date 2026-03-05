@@ -18,15 +18,17 @@ declare_global() {
 
 generate_indexes() {
   declare_global "qrindex" >> "$OUT_FILE"
+  echo "Generating module indexes table"
   for ((i = 1 ; i <= MAX_VERSION ; i++)); do
-    echo "Generating indexes for Version" "$i" "of" "$MAX_VERSION"
-    python3 "$SCRIPT_DIR"/indexes.py "$i" >> "$OUT_FILE"
+    echo "...indexes for Version" "$i"
+    python "$SCRIPT_DIR"/indexes.py "$i" >> "$OUT_FILE"
   done
 }
 
 generate_info() {
   declare_global "qrinfo" >> "$OUT_FILE"
-  python3 "$SCRIPT_DIR"/info.py "$SCRIPT_DIR"/"$CSV_FILE" >> "$OUT_FILE"
+  echo "Generating version info table"
+  python "$SCRIPT_DIR"/info.py "$SCRIPT_DIR"/"$CSV_FILE" >> "$OUT_FILE"
 }
 
 create_lookup() {
@@ -35,4 +37,5 @@ create_lookup() {
   generate_indexes
 }
 
+pip install matplotlib
 create_lookup

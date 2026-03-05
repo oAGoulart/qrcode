@@ -57,11 +57,13 @@ To build this project, use `make`. Otherwise, as long as your system has
 Clang and Python, you may run Makefile's _build_ commands manually.
 
 > [!CAUTION]
-> Beware: this repo's `master` branch may or may not contain uncompilable, unstable code.
+> **Beware 1:** this repo's `master` branch may or may not contain uncompilable, unstable code.
 > It's recommended that you select the latest tag release,
 > unless you wish to collaborate with code.
 >
-> Whilst building, scripts will generate +2MB of pre-calculated lookup tables. That should take less than 30s.
+> **Beware 2:** Whilst building, scripts will generate +2MB of pre-calculated lookup tables. That process should take less than 10s.
+>
+> **Beware 3:** Make sure `pip` is properly installed and can install packages, if needed, activate a virtual envionment before executing `make`
 
 **Build tools used for binaries:**
 
@@ -141,6 +143,8 @@ pip install matplotlib
 python scripts/indexes.py 2 True
 ```
 Where `2` is the bar code Version and `True` is the debug flag (default: False).
+
+![Module path](assets/qrcode2path.svg)
 
 ## Roadmap
 
