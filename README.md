@@ -1,7 +1,7 @@
 # Command-line QR Code generator
 [![Static Badge](https://img.shields.io/badge/ISO%2FIEC-18004%3A2024-red)](https://www.iso.org/standard/83389.html)
-[![GitHub Release](https://img.shields.io/github/v/release/oagoulart/qrcode?color=green)](https://github.com/oAGoulart/qrcode/releases)
-[![GitHub License](https://img.shields.io/github/license/oagoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
+[![GitHub Release](https://img.shields.io/github/v/release/oAGoulart/qrcode?color=green)](https://github.com/oAGoulart/qrcode/releases)
+[![GitHub License](https://img.shields.io/github/license/oAGoulart/qrcode)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
 **Objective:** Model 2, from version 1 to 5 (so far), byte/num/alpha modes, with EC level L,
@@ -155,6 +155,7 @@ ISO/IEC 2024 – All rights reserved.
 2. [Denso's QR Code FAQ](https://www.qrcode.com/en/faq.html)
 3. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 4. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
 
 
