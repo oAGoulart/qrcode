@@ -62,7 +62,7 @@ Clang and Python, you may run Makefile's `build` commands manually.
 >
 > **Beware 2:** Whilst building, scripts will generate +2MB of pre-calculated lookup tables. That process should take less than 10s.
 >
-> **Beware 3:** If building LUT in debug, make sure `pip` is properly setup and can install packages, if needed, activate a virtual envionment before executing `make`.
+> **Beware 3:** If using LUT script in debug, make sure `matplotlib` is properly installed. If needed, activate a virtual envionment before executing `make`. With MinGW, make sure to use `pacman` instead of `pip`.
 
 **Build tools used for binaries:**
 
@@ -133,12 +133,12 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 
 ### Module path visualizer
 
-If you wish to visualize how modules are placed onto the encoding region, you can use the generator script at `scripts/indexes.py` in debug mode. An usage example is:
+If you wish to visualize how modules are placed onto the encoding region, you can use the generator script at `scripts/indexes.py` in debug mode. An usage example with MinGW is:
 
 ```sh
-python -m venv .venv               # create venv
-source .venv/bin/activate          # activate it
-pip install matplotlib             # install deps
+pacman -S mingw-w64-x86_64-python-matplotlib
+python -m venv .venv --system-site-packages
+source .venv/bin/activate
 python scripts/indexes.py 2 True
 ```
 Where `2` is the bar code Version and `True` is the debug flag (default: `False`).
@@ -170,10 +170,3 @@ ISO/IEC 2024 – All rights reserved.
 2. [Denso's QR Code FAQ](https://www.qrcode.com/en/faq.html)
 3. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 4. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
-
-
-
-
-
-
-
