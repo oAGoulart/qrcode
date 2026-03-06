@@ -24,6 +24,8 @@ bytes_length(const bytes_t* self);
 
 __attribute__((__nonnull__)) void
 bytes_copy(const bytes_t* self, void* dst, size_t dstlen);
+__attribute__((__nonnull__)) void
+bytes_empty(bytes_t* self);
 
 __attribute__((__nonnull__)) uint8_t
 bytes_byte(const bytes_t* self, size_t index);

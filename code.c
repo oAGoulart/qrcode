@@ -191,7 +191,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     for (; i <= ver; i++)
     {
-      if (strcount <= qrinfo[i * EC_COUNT + level].len - 2)
+      /* FIXME: level enum is not sequential */
+      if (strcount <= qrinfo[i * EC_COUNT].len - 2)
       {
         ver = i;
         break;
@@ -391,14 +392,14 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t datalen = bytes_length(arr);
   for (i = ver; i > 0; i--)
   {
-    if (datalen > qrinfo[(i - 1) * EC_COUNT + level].len)
+    if (datalen > qrinfo[(i - 1) * EC_COUNT].len)
     {
       break;
     }
   }
   ver = i;
   (*self)->version_ = ver;
-  const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT + level];
+  const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT];
   if (datalen > finalvl->len)
   {
     eprintf("data must be less than %u characters long", finalvl->len - 2u);
@@ -436,7 +437,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     delete_qrcode(self);
     return err;
   }
-  /* TODO: empty bytes_t */
+  //bytes_empty(arr);
   bytes_push(arr, 
     &qrdata_codewords(qrdata)[datalen], 
     finalvl->eccpb
