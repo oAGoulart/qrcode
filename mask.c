@@ -11,6 +11,7 @@
 #define MASKINFO_LEN 15
 
 extern const uint16_t qrindex[];
+extern const uint32_t qroffset[];
 
 struct qrmask_s
 {
@@ -298,13 +299,6 @@ symbol_order_(const uint8_t version)
 int
 create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
 {
-  /* TODO: move to lookup, once higher versions available */
-  static const uint16_t qr_basedark[MAX_VERSION] = {
-    91u, 112u, 114u, 118u, 122u
-  };
-  static const uint16_t qr_offset[MAX_VERSION] = {
-    0, 208u, 567u, 1134u, 1941u
-  };
   if (*self != NULL)
   {
     eprintf("pointer to garbage in *self");
@@ -325,7 +319,7 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
   (*self)->order_ = symbol_order_(version);
   (*self)->count_ = (*self)->order_ * (*self)->order_;
   (*self)->pattern_ = pattern;
-  (*self)->i_ = qrindex + qr_offset[version];
+  (*self)->i_ = qrindex + qroffset[version];
   (*self)->v_ = (uint8_t*)calloc((*self)->count_, 1);
   if ((*self)->v_ == NULL)
   {
@@ -334,7 +328,7 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
     *self = NULL;
     return ENOMEM;
   }
-  (*self)->dark_ = qr_basedark[version];
+  (*self)->dark_ = 0;
   (*self)->penalty_ = 0;
   place_finder_(*self);
   place_timing_(*self);
