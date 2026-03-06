@@ -20,11 +20,11 @@ def visualize_module_path(version: int, indexes: list) -> None:
   sequence_numbers = list(range(len(indexes)))
   sc = plt.scatter(x_coords, y_coords, c=sequence_numbers, cmap='viridis', 
                    s=40, marker='s', label='Modules')
-  cbar = plt.colorbar(sc, label='Placement sequence', shrink=0.8)
+  cbar = plt.colorbar(sc, label='Placement sequence', shrink=0.7)
   cbar.ax.text(0.5, 1.01, 'end', transform=cbar.ax.transAxes,
-              ha='center', va='bottom', fontstyle='italic')
+               ha='center', va='bottom', fontstyle='italic')
   cbar.ax.text(0.5, -0.02, 'start', transform=cbar.ax.transAxes,
-              ha='center', va='top', fontstyle='italic')
+               ha='center', va='top', fontstyle='italic')
   plt.plot(x_coords, y_coords, color='gray', linewidth=1, alpha=0.5)
 
   if dup_indexes:

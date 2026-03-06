@@ -121,7 +121,7 @@ main(const int argc, char* argv[])
           {
             if (strlen(argv[arg + 1]) == 1)
             {
-              const char lvl = (char)tolower(argv[arg + 1][0]);
+              const char lvl = (char)tolower((uint8_t)argv[arg + 1][0]);
               if (strchr("lmqh", lvl) != NULL)
               {
                 level = lvl - 'h';
