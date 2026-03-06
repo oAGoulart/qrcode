@@ -20,8 +20,8 @@ log_(const uint8_t num)
 static __inline__ uint8_t
 alog_(const uint16_t num)
 {
-  /* NOTE: length 512 */
-  return alogt[num];
+  /* NOTE: length 256 */
+  return alogt[num % UINT8_MAX];
 }
 
 static __inline__ const uint8_t*
@@ -83,7 +83,7 @@ create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
       (*self)->ecc_[i + j] ^= alog_(gen[j] + log_(lead));
     }
   }
-  memcpy((*self)->ecc_, codewords, length);
+  //memcpy((*self)->ecc_, codewords, length);
   return 0;
 }
 
