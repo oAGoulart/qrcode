@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "bytes.h"
+#include "vector.h"
 #include "data.h"
 #include "mask.h"
 #include "bits.h"
@@ -146,6 +147,8 @@ struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
   bits_t*   bits_;
+  vector_t* blocks_;
+  bytes_t*  modules_;
   uint8_t   selected_mask_;
   uint8_t   version_;
 };
@@ -422,29 +425,25 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     bits_push((*self)->bits_, 0, 8);
   }
-  datalen = bytes_length(arr);
 
-  uint16_t nblocks = finalvl->blocks[0] + finalvl->blocks[1];
-  size_t fullen = nblocks * finalvl->eccpb + finalvl->len;
-  /* FIXME: create when interlacing */
-  bytes_t* modules = NULL;
-  err = create_bytes(&modules, fullen);
+  (*self)->blocks_ = NULL;
+  err = create_vector(&(*self)->blocks_,
+    (void (*)(void **))&delete_qrdata);
   if (err != 0)
   {
-    eprintf("could not create bytes type");
+    eprintf("could not create vector type");
     delete_qrcode(self);
     return err;
   }
-  /* FIXME: create vector*/
 
   pdebug("starting polynomial division (long division)");
   size_t mod = 0;
+  uint16_t nblocks = finalvl->blocks[0] + finalvl->blocks[1];
   for (i = 0; i < nblocks; i++)
   {
     uint8_t dlen = (i < finalvl->blocks[0]) ?
       finalvl->datapb[0] : finalvl->datapb[1];
     qrdata_t* qrdata = NULL;
-    /* FIXME: push to vector*/
     err = create_qrdata(&qrdata,
       bytes_span(arr, mod),
       dlen, finalvl->eccpb
@@ -452,27 +451,61 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     if (err != 0)
     {
       eprintf("could not create qrdata type");
-      delete_bytes(&modules);
       delete_qrcode(self);
       return err;
     }
-    bytes_push(modules, 
-      qrdata_codewords(qrdata), 
-      dlen + finalvl->eccpb
-    );
-    delete_qrdata(&qrdata);
+    vector_push((*self)->blocks_, qrdata);
     mod += dlen;
   }
-  /* FIXME: Add interlacing loop */
 
-  datalen = bytes_length(modules);
+  size_t fullen = nblocks * finalvl->eccpb + finalvl->len;
+  (*self)->modules_ = NULL;
+  err = create_bytes(&(*self)->modules_, fullen);
+  if (err != 0)
+  {
+    eprintf("could not create bytes type");
+    delete_qrcode(self);
+    return err;
+  }
+  /* NOTE: data interlacing */
+  uint8_t highpb = (finalvl->datapb[1] == 0) ?
+    finalvl->datapb[0] : finalvl->datapb[1];
+  for (i = 0; i < highpb; i++)
+  {
+    size_t j = 0;
+    for (qrdata_t** d = (qrdata_t**)vector_begin((*self)->blocks_);
+        d != (qrdata_t**)vector_end((*self)->blocks_); d++, j++)
+    {
+      if (j < finalvl->blocks[0] && i >= finalvl->datapb[0])
+      {
+        continue;
+      }
+      bytes_push((*self)->modules_,
+        &qrdata_codewords(*d)[i], 1);
+    }
+  }
+  /* NOTE: ecc interlacing */
+  for (i = 0; i < finalvl->eccpb; i++)
+  {
+    size_t j = 0;
+    for (qrdata_t** d = (qrdata_t**)vector_begin((*self)->blocks_);
+        d != (qrdata_t**)vector_end((*self)->blocks_); d++, j++)
+    {
+      uint8_t dlen = (j < finalvl->blocks[0]) ?
+        finalvl->datapb[0] : finalvl->datapb[1];
+      bytes_push((*self)->modules_,
+        &qrdata_codewords(*d)[i + dlen], 1);
+    }
+  }
+
+  datalen = bytes_length((*self)->modules_);
   if (verbose)
   {
     pinfo("Calculated codewords (%zu):", datalen);
-    printf("0x%x", bytes_byte(modules, 0));
+    printf("0x%x", bytes_byte((*self)->modules_, 0));
     for (i = 1; i < datalen; i++)
     {
-      printf(", 0x%x", bytes_byte(modules, i));
+      printf(", 0x%x", bytes_byte((*self)->modules_, i));
     }
     puts("");
   }
@@ -495,7 +528,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     for (int8_t bit = 7; bit >= 0; bit--)
     {
       uint8_t module =
-        (bytes_byte(modules, i) & 1 << bit) >> bit & 1;
+        (bytes_byte((*self)->modules_, i) & 1 << bit) >> bit & 1;
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
@@ -504,7 +537,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
     }
   }
-  /* WARNING: padding bits, MUST check xor */
+  /* NOTE: padding bits, MUST check xor */
   if (ver > 0)
   {
     for (i = 0; i < NUM_PADBITS; i++)
@@ -516,7 +549,6 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
     }
   }
-  delete_bytes(&modules);
 
   pdebug("calculating masks penalty");
   uint16_t minscore = UINT16_MAX;
@@ -549,6 +581,8 @@ delete_qrcode(qrcode_t** self)
   if (*self != NULL)
   {
     delete_bits(&(*self)->bits_);
+    delete_vector(&(*self)->blocks_);
+    delete_bytes(&(*self)->modules_);
     uint8_t i = 0;
     for (; i < NUM_MASKS; i++)
     {

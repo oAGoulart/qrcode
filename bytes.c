@@ -136,14 +136,6 @@ bytes_copy(const bytes_t* self, void* dst, const size_t dstlen)
   memcpy(dst, self->data_, n);
 }
 
-__inline__ void
-bytes_empty(bytes_t* self)
-{
-  /* NOTE: cleaning and shrinking is not required */
-  self->available_ += self->length_;
-  self->length_ = 0;
-}
-
 __inline__ uint8_t __attribute__((__const__))
 bytes_byte(const bytes_t* self, const size_t index)
 {

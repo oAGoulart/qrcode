@@ -16,7 +16,7 @@ struct vector_s
 };
 
 int
-vector_create(vector_t** self, void (*deleter)(void**))
+create_vector(vector_t** self, void (*deleter)(void**))
 {
   if (*self != NULL)
   {
@@ -38,17 +38,20 @@ vector_create(vector_t** self, void (*deleter)(void**))
     *self = NULL;
     return ENOMEM;
   }
+  /* NOTE: last element must be NULL */
+  (*self)->available_--;
   (*self)->count_ = 0;
   (*self)->deleter_ = deleter;
   return 0;
 }
 
 void
-vector_delete(vector_t** self)
+delete_vector(vector_t** self)
 {
   if (*self != NULL)
   {
-    for (void** b = (*self)->v_; b != (*self)->v_ + (*self)->available_; b++)
+    for (void** b = (*self)->v_;
+         b != vector_end(*self); b++)
     {
       (*self)->deleter_(b);
     }
@@ -70,7 +73,7 @@ vector_push(vector_t* self, void* obj)
       return ENOMEM;
     }
     self->v_ = tmp;
-    self->available_ = MINIMUM_VECTOR_COUNT;
+    self->available_ = MINIMUM_VECTOR_COUNT - 1;
   }
   self->v_[self->count_] = obj;
   self->count_++;
@@ -93,5 +96,5 @@ vector_begin(const vector_t* self)
 __inline__ void** __attribute__((__const__))
 vector_end(const vector_t* self)
 {
-  return self->v_ + self->available_;
+  return self->v_ + self->count_;
 }
