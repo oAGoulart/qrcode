@@ -4,7 +4,7 @@
 [![GitHub License](https://img.shields.io/badge/license-MS--RL-orange)](https://github.com/oAGoulart/qrcode/tree/master?tab=MS-RL-1-ov-file)
 [![DOI](https://zenodo.org/badge/998115592.svg)](https://doi.org/10.5281/zenodo.15851589)
 
-**Features:** Model 2 byte/num/alpha modes, with EC level L, as specified in ISO/IEC 18004:2024.
+**Features:** Model 2 byte/num/alpha modes, as specified in ISO/IEC 18004:2024.
 There are no dependencies, generator can be built from code on any platform. Outputs inline (stdout), bitmap, or vectors (svg).
 
 **Available generation and capacity (codewords):**
@@ -13,7 +13,7 @@ There are no dependencies, generator can be built from code on any platform. Out
 |------------------------------:|:--:|:--:|:--:|:--:|:--:|
 |   EC Level **Low** (7%)       | 17 | 32 | 53 | 78 | 106 |
 |   EC Level **Medium** (15%)   | 14 | 26 | 42 | 62 | 84 |
-|   EC Level **Quartile** (20%) | 11 | 20 | 32 | 46 | 60 |
+|   EC Level **Quartile** (25%) | 11 | 20 | 32 | 46 | 60 |
 |   EC Level **High** (30%)     | 7  | 14 | 24 | 34 | 44 |
 
 > [!NOTE]

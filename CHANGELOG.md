@@ -5,23 +5,23 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 - Add `--help`, `-h` command to show help message
+- Add shorthand `-v` for command `--version`
 - Add redundant data type `data_t` to generate codeword blocks
 - Add Version limit to inline printing, `--nolimit` to skip this
 - Add object vector with cleanup on deletion
 - Add format info table to `lookup.s`
 - Add version/level info lookup table generator
-- Add module path visualizer
-- Change comments from `//` to `/**/`
+- Add module path visualizer for `indexes.py` script
 - Change name of types `heaparray`, `objectvector`, `packedbits`
 - Change name of files `quickresponse`, `redundantdata`
 - Change cmdln option `--verbose` to `-g`
-- Fix minimum version selection
+- Fix minimum version selection at `qrcode_t`
 - Fix build issue on MSYS environment
-- Fix module penalty right-pattern
-- Optimize pad bytes push
+- Fix module penalty right-pattern comparison array
+- Optimize pad bytes push by using 64-bits
 - Refactor codebase with `clang-tidy`
 - Refactor inline printing to reduce stack usage
-- Remove cmdln options `--nocopy`, `--noinline`
+- Remove cmdln options `--nocopy`, `--noinline`; use `-g`
 - Update lookup table build script to support all Versions
 - Update command-line options parser
 
