@@ -12,18 +12,25 @@
 
 extern const uint16_t qrindex[];
 extern const uint32_t qroffset[];
+extern const uint16_t qrfmtinfo[];
 
 struct qrmask_s
 {
   const uint16_t* i_;
   uint16_t  count_;
   uint8_t*  v_;
-  uint8_t   version_;
+  eclevel_t level_;
   uint8_t   order_;
   uint8_t   pattern_;
   uint16_t  dark_;
   uint16_t  penalty_;
 };
+
+static __inline__ uint16_t
+maskinfo_(const uint8_t pattern, const eclevel_t level)
+{
+  return qrfmtinfo[pattern + ((uint8_t)level * 8)];
+}
 
 static __inline__ bool __attribute__((__const__))
 should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
@@ -296,7 +303,8 @@ symbol_order_(const uint8_t version)
 }
 
 int
-create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
+create_qrmask(qrmask_t** self, const uint8_t version,
+              const eclevel_t level, const uint8_t pattern)
 {
   if (*self != NULL)
   {
@@ -314,7 +322,7 @@ create_qrmask(qrmask_t** self, const uint8_t version, const uint8_t pattern)
     eprintf("cannot allocate %zu bytes", sizeof(qrmask_t));
     return ENOMEM;
   }
-  (*self)->version_ = version; /* OPTIMIZE: verify this is necessary */
+  (*self)->level_ = level;
   (*self)->order_ = symbol_order_(version);
   (*self)->count_ = (*self)->order_ * (*self)->order_;
   (*self)->pattern_ = pattern;
@@ -379,10 +387,6 @@ qrmask_penalty(qrmask_t* self)
 void
 qrmask_apply(qrmask_t* self)
 {
-  static const uint16_t maskinfo[NUM_MASKS] = {
-    30660u, 29427u, 32170u, 30877u,
-    26159u, 25368u, 27713u, 26998u
-  };
   for (uint8_t i = 0; i < MASKINFO_LEN; i++)
   {
     int idx1 = 0;
@@ -405,8 +409,12 @@ qrmask_apply(qrmask_t* self)
     {
       idx2 = self->order_ * 8 + self->order_ - 8 + i - 7;
     }
-    self->v_[idx1] = (maskinfo[self->pattern_] >> (MASKINFO_LEN - i - 1)) & 1;
-    self->v_[idx2] = (maskinfo[self->pattern_] >> (MASKINFO_LEN - i - 1)) & 1;
+    self->v_[idx1] =
+      (maskinfo_(self->pattern_, self->level_) >>
+      (MASKINFO_LEN - i - 1)) & 1;
+    self->v_[idx2] =
+      (maskinfo_(self->pattern_, self->level_) >>
+      (MASKINFO_LEN - i - 1)) & 1;
   }
 }
 

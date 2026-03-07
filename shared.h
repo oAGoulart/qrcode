@@ -123,6 +123,14 @@ typedef struct __attribute__((packed)) qrinfo_s
   uint8_t  datapb[2]; /* data codewords per block, per group (2) */
 } qrinfo_t;
 
+typedef enum eclevel_e
+{
+  EC_LOW,      /* 7% */
+  EC_MEDIUM,   /* 15% */
+  EC_QUARTILE, /* 25% */
+  EC_HIGH      /* 30% */
+} __attribute__((packed)) eclevel_t;
+
 #ifndef NDEBUG
 static
 #endif

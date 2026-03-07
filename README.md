@@ -27,7 +27,8 @@ There are no dependencies, generator can be built from code on any platform. Out
 1. Reed-Solomon error correction generator polynomials.
 2. Galois field of 256 (285 primitive) log and anti-log table.
 3. Placement index of each module onto the encoding region.
-4. QR Code Version/Level information table.
+4. QR Code format information table.
+5. QR Code Version/Level information table.
 
 ## Usage
 

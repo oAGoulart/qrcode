@@ -514,7 +514,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   memset((*self)->masks_, 0, sizeof((*self)->masks_));
   for (i = 0; i < NUM_MASKS; i++)
   {
-    err = create_qrmask(&(*self)->masks_[i], ver, i);
+    err = create_qrmask(&(*self)->masks_[i],
+      ver, level, i);
     if (err)
     {
       delete_qrcode(self);

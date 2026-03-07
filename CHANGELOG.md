@@ -6,9 +6,9 @@ All notable changes to this project will be documented in this file.
 
 - Add `--help`, `-h` command to show help message
 - Add redundant data type `data_t` to generate codeword blocks
-- Add Version limit to inline printing
-- Add command `--nolimit` to print any Version inline
+- Add Version limit to inline printing, `--nolimit` to skip this
 - Add object vector with cleanup on deletion
+- Add format info table to `lookup.s`
 - Add version/level info lookup table generator
 - Add module path visualizer
 - Change comments from `//` to `/**/`
@@ -21,7 +21,6 @@ All notable changes to this project will be documented in this file.
 - Optimize pad bytes push
 - Refactor codebase with `clang-tidy`
 - Refactor inline printing to reduce stack usage
-- Remove deprecated call to `fopen`
 - Remove cmdln options `--nocopy`, `--noinline`
 - Update lookup table build script to support all Versions
 - Update command-line options parser

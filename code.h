@@ -12,14 +12,6 @@ typedef enum imgfmt_e
   FMT_SVG
 } __attribute__((packed)) imgfmt_t;
 
-typedef enum eclevel_e
-{
-  EC_LOW,      /* 7% */
-  EC_MEDIUM,   /* 15% */
-  EC_QUARTILE, /* 25% */
-  EC_HIGH      /* 30% */
-} __attribute__((packed)) eclevel_t;
-
 typedef struct qrcode_s qrcode_t;
 
 __attribute__((__nonnull__)) int

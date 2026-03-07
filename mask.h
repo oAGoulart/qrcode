@@ -4,13 +4,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "shared.h"
+
 #define MASK_DARK  1
 #define MASK_LIGHT 0
 
 typedef struct qrmask_s qrmask_t;
 
 __attribute__((__nonnull__)) int
-create_qrmask(qrmask_t** self, uint8_t version, uint8_t pattern);
+create_qrmask(qrmask_t** self, uint8_t version,
+              eclevel_t level, uint8_t pattern);
 __attribute__((__nonnull__)) void
 delete_qrmask(qrmask_t** self);
 
