@@ -426,6 +426,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   uint16_t nblocks = finalvl->blocks[0] + finalvl->blocks[1];
   size_t fullen = nblocks * finalvl->eccpb + finalvl->len;
+  /* FIXME: create when interlacing */
   bytes_t* modules = NULL;
   err = create_bytes(&modules, fullen);
   if (err != 0)
@@ -434,6 +435,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     delete_qrcode(self);
     return err;
   }
+  /* FIXME: create vector*/
 
   pdebug("starting polynomial division (long division)");
   size_t mod = 0;
@@ -442,6 +444,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     uint8_t dlen = (i < finalvl->blocks[0]) ?
       finalvl->datapb[0] : finalvl->datapb[1];
     qrdata_t* qrdata = NULL;
+    /* FIXME: push to vector*/
     err = create_qrdata(&qrdata,
       bytes_span(arr, mod),
       dlen, finalvl->eccpb
@@ -460,6 +463,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     delete_qrdata(&qrdata);
     mod += dlen;
   }
+  /* FIXME: Add interlacing loop */
 
   datalen = bytes_length(modules);
   if (verbose)
