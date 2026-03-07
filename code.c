@@ -474,7 +474,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     size_t j = 0;
     for (qrdata_t** d = (qrdata_t**)vector_begin((*self)->blocks_);
-        d != (qrdata_t**)vector_end((*self)->blocks_); d++, j++)
+         d != (qrdata_t**)vector_end((*self)->blocks_); d++, j++)
     {
       if (j < finalvl->blocks[0] && i >= finalvl->datapb[0])
       {

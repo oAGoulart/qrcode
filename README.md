@@ -154,7 +154,8 @@ Where `2` is the bar code Version and `True` is the debug flag (default: `False`
 
 Work-in-progress:
 1. higher Version codes
-   - [ ] add alignment patterns
+   - [ ] version info placement
+   - [ ] alignment patterns placement
    - [x] lookup tables
 
 ## Disclaimer
