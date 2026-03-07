@@ -10,6 +10,7 @@
 
 #define FMTINFO_LEN 15
 #define VERINFO_LEN 18
+#define MIN_VERINFO_VERSION 7
 
 extern const uint16_t qrindex[];
 extern const uint32_t qroffset[];
@@ -22,6 +23,7 @@ struct qrmask_s
   uint16_t  count_;
   uint8_t*  v_;
   eclevel_t level_;
+  uint8_t   version_;
   uint8_t   order_;
   uint8_t   pattern_;
   uint16_t  dark_;
@@ -324,6 +326,7 @@ create_qrmask(qrmask_t** self, const uint8_t version,
     eprintf("cannot allocate %zu bytes", sizeof(qrmask_t));
     return ENOMEM;
   }
+  (*self)->version_ = version;
   (*self)->level_ = level;
   (*self)->order_ = symbol_order_(version);
   (*self)->count_ = (*self)->order_ * (*self)->order_;
@@ -386,8 +389,8 @@ qrmask_penalty(qrmask_t* self)
   return self->penalty_;
 }
 
-void
-qrmask_apply(qrmask_t* self)
+void __inline__
+qrmask_place_format_info_(qrmask_t* self)
 {
   for (uint8_t i = 0; i < FMTINFO_LEN; i++)
   {
@@ -417,6 +420,40 @@ qrmask_apply(qrmask_t* self)
     self->v_[idx2] =
       (maskinfo_(self->pattern_, self->level_) >>
       (FMTINFO_LEN - i - 1)) & 1;
+  }
+}
+
+void __inline__
+qrmask_place_version_info_(qrmask_t* self)
+{
+  for (uint8_t i = 0; i < VERINFO_LEN; i++)
+  {
+    int idx1 = 0;
+    int idx2 = 0;
+    if (i % 3 == 0)
+    {
+      idx1 = self->order_ * (self->order_ - 12) + (i / 3);
+      idx2 = (self->order_ * (i / 3)) - 12;
+    }
+    else
+    {
+      idx1 += self->order_;
+      idx2++;
+    }
+    self->v_[idx1] = (qrverinfo[self->version_] >>
+      (VERINFO_LEN - i - 1)) & 1;
+    self->v_[idx2] = (qrverinfo[self->version_] >>
+      (VERINFO_LEN - i - 1)) & 1;
+  }
+}
+
+void
+qrmask_apply(qrmask_t* self)
+{
+  qrmask_place_format_info_(self);
+  if (self->version_ >= MIN_VERINFO_VERSION - 1)
+  {
+    qrmask_place_version_info_(self);
   }
 }
 

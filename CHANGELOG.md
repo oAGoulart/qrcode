@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Add format info table to `lookup.s`
 - Add version/level info lookup table generator
 - Add module path visualizer for `indexes.py` script
+- Add version info placement for Version above 6
 - Change name of types `heaparray`, `objectvector`, `packedbits`
 - Change name of files `quickresponse`, `redundantdata`
 - Change cmdln option `--verbose` to `-g`
