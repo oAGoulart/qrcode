@@ -8,11 +8,13 @@
 
 #include "shared.h"
 
-#define MASKINFO_LEN 15
+#define FMTINFO_LEN 15
+#define VERINFO_LEN 18
 
 extern const uint16_t qrindex[];
 extern const uint32_t qroffset[];
 extern const uint16_t qrfmtinfo[];
+extern const uint32_t qrverinfo[];
 
 struct qrmask_s
 {
@@ -387,7 +389,7 @@ qrmask_penalty(qrmask_t* self)
 void
 qrmask_apply(qrmask_t* self)
 {
-  for (uint8_t i = 0; i < MASKINFO_LEN; i++)
+  for (uint8_t i = 0; i < FMTINFO_LEN; i++)
   {
     int idx1 = 0;
     int idx2 = 0;
@@ -398,7 +400,7 @@ qrmask_apply(qrmask_t* self)
     }
     else
     {
-      idx1 = (MASKINFO_LEN - i) * self->order_ + 8;
+      idx1 = (FMTINFO_LEN - i) * self->order_ + 8;
       idx1 -= (i > 8) ? self->order_ : 0;
     }
     if (i < 7)
@@ -411,10 +413,10 @@ qrmask_apply(qrmask_t* self)
     }
     self->v_[idx1] =
       (maskinfo_(self->pattern_, self->level_) >>
-      (MASKINFO_LEN - i - 1)) & 1;
+      (FMTINFO_LEN - i - 1)) & 1;
     self->v_[idx2] =
       (maskinfo_(self->pattern_, self->level_) >>
-      (MASKINFO_LEN - i - 1)) & 1;
+      (FMTINFO_LEN - i - 1)) & 1;
   }
 }
 
