@@ -7,14 +7,6 @@
 #define MASK_DARK  1
 #define MASK_LIGHT 0
 
-typedef enum eclevel_e
-{
-  EC_LOW       = 4, /* 7% */
-  EC_MEDIUM    = 5, /* 15% */
-  EC_QUARTILE  = 9, /* 25% */
-  EC_HIGH      = 0  /* 30% */
-} __attribute__((packed)) eclevel_t;
-
 typedef struct qrmask_s qrmask_t;
 
 __attribute__((__nonnull__)) int

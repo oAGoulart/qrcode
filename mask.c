@@ -19,7 +19,6 @@ struct qrmask_s
   uint16_t  count_;
   uint8_t*  v_;
   uint8_t   version_;
-  eclevel_t level_; /* TODO: move to qrdata_t */
   uint8_t   order_;
   uint8_t   pattern_;
   uint16_t  dark_;

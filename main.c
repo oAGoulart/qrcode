@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mask.h"
 #include "code.h"
 #include "shared.h"
 
@@ -80,6 +79,21 @@ print_help_(const char* __restrict__ cmdln)
   return EINVAL;
 }
 
+static __inline__ eclevel_t
+lvlfromchar_(const char ch)
+{
+  switch (ch) {
+    case 'l':
+      return EC_LOW;
+    case 'm':
+      return EC_MEDIUM;
+    case 'q':
+      return EC_QUARTILE;
+    default:
+      return EC_HIGH;
+  }
+}
+
 int
 main(const int argc, char* argv[])
 {
@@ -124,7 +138,7 @@ main(const int argc, char* argv[])
               const char lvl = (char)tolower((uint8_t)argv[arg + 1][0]);
               if (strchr("lmqh", lvl) != NULL)
               {
-                level = lvl - 'h';
+                level = lvlfromchar_(lvl);
                 break;
               }
             }

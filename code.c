@@ -191,8 +191,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   {
     for (; i <= ver; i++)
     {
-      /* FIXME: level enum is not sequential */
-      if (strcount <= qrinfo[i * EC_COUNT].len - 2)
+      if (strcount <= qrinfo[i * EC_COUNT + level].len - 2)
       {
         ver = i;
         break;
@@ -392,14 +391,14 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t datalen = bytes_length(arr);
   for (i = ver; i > 0; i--)
   {
-    if (datalen > qrinfo[(i - 1) * EC_COUNT].len)
+    if (datalen > qrinfo[(i - 1) * EC_COUNT + level].len)
     {
       break;
     }
   }
   ver = i;
   (*self)->version_ = ver;
-  const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT];
+  const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT + level];
   if (datalen > finalvl->len)
   {
     eprintf("data must be less than %u characters long", finalvl->len - 2u);
@@ -424,33 +423,52 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     bits_push((*self)->bits_, 0, 8);
   }
   datalen = bytes_length(arr);
-  const uint8_t* span = bytes_span(arr, 0);
 
-  pdebug("starting polynomial division (long division)");
-  qrdata_t* qrdata = NULL;
-  err = create_qrdata(&qrdata,
-    span, datalen, finalvl->eccpb
-  );
+  uint16_t nblocks = finalvl->blocks[0] + finalvl->blocks[1];
+  size_t fullen = nblocks * finalvl->eccpb + finalvl->len;
+  bytes_t* modules = NULL;
+  err = create_bytes(&modules, fullen);
   if (err != 0)
   {
-    eprintf("could not create qrdata type");
+    eprintf("could not create bytes type");
     delete_qrcode(self);
     return err;
   }
-  //bytes_empty(arr);
-  bytes_push(arr, 
-    &qrdata_codewords(qrdata)[datalen], 
-    finalvl->eccpb
-  );
-  delete_qrdata(&qrdata);
-  datalen = bytes_length(arr);
+
+  pdebug("starting polynomial division (long division)");
+  size_t mod = 0;
+  for (i = 0; i < nblocks; i++)
+  {
+    uint8_t dlen = (i < finalvl->blocks[0]) ?
+      finalvl->datapb[0] : finalvl->datapb[1];
+    qrdata_t* qrdata = NULL;
+    err = create_qrdata(&qrdata,
+      bytes_span(arr, mod),
+      dlen, finalvl->eccpb
+    );
+    if (err != 0)
+    {
+      eprintf("could not create qrdata type");
+      delete_bytes(&modules);
+      delete_qrcode(self);
+      return err;
+    }
+    bytes_push(modules, 
+      qrdata_codewords(qrdata), 
+      dlen + finalvl->eccpb
+    );
+    delete_qrdata(&qrdata);
+    mod += dlen;
+  }
+
+  datalen = bytes_length(modules);
   if (verbose)
   {
     pinfo("Calculated codewords (%zu):", datalen);
-    printf("0x%x", bytes_byte(arr, 0));
+    printf("0x%x", bytes_byte(modules, 0));
     for (i = 1; i < datalen; i++)
     {
-      printf(", 0x%x", bytes_byte(arr, i));
+      printf(", 0x%x", bytes_byte(modules, i));
     }
     puts("");
   }
@@ -473,7 +491,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     for (int8_t bit = 7; bit >= 0; bit--)
     {
       uint8_t module =
-        (bytes_byte(arr, i) & 1 << bit) >> bit & 1;
+        (bytes_byte(modules, i) & 1 << bit) >> bit & 1;
       uint8_t uj8 = 0;
       for (; uj8 < NUM_MASKS; uj8++)
       {
@@ -494,6 +512,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       }
     }
   }
+  delete_bytes(&modules);
 
   pdebug("calculating masks penalty");
   uint16_t minscore = UINT16_MAX;

@@ -83,7 +83,7 @@ create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
       (*self)->ecc_[i + j] ^= alog_(gen[j] + log_(lead));
     }
   }
-  //memcpy((*self)->ecc_, codewords, length);
+  memcpy((*self)->ecc_, codewords, length);
   return 0;
 }
 

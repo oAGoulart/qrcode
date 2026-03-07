@@ -9,9 +9,12 @@ There are no dependencies, generator can be built from code on any platform. Out
 
 **Available generation and capacity (codewords):**
 
-|              **Version** | 1  | 2  | 3  | 4  | 5  |
-|-------------------------:|:--:|:--:|:--:|:--:|:--:|
-|   EC Level **Low** (7%) | 17 | 32 | 53 | 78 | 106 |
+|                   **Version** | 1  | 2  | 3  | 4  | 5  |
+|------------------------------:|:--:|:--:|:--:|:--:|:--:|
+|   EC Level **Low** (7%)       | 17 | 32 | 53 | 78 | 106 |
+|   EC Level **Medium** (15%)   | 14 | 26 | 42 | 62 | 84 |
+|   EC Level **Quartile** (20%) | 11 | 20 | 32 | 46 | 60 |
+|   EC Level **High** (30%)     | 7  | 14 | 24 | 34 | 44 |
 
 > [!NOTE]
 > Generator will auto-select lowest Version possible.
@@ -150,12 +153,8 @@ Where `2` is the bar code Version and `True` is the debug flag (default: `False`
 ## Roadmap
 
 Work-in-progress:
-1. higher EC levels
-   - [x] redundant data type
-   - [ ] split codewords into blocks/group
-   - [x] lookup tables
-2. higher Version codes
-   - [ ] higher EC levels (see above)
+1. higher Version codes
+   - [ ] add alignment patterns
    - [x] lookup tables
 
 ## Disclaimer
