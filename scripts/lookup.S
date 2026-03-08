@@ -6,6 +6,7 @@
 #else
   .section rodata, "aR", @progbits
 #endif
+  .balign 4
 
 #if defined(__APPLE__)
 #define sym_(name) _##name
