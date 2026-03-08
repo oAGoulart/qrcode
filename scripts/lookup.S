@@ -1,18 +1,3 @@
-.data
-#if defined(_WIN32) || defined(__MSYS__) || defined(__CYGWIN__)
-  .section rdata, "rd"
-#elif defined(__APPLE__)
-  .section __DATA, __const
-#else
-  .section rodata, "aR", @progbits
-#endif
-
-#if defined(__APPLE__)
-#define sym_(name) _##name
-#else
-#define sym_(name) name
-#endif
-
 #if __SIZEOF_POINTER__ == 8
 #define pointer_ .quad
 #define align_ .balign 8
@@ -23,11 +8,26 @@
 #error "unsupported pointer size!"
 #endif
 
+#if defined(__APPLE__)
+#define sym_(name) _##name
+#else
+#define sym_(name) name
+#endif
+
 .macro globale_ name
   .globl \name
   align_
   \name:
 .endm
+
+.data
+#if defined(_WIN32) || defined(__MSYS__) || defined(__CYGWIN__)
+  .section .rdata,"dr"
+#elif defined(__APPLE__)
+  .section __TEXT,__const
+#else
+  .section .rodata,"aR",@progbits
+#endif
 
 globale_ sym_(logt)
   .byte 0,0,1,25,2,50,26,198,3,223,51,238,27,104,199,75,4,100,224,14,52,141,\
