@@ -55,6 +55,7 @@ delete_vector(vector_t** self)
     {
       (*self)->deleter_(b);
     }
+    free((*self)->v_);
     free(*self);
     *self = NULL;
   }
