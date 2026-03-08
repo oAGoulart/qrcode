@@ -183,7 +183,7 @@ if __name__ == "__main__":
     mode = sys.argv[2]
   if mode == "align" and version > 1:
     indexes = [
-      (row * orders[version - 2]) + col\
+      ((row - 2) * orders[version - 2]) + (col - 2)\
       for col, row in align_patterns_coords[version - 2]
     ]
     indexes.append(0)
