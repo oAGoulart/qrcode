@@ -392,7 +392,7 @@ qrmask_penalty(qrmask_t* self)
   return self->penalty_;
 }
 
-void
+void __attribute__((__nonnull__))
 qrmask_place_format_info_(qrmask_t* self)
 {
   for (uint8_t i = 0; i < FMTINFO_LEN; i++)
@@ -426,7 +426,7 @@ qrmask_place_format_info_(qrmask_t* self)
   }
 }
 
-void
+void __attribute__((__nonnull__))
 qrmask_place_version_info_(qrmask_t* self)
 {
   int idx1 = 0;
@@ -435,18 +435,16 @@ qrmask_place_version_info_(qrmask_t* self)
   {
     if (i % 3 == 0)
     {
-      idx1 = self->order_ * (self->order_ - 12) + (i / 3);
-      idx2 = (self->order_ * (i / 3)) - 12;
+      idx1 = self->order_ * (self->order_ - 11) + (i / 3);
+      idx2 = (self->order_ * (i / 3)) + self->order_ - 11;
     }
     else
     {
       idx1 += self->order_;
       idx2++;
     }
-    self->v_[idx1] = (qrverinfo[self->version_] >>
-      (VERINFO_LEN - i - 1)) & 1;
-    self->v_[idx2] = (qrverinfo[self->version_] >>
-      (VERINFO_LEN - i - 1)) & 1;
+    self->v_[idx1] = (qrverinfo[self->version_ - 6] >> i) & 1;
+    self->v_[idx2] = (qrverinfo[self->version_ - 6] >> i) & 1;
   }
 }
 
