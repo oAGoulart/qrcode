@@ -16,8 +16,6 @@
 #include "bits.h"
 #include "shared.h"
 
-#define NUM_PADBITS 7
-
 extern const qrinfo_t qrinfo[];
 
 typedef enum subset_e
@@ -157,6 +155,24 @@ static __inline__ uint8_t __attribute__((__const__))
 frombyte_(const uint8_t b)
 {
   return frombyte_lut_[b];
+}
+
+static __inline__ uint8_t __attribute__((__const__))
+remainderbits_(const uint8_t version)
+{
+  if (version > 0 && version < 6)
+  {
+    return 7;
+  }
+  else if ((version > 12 && version < 20) || (version > 26 && version < 34))
+  {
+    return 3;
+  }
+  else if (version > 19 && version < 27)
+  {
+    return 4;
+  }
+  return 0;
 }
 
 int
@@ -539,15 +555,12 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
   }
   /* NOTE: padding bits, MUST check xor */
-  if (ver > 0)
+  for (i = 0; i < remainderbits_(ver); i++)
   {
-    for (i = 0; i < NUM_PADBITS; i++)
+    for (uint8_t j = 0; j < NUM_MASKS; j++)
     {
-      for (uint8_t j = 0; j < NUM_MASKS; j++)
-      {
-        uint16_t index = (uint16_t)(datalen * 8) + i;
-        qrmask_set((*self)->masks_[j], index, MASK_LIGHT);
-      }
+      uint16_t index = (uint16_t)(datalen * 8) + i;
+      qrmask_set((*self)->masks_[j], index, MASK_LIGHT);
     }
   }
 
