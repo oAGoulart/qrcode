@@ -62,6 +62,7 @@ align_patterns = [
   [30,58,86,114,142,170]
 ]
 assert(len(align_patterns) == 39)
+
 align_patterns_coords = [
   [
     (col, row)\
@@ -71,6 +72,8 @@ align_patterns_coords = [
   ]
   for p in align_patterns
 ]
+
+orders = [4 * i + 17 for i in range(2, 41)]
 
 def is_pattern(version: int, row: int, col: int) -> bool:
   if not (2 <= version <= 40):
@@ -98,9 +101,7 @@ def remainder_bits(version: int) -> int:
     return 4
   return 0
 
-def generate_indexes(version: int, debug: bool = False) -> None:
-  if not (1 <= version <= 40):
-    raise ValueError("unsupported version.")
+def generate_indexes(version: int, mode: str) -> None:
   order = 4 * version + 17
   num_bits = num_bytes[version - 1] * 8 + remainder_bits(version)
 
@@ -165,16 +166,27 @@ def generate_indexes(version: int, debug: bool = False) -> None:
     indexes.append(idx)
     idx = next_index(idx)
   indexes = indexes[:num_bits]
-  if debug:
+  if mode == "debug":
     visualize_module_path(version, indexes)
   else:
     print("  .short " + ",".join(map(str, indexes)))
 
 if __name__ == "__main__":
   count = len(sys.argv)
-  debug = False
+  mode = "none"
   if count < 2:
     raise ValueError("not enough arguments")
+  version = int(sys.argv[1])
+  if not (1 <= version <= 40):
+    raise ValueError("unsupported version.")
   if count > 2:
-    debug = bool(sys.argv[2])
-  generate_indexes(int(sys.argv[1]), debug)
+    mode = sys.argv[2]
+  if mode == "align" and version > 1:
+    indexes = [
+      (row * orders[version - 2]) + col\
+      for col, row in align_patterns_coords[version - 2]
+    ]
+    indexes.append(0)
+    print("  .short " + ",".join(map(str, indexes)))
+  else:
+    generate_indexes(version, mode)

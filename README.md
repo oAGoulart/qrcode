@@ -145,9 +145,9 @@ If you wish to visualize how modules are placed onto the encoding region, you ca
 pacman -S mingw-w64-x86_64-python-matplotlib
 python -m venv .venv --system-site-packages
 source .venv/bin/activate
-python scripts/indexes.py 2 True
+python scripts/indexes.py 2 debug
 ```
-Where `2` is the bar code Version and `True` is the debug flag (default: `False`).
+Where `2` is the bar code Version and `debug` is the debug mode.
 
 ![Module path](assets/qrcode2path.png)
 

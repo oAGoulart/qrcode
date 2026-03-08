@@ -12,10 +12,9 @@
 #define VERINFO_LEN 18
 #define MIN_VERINFO_VERSION 7
 
-extern const uint16_t qrindex[];
-extern const uint32_t qroffset[];
-extern const uint16_t qrfmtinfo[];
-extern const uint32_t qrverinfo[];
+extern const uint16_t* qrindex[];
+extern const uint16_t  qrfmtinfo[];
+extern const uint32_t  qrverinfo[];
 
 struct qrmask_s
 {
@@ -331,7 +330,7 @@ create_qrmask(qrmask_t** self, const uint8_t version,
   (*self)->order_ = symbol_order_(version);
   (*self)->count_ = (*self)->order_ * (*self)->order_;
   (*self)->pattern_ = pattern;
-  (*self)->i_ = qrindex + qroffset[version];
+  (*self)->i_ = qrindex[version];
   (*self)->v_ = (uint8_t*)calloc((*self)->count_, 1);
   if ((*self)->v_ == NULL)
   {
@@ -389,7 +388,7 @@ qrmask_penalty(qrmask_t* self)
   return self->penalty_;
 }
 
-void __inline__
+void
 qrmask_place_format_info_(qrmask_t* self)
 {
   for (uint8_t i = 0; i < FMTINFO_LEN; i++)
@@ -423,7 +422,7 @@ qrmask_place_format_info_(qrmask_t* self)
   }
 }
 
-void __inline__
+void
 qrmask_place_version_info_(qrmask_t* self)
 {
   for (uint8_t i = 0; i < VERINFO_LEN; i++)

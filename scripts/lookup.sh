@@ -5,34 +5,36 @@ CSV_FILE="qrinfo.csv"
 SCRIPT_DIR="$(dirname "$0")"
 MAX_VERSION=40
 
-declare_global() {
-  echo ""
-  echo "#if defined(__APPLE__)"
-  printf ".globl _%s\n" "$1"
-  printf "_%s:\n" "$1"
-  echo "#else"
-  printf ".global %s\n" "$1"
-  printf "%s:\n" "$1"
-  echo "#endif"
-}
-
 generate_indexes() {
-  declare_global "qrindex" >> "$OUT_FILE"
-  echo "Generating module indexes table"
+  echo "[2/3] Generating align pattern indexes table"
+  for ((i = 2 ; i <= MAX_VERSION ; i++)); do
+    printf "\nglobale_ sym_(%s_%i)\n" "qralign" "$i" >> "$OUT_FILE"
+    python "$SCRIPT_DIR"/indexes.py "$i" align >> "$OUT_FILE"
+  done
+  printf "\nglobale_ sym_(%s)\n" "qralign" >> "$OUT_FILE"
+  for ((i = 2 ; i <= MAX_VERSION ; i++)); do
+    printf "  pointer_ sym_(%s_%i)\n" "qralign" "$i" >> "$OUT_FILE"
+  done
+
+  echo "[3/3] Generating module indexes table"
   for ((i = 1 ; i <= MAX_VERSION ; i++)); do
-    echo "...indexes for Version" "$i"
+    printf "\nglobale_ sym_(%s_%i)\n" "qrindex" "$i" >> "$OUT_FILE"
     python "$SCRIPT_DIR"/indexes.py "$i" >> "$OUT_FILE"
+  done
+  printf "\nglobale_ sym_(%s)\n" "qrindex" >> "$OUT_FILE"
+  for ((i = 1 ; i <= MAX_VERSION ; i++)); do
+    printf "  pointer_ sym_(%s_%i)\n" "qrindex" "$i" >> "$OUT_FILE"
   done
 }
 
 generate_info() {
-  declare_global "qrinfo" >> "$OUT_FILE"
-  echo "Generating version info table"
+  echo "[1/3] Generating version info table"
+  printf "\nglobale_ sym_(%s)\n" "qrinfo" >> "$OUT_FILE"
   python "$SCRIPT_DIR"/info.py "$SCRIPT_DIR"/"$CSV_FILE" >> "$OUT_FILE"
 }
 
 create_lookup() {
-  cp "$SCRIPT_DIR"/lookup.template "$OUT_FILE"
+  cp "$SCRIPT_DIR"/lookup.S "$OUT_FILE"
   generate_info
   generate_indexes
 }
