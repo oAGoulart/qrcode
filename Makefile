@@ -5,7 +5,7 @@ TARGET_EXEC := qrcode
 
 CC := clang
 CCFLAGS := -DNDEBUG -g0 -O3 -Wno-ignored-qualifiers -Wno-gnu-designator
-LDFLAGS := -lm
+LDFLAGS := -lm -no-pie
 
 BUILD_DIR := ./bin
 SCRIPT_DIR := ./scripts
