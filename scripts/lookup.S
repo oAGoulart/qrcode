@@ -6,7 +6,6 @@
 #else
   .section rodata, "aR", @progbits
 #endif
-  .balign 4
 
 #if defined(__APPLE__)
 #define sym_(name) _##name
@@ -16,14 +15,17 @@
 
 #if __SIZEOF_POINTER__ == 8
 #define pointer_ .quad
+#define align_ .balign 8
 #elif __SIZEOF_POINTER__ == 4
 #define pointer_ .long
+#define align_ .balign 4
 #else
 #error "unsupported pointer size!"
 #endif
 
 .macro globale_ name
   .globl \name
+  align_
   \name:
 .endm
 
