@@ -110,7 +110,7 @@
   "QR Code is a registered trademark of DENSO WAVE" _nl \
   "INCORPORATED in Japan and in other countries."
 
-#define MAX_VERSION 5
+#define MAX_VERSION 40
 #define MAX_SCALE   30
 #define NUM_MASKS   8
 #define EC_COUNT    4

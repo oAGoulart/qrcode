@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.20.0] - 2026-03-08
+
+Add full Version and Level support
+
 - Add `--help`, `-h` command to show help message
 - Add shorthand `-v` for command `--version`
 - Add redundant data type `data_t` to generate codeword blocks
@@ -13,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Add version/level info lookup table generator
 - Add module path visualizer for `indexes.py` script
 - Add version info placement for Version above 6
+- Add missing alignment pattern placement
 - Change name of types `heaparray`, `objectvector`, `packedbits`
 - Change name of files `quickresponse`, `redundantdata`
 - Change cmdln option `--verbose` to `-g`
@@ -120,7 +125,8 @@ Initial release.
 - Added Version 1 and 2 QR Codes
 
 
-[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.11.0..HEAD
+[Unreleased]: https://github.com/oAGoulart/qrcode/compare/v1.20.0..HEAD
+[1.20.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.20.0
 [1.11.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.11.0
 [1.4.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.4.0
 [1.3.0]: https://github.com/oAGoulart/qrcode/releases/tag/v1.3.0

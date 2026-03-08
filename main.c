@@ -8,7 +8,7 @@
 #include "shared.h"
 
 /* NOTE: not to be confused with MAX_VERSION */
-#define INLINE_VERSION_LIMIT 5
+#define INLINE_VERSION_LIMIT 7
 
 typedef enum cli_argument_e
 {

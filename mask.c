@@ -13,6 +13,7 @@
 #define MIN_VERINFO_VERSION 7
 
 extern const uint16_t* qrindex[];
+extern const uint16_t* qralign[];
 extern const uint16_t  qrfmtinfo[];
 extern const uint32_t  qrverinfo[];
 
@@ -147,7 +148,7 @@ place_finder_(qrmask_t* self)
       &finder[i], 7u
     );
   }
-  /* WARNING: assumes separators are not required (zero-ed buffer) */
+  /* NOTE: assumes separators are not required (i.e. zero-ed buffer) */
 }
 
 static void __attribute__((__nonnull__))
@@ -160,12 +161,15 @@ place_align_(qrmask_t* self)
     { 1, 0, 0, 0, 1 },
     { 1, 1, 1, 1, 1 }
   };
-  /* FIXME: add align patterns for v>5 */
-  const size_t index = (self->order_ - 9u) *
-                       self->order_ + self->order_ - 9u;
-  for (size_t i = 0; i < 5; i++)
+  const uint16_t* index = qralign[self->version_ - 1];
+  while (*index != 0)
   {
-    memcpy(&self->v_[index + i * self->order_], &align[i], 5u);
+    for (size_t i = 0; i < 5; i++)
+    {
+      memcpy(&self->v_[(*index) + i * self->order_],
+        &align[i], 5u);
+    }
+    index++;
   }
 }
 
@@ -425,10 +429,10 @@ qrmask_place_format_info_(qrmask_t* self)
 void
 qrmask_place_version_info_(qrmask_t* self)
 {
+  int idx1 = 0;
+  int idx2 = 0;
   for (uint8_t i = 0; i < VERINFO_LEN; i++)
   {
-    int idx1 = 0;
-    int idx2 = 0;
     if (i % 3 == 0)
     {
       idx1 = self->order_ * (self->order_ - 12) + (i / 3);

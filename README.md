@@ -47,7 +47,7 @@ OPTIONS:
   -l <char>      use a specific error correction level (l, m, q, or h)
   -m <uint>      force use of mask <0-7>, regardless of penalty
   -s <uint>      scale image output <1-30> times
-  -V <uint>      force use of version <1-5> code (or lower, if
+  -V <uint>      force use of version <1-40> code (or lower, if
                    used with --optimize)
   -B <string>    create bitmap file with generated code
   -K <string>    create scalable vector image, disregards -s
@@ -153,11 +153,7 @@ Where `2` is the bar code Version and `debug` is the debug mode.
 
 ## Roadmap
 
-Work-in-progress:
-1. higher Version codes
-   - [x] version info placement
-   - [ ] alignment patterns placement
-   - [x] lookup tables
+Nothing planned at the moment.
 
 ## Disclaimer
 QR Code, iQR Code SQRC and FrameQR are registered trademarks
