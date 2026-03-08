@@ -1,0 +1,25 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Command-line QR Code generator
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Augusto
+    family-names: Goulart
+    orcid: 'https://orcid.org/0000-0003-1391-7216'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.15851589
+repository-code: 'https://github.com/oAGoulart/qrcode'
+abstract: >-
+  An ISO 18004 compliant QR Code generator for the terminal,
+  capable of outputting as a bitmap or vector image.
+keywords:
+  - iso18004
+  - barcode
+  - qrcode
+license: MS-RL
