@@ -70,7 +70,7 @@ Clang and Python, you may run Makefile's `build` commands manually.
 
 **Build tools used for binaries:**
 
-|     Tool | ![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04-E95420?logo=ubuntu) | ![Windows](https://img.shields.io/badge/Windows-11-blue) | ![FreeBSD](https://img.shields.io/badge/FreeBSD-14.3-AB2B28?logo=freebsd) | ![macOS](https://img.shields.io/badge/macOS-15-black?logo=apple) | ![OmniOS](https://img.shields.io/badge/OmniOS-r151054-orange) |
+|     Tool | ![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04-E95420?logo=ubuntu) | ![Windows](https://badgen.net/badge/Windows/11/357EC7?icon=windows) | ![FreeBSD](https://img.shields.io/badge/FreeBSD-14.3-AB2B28?logo=freebsd) | ![macOS](https://img.shields.io/badge/macOS-15-black?logo=apple) | ![OmniOS](https://img.shields.io/badge/OmniOS-r151054-orange) |
 |---------:| :----: | :----: | :----: | :----: | :----: |
 | GNU Make | 4.3 | 4.4.1 | 4.4.1* | 4.4.1* | 4.4.1* |
 |    Clang | 14.0.0 | 21.1.8 | 19.1.7 | 17.0.0 | 20.1.7 |
@@ -169,6 +169,7 @@ ISO/IEC 2024 – All rights reserved.
 2. [Denso's QR Code FAQ](https://www.qrcode.com/en/faq.html)
 3. [BMP file format](https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bmp.htm)
 4. [Scalable Vector Graphics (SVG) 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/)
+
 
 
 
