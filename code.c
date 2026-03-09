@@ -674,6 +674,7 @@ qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
   {
     pdebug("vector image output selected");
     qrmask_outsvg(self->masks_[self->selected_mask_], f);
+    err = 0;
     break;
   }
   default:
