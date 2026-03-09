@@ -155,6 +155,11 @@ Where `2` is the bar code Version and `debug` is the debug mode.
 
 Nothing planned at the moment.
 
+Things that **can** be added, but are not planned at the moment:
+- Kanji encoding support (due to lack of testing);
+- Other image formats such as PNG (not a priority);
+- Concurrency support with workers pool (this one is more likely in the near future).
+
 ## Disclaimer
 QR Code, iQR Code SQRC and FrameQR are registered trademarks
 of DENSO WAVE INCORPORATED in Japan and in other countries.

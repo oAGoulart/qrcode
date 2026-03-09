@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.20.0] - 2026-03-08
+## [1.20.0] - 2026-03-09
 
 Add full Version and Level support
 
@@ -24,6 +24,11 @@ Add full Version and Level support
 - Fix minimum version selection at `qrcode_t`
 - Fix build issue on MSYS environment
 - Fix module penalty right-pattern comparison array
+- Fix `aarch64` atom grouping
+- Fix use of Galois field log table at element `0`
+- Fix image output error due to wrong size comparison
+- Fix section `.rodata` flags on ELF targets
+- Fix mask penalty evaluation with duplicates and one-off errors
 - Optimize pad bytes push by using 64-bits
 - Refactor codebase with `clang-tidy`
 - Refactor inline printing to reduce stack usage
