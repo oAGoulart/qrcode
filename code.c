@@ -432,14 +432,21 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
   /* NOTE: padding bytes */
   const size_t padbytes = finalvl->len - datalen;
-  const size_t padquads = padbytes - (padbytes % 8);
-  for (i = 0; i < padquads; i += 8)
+  for (i = 0; i < padbytes; i++)
   {
-    bits_push((*self)->bits_, 0, 64);
+    uint8_t pad_byte = (i % 2 == 0) ? 0xec : 0x11;
+    bits_push((*self)->bits_, pad_byte, 8);
   }
-  for (i = 0; i < padbytes - padquads; i++)
+
+  if (verbose)
   {
-    bits_push((*self)->bits_, 0, 8);
+    pinfo("Calculated codewords (%hu):", finalvl->len);
+    printf("0x%x", bytes_byte(arr, 0));
+    for (i = 1; i < finalvl->len; i++)
+    {
+      printf(", 0x%x", bytes_byte(arr, i));
+    }
+    puts("");
   }
 
   (*self)->blocks_ = NULL;
@@ -483,8 +490,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     delete_qrcode(self);
     return err;
   }
-  /* NOTE: data interlacing */
-  uint8_t highpb = (finalvl->datapb[1] == 0) ?
+  /* NOTE: data interleaving */
+  uint8_t highpb = (finalvl->blocks[1] == 0) ?
     finalvl->datapb[0] : finalvl->datapb[1];
   for (i = 0; i < highpb; i++)
   {
@@ -500,7 +507,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
         &qrdata_codewords(*d)[i], 1);
     }
   }
-  /* NOTE: ecc interlacing */
+  /* NOTE: ecc interleaving */
   for (i = 0; i < finalvl->eccpb; i++)
   {
     size_t j = 0;
@@ -517,7 +524,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   datalen = bytes_length((*self)->modules_);
   if (verbose)
   {
-    pinfo("Calculated codewords (%zu):", datalen);
+    pinfo("Interleaved codewords (%zu):", datalen);
     printf("0x%x", bytes_byte((*self)->modules_, 0));
     for (i = 1; i < datalen; i++)
     {

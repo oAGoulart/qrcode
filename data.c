@@ -78,6 +78,10 @@ create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
   for (size_t i = 0; i < length; i++)
   {
     uint8_t lead = (*self)->ecc_[i];
+    if (lead == 0)
+    {
+      continue;
+    }
     for (uint8_t j = 0; j <= eclen; j++)
     {
       (*self)->ecc_[i + j] ^= alog_(gen[j] + log_(lead));

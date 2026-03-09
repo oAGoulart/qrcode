@@ -532,7 +532,9 @@ qrmask_outbmp(const qrmask_t* self,
     }
   };
   pdebug("writing bitmap header");
-  if (fwrite(&bm, sizeof(bitmap_t), 1, file) != sizeof(bitmap_t))
+  if (fwrite(&bm,
+    sizeof(bitmap_t), 1,
+    file) != sizeof(bitmap_t))
   {
     eprintf("corrupted bitmap format");
     return EIO;
