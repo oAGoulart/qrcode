@@ -20,14 +20,14 @@ extern const uint32_t  qrverinfo[];
 struct qrmask_s
 {
   const uint16_t* i_;
-  uint16_t  count_;
-  uint8_t*  v_;
-  eclevel_t level_;
-  uint8_t   version_;
-  uint8_t   order_;
-  uint8_t   pattern_;
-  uint16_t  dark_;
-  uint16_t  penalty_;
+  uint16_t    count_;
+  uint8_t*    v_;
+  eclevel_t   level_;
+  uint8_t     version_;
+  uint8_t     order_;
+  uint8_t     pattern_;
+  uint16_t    dark_;
+  qrpenalty_t penalty_;
 };
 
 static __inline__ uint16_t
@@ -62,21 +62,6 @@ should_xor_(const uint8_t order, const uint16_t index, const uint8_t pattern)
   default:
     return false;
   }
-}
-
-static __inline__ int __attribute__((__nonnull__))
-colcmp_(const uint8_t* __restrict__ v, const uint8_t order,
-        const uint16_t n, const uint8_t arr[n])
-{
-  for (uint16_t i = 0; i < n; i++)
-  {
-    const int diff = v[i * order] - arr[i];
-    if (diff != 0)
-    {
-      return diff;
-    }
-  }
-  return 0;
 }
 
 static void __attribute__((__nonnull__))
@@ -169,7 +154,75 @@ place_align_(qrmask_t* self)
       memcpy(&self->v_[(*index) + i * self->order_],
         &align[i], 5u);
     }
+    self->dark_ += 17;
     index++;
+  }
+}
+
+static void __attribute__((__nonnull__))
+place_format_info_(qrmask_t* self)
+{
+  for (uint8_t i = 0; i < FMTINFO_LEN; i++)
+  {
+    uint32_t idx1 = 0;
+    uint32_t idx2 = 0;
+    if (i < 8)
+    {
+      idx1 = self->order_ * 8 + i;
+      idx1 += (i > 5) ? 1 : 0;
+    }
+    else
+    {
+      idx1 = (FMTINFO_LEN - i) * self->order_ + 8;
+      idx1 -= (i > 8) ? self->order_ : 0;
+    }
+    if (i < 7)
+    {
+      idx2 = self->order_ * (self->order_ - i - 1) + 8;
+    }
+    else
+    {
+      idx2 = self->order_ * 8 + self->order_ - 8 + i - 7;
+    }
+    uint8_t bit = (maskinfo_(self->pattern_, self->level_) >>
+      (FMTINFO_LEN - i - 1)) & 1;
+    self->v_[idx1] = bit;
+    self->v_[idx2] = bit;
+    self->dark_ += (bit * 2);
+  }
+}
+
+static void __attribute__((__nonnull__))
+place_version_info_(qrmask_t* self)
+{
+  uint32_t idx1 = 0;
+  uint32_t idx2 = 0;
+  for (uint8_t i = 0; i < VERINFO_LEN; i++)
+  {
+    if (i % 3 == 0)
+    {
+      idx1 = self->order_ * (self->order_ - 11) + (i / 3);
+      idx2 = (self->order_ * (i / 3)) + self->order_ - 11;
+    }
+    else
+    {
+      idx1 += self->order_;
+      idx2++;
+    }
+    uint8_t bit = (qrverinfo[self->version_ - 6] >> i) & 1;
+    self->v_[idx1] = bit;
+    self->v_[idx2] = bit;
+    self->dark_ += (bit * 2);
+  }
+}
+
+static __inline__ void __attribute__((__nonnull__))
+place_infos_(qrmask_t* self)
+{
+  place_format_info_(self);
+  if (self->version_ >= MIN_VERINFO_VERSION - 1)
+  {
+    place_version_info_(self);
   }
 }
 
@@ -180,8 +233,13 @@ place_timing_(qrmask_t* self)
   size_t idx2 = self->order_ * 8u + 6u;
   for (size_t i = 0; i < self->order_ - 16u; i++)
   {
-    self->v_[idx1] = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
-    self->v_[idx2] = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
+    uint8_t module = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
+    self->v_[idx1] = module;
+    self->v_[idx2] = module;
+    if (module == MASK_DARK)
+    {
+      self->dark_ += 2;
+    }
     idx1++;
     idx2 += self->order_;
   }
@@ -196,109 +254,190 @@ place_darkmodule_(qrmask_t* self)
 static void __attribute__((__nonnull__))
 percentage_penalty_(qrmask_t* self)
 {
-  const uint32_t remain = self->dark_ % self->count_;
-  const uint16_t percentage = ((self->dark_ - remain) / self->count_) * 10;
-  int32_t prev = percentage * 10;
-  int32_t next = percentage - (prev % 5) + 5;
-  prev = (prev - 50) / 5;
-  next = (next - 50) / 5;
-  prev = (prev < 0) ? prev * -1 : prev;
-  next = (next < 0) ? next * -1 : next;
-  self->penalty_ += (prev < next) ? prev * 10 : next * 10;
+  int32_t diff = (int32_t)(self->dark_ * 20) - (int32_t)(self->count_ * 10);
+  if (diff < 0)
+  {
+    diff = -diff;
+  }
+  int32_t k = (diff + self->count_ - 1) / self->count_ - 1;
+  if (k < 0)
+  {
+    k = 0;
+  }
+  self->penalty_.balance += k * 10;
+}
+
+static __inline__ uint8_t __attribute__((__nonnull__))
+finder_ratio_(const uint16_t* line)
+{
+  uint16_t n = line[1];
+  if (n == 0)
+  {
+    return 0;
+  }
+  /* NOTE: exact 1:1:3:1:1 proportion */
+  if (line[2] == n && line[3] == n * 3 && line[4] == n && line[5] == n)
+  {
+    uint8_t count = 0;
+    if (line[0] >= n * 4 && line[6] >= n)
+    {
+      count++;
+    }
+    if (line[6] >= n * 4 && line[0] >= n)
+    {
+      count++;
+    }
+    return count;
+  }
+  return 0;
 }
 
 static void __attribute__((__nonnull__))
 module_penalty_(qrmask_t* self)
 {
-  static const uint8_t patright[9] = {
-    0, 0, 0, 0, 1, 0, 1, 1, 1
-  };
-  static const uint8_t patleft[9] = {
-    1, 1, 1, 0, 1, 0, 0, 0, 0
-  };
-  for (uint8_t i = 0; i < self->order_; i++)
+  /* NOTE: row run */
+  for (uint8_t r = 0; r < self->order_; r++)
   {
-    const uint16_t row = i * self->order_;
-    /* NOTE: row direction >>> */
-    for (uint8_t j = 0; j < self->order_ - 1; j++)
+    uint8_t run_color = 0;
+    uint16_t run_count = 0;
+    uint16_t run_history[7] = {0};
+    uint8_t pad_left = 1;
+    for (uint8_t c = 0; c < self->order_; c++)
     {
-      uint8_t* module = &self->v_[row + j];
-      const uint8_t* next = &self->v_[row + j + 1];
-      if (*module == *next)
+      uint8_t color = self->v_[r * self->order_ + c];
+      if (color == run_color)
       {
-        /* NOTE: square penalty */
-        if (i < self->order_ - 1) {
-          if (*(module + self->order_) == *module &&
-              *(next + self->order_) == *module)
-          {
-            self->penalty_ += 3;
-          }
-        }
-        /* NOTE: sequential line penalty (row) */
-        if (j < self->order_ - 4)
+        run_count++;
+        /* NOTE: run penalty */
+        if (run_count == 5)
         {
-          uint8_t count = j;
-          for (; next + j + 1 < self->v_ + self->count_; j++)
-          {
-            if (*(next + j + 1) != *module)
-            {
-              break;
-            }
-          }
-          count = j - count;
-          if (count > 4)
-          {
-            self->penalty_ += (count - 5) + 3;
-          }
+          self->penalty_.run += 3;
+        }
+        else if (run_count > 5)
+        {
+          self->penalty_.run += 1;
         }
       }
-      /* NOTE: pattern penalty (row) */
-      if (j < self->order_ - 10 && *next == MASK_LIGHT)
+      else
       {
-        const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
-        if (!memcmp(module + 2, pattern, 9))
+        for (uint8_t i = 6; i > 0; i--)
         {
-          self->penalty_ += 40;
+          run_history[i] = run_history[i - 1];
+        }
+        run_history[0] = run_count;
+        if (pad_left)
+        {
+          run_history[0] += self->order_; 
+          pad_left = 0;
+        }
+        if (run_color == 0)
+        {
+          self->penalty_.finder += finder_ratio_(run_history) * 40;
+        }
+        run_color = color;
+        run_count = 1;
+      }
+      if (r < self->order_ - 1 && c < self->order_ - 1)
+      {
+        /* NOTE: box penalty */
+        uint8_t c1 = color;
+        uint8_t c2 = self->v_[r * self->order_ + (c + 1)];
+        uint8_t c3 = self->v_[(r + 1) * self->order_ + c];
+        uint8_t c4 = self->v_[(r + 1) * self->order_ + (c + 1)];
+        if (c1 == c2 && c2 == c3 && c3 == c4)
+        {
+          self->penalty_.box += 3;
         }
       }
     }
-    /* NOTE: column direction vvv */
-    for (
-      uint32_t k = 0;
-      k < self->count_ - (4u * self->order_);
-      k += self->order_
-    )
+    for (uint8_t i = 6; i > 0; i--)
     {
-      const uint8_t* module = &self->v_[i + k];
-      const uint8_t* next = &self->v_[i + k + self->order_];
-      if (*module == *next)
+      run_history[i] = run_history[i - 1];
+    }
+    run_history[0] = run_count;
+    if (pad_left)
+    {
+      run_history[0] += self->order_;
+    }
+    if (run_color == 0)
+    {
+      run_history[0] += self->order_;
+      self->penalty_.finder += finder_ratio_(run_history) * 40;
+    }
+    else
+    {
+      for (uint8_t i = 6; i > 0; i--)
       {
-        /* NOTE: sequential line penalty (column) */
-        uint16_t count = k;
-        for (; next + k < self->v_ + self->count_; k += self->order_)
+        run_history[i] = run_history[i - 1];
+      }
+      run_history[0] = self->order_; 
+      self->penalty_.finder += finder_ratio_(run_history) * 40;
+    }
+  }
+  /* NOTE: column run (repeat as above) */
+  for (uint8_t c = 0; c < self->order_; c++)
+  {
+    uint8_t run_color = 0; 
+    uint16_t run_count = 0;
+    uint16_t run_history[7] = {0};
+    uint8_t pad_top = 1;
+    for (uint8_t r = 0; r < self->order_; r++)
+    {
+      uint8_t color = self->v_[r * self->order_ + c];
+      if (color == run_color)
+      {
+        run_count++;
+        if (run_count == 5)
         {
-          if (*(next + k) != *module)
-          {
-            break;
-          }
+          self->penalty_.run += 3;
         }
-        const uint16_t remain = (k - count) % self->order_;
-        count = (k - count - remain) / self->order_;
-        if (count > 4)
+        else if (run_count > 5)
         {
-          self->penalty_ += (count - 5) + 3;
+          self->penalty_.run += 1;
         }
       }
-      /* NOTE: pattern penalty (column) */
-      if (k < self->count_ - (10 * self->order_) && *next == MASK_LIGHT)
+      else
       {
-        const uint8_t* pattern = (*module == MASK_DARK) ? patleft : patright;
-        if (!colcmp_(module + (2 * self->order_),
-          self->order_, 9, pattern))
+        for (uint8_t i = 6; i > 0; i--)
         {
-          self->penalty_ += 40;
+          run_history[i] = run_history[i - 1];
         }
+        run_history[0] = run_count;
+        if (pad_top)
+        {
+          run_history[0] += self->order_; 
+          pad_top = 0;
+        }
+        if (run_color == 0)
+        {
+          self->penalty_.finder += finder_ratio_(run_history) * 40;
+        }
+        run_color = color;
+        run_count = 1;
       }
+    }
+    for (uint8_t i = 6; i > 0; i--)
+    {
+      run_history[i] = run_history[i - 1];
+    }
+    run_history[0] = run_count;
+    if (pad_top)
+    {
+      run_history[0] += self->order_;
+    }
+    if (run_color == 0)
+    {
+      run_history[0] += self->order_;
+      self->penalty_.finder += finder_ratio_(run_history) * 40;
+    }
+    else
+    {
+      for (uint8_t i = 6; i > 0; i--)
+      {
+        run_history[i] = run_history[i - 1];
+      }
+      run_history[0] = self->order_;
+      self->penalty_.finder += finder_ratio_(run_history) * 40;
     }
   }
 }
@@ -343,8 +482,12 @@ create_qrmask(qrmask_t** self, const uint8_t version,
     *self = NULL;
     return ENOMEM;
   }
-  (*self)->dark_ = 0;
-  (*self)->penalty_ = 0;
+  (*self)->dark_ = 100;
+  (*self)->penalty_.run = 0;
+  (*self)->penalty_.box = 0;
+  (*self)->penalty_.finder = 0;
+  (*self)->penalty_.balance = 0;
+  (*self)->penalty_.evaluated = false;
   place_finder_(*self);
   place_timing_(*self);
   if (version > 0)
@@ -381,81 +524,17 @@ qrmask_set(qrmask_t* self, const uint16_t index, uint8_t module)
   self->dark_ += (module == MASK_DARK);
 }
 
-uint16_t
+qrpenalty_t
 qrmask_penalty(qrmask_t* self)
 {
-  if (self->penalty_ == 0)
+  if (self->penalty_.evaluated == false)
   {
+    place_infos_(self);
     percentage_penalty_(self);
     module_penalty_(self);
+    self->penalty_.evaluated = true;
   }
   return self->penalty_;
-}
-
-void __attribute__((__nonnull__))
-qrmask_place_format_info_(qrmask_t* self)
-{
-  for (uint8_t i = 0; i < FMTINFO_LEN; i++)
-  {
-    int idx1 = 0;
-    int idx2 = 0;
-    if (i < 8)
-    {
-      idx1 = self->order_ * 8 + i;
-      idx1 += (i > 5) ? 1 : 0;
-    }
-    else
-    {
-      idx1 = (FMTINFO_LEN - i) * self->order_ + 8;
-      idx1 -= (i > 8) ? self->order_ : 0;
-    }
-    if (i < 7)
-    {
-      idx2 = self->order_ * (self->order_ - i - 1) + 8;
-    }
-    else
-    {
-      idx2 = self->order_ * 8 + self->order_ - 8 + i - 7;
-    }
-    self->v_[idx1] =
-      (maskinfo_(self->pattern_, self->level_) >>
-      (FMTINFO_LEN - i - 1)) & 1;
-    self->v_[idx2] =
-      (maskinfo_(self->pattern_, self->level_) >>
-      (FMTINFO_LEN - i - 1)) & 1;
-  }
-}
-
-void __attribute__((__nonnull__))
-qrmask_place_version_info_(qrmask_t* self)
-{
-  int idx1 = 0;
-  int idx2 = 0;
-  for (uint8_t i = 0; i < VERINFO_LEN; i++)
-  {
-    if (i % 3 == 0)
-    {
-      idx1 = self->order_ * (self->order_ - 11) + (i / 3);
-      idx2 = (self->order_ * (i / 3)) + self->order_ - 11;
-    }
-    else
-    {
-      idx1 += self->order_;
-      idx2++;
-    }
-    self->v_[idx1] = (qrverinfo[self->version_ - 6] >> i) & 1;
-    self->v_[idx2] = (qrverinfo[self->version_ - 6] >> i) & 1;
-  }
-}
-
-void
-qrmask_apply(qrmask_t* self)
-{
-  qrmask_place_format_info_(self);
-  if (self->version_ >= MIN_VERINFO_VERSION - 1)
-  {
-    qrmask_place_version_info_(self);
-  }
 }
 
 void

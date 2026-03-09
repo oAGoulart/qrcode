@@ -11,6 +11,15 @@
 
 typedef struct qrmask_s qrmask_t;
 
+typedef struct qrpenalty_s
+{
+  uint16_t run;
+  uint16_t box;
+  uint16_t finder;
+  uint16_t balance;
+  bool evaluated;
+} qrpenalty_t;
+
 __attribute__((__nonnull__)) int
 create_qrmask(qrmask_t** self, uint8_t version,
               eclevel_t level, uint8_t pattern);
@@ -19,10 +28,8 @@ delete_qrmask(qrmask_t** self);
 
 __attribute__((__nonnull__)) void
 qrmask_set(qrmask_t* self, uint16_t index, uint8_t module);
-__attribute__((__nonnull__)) uint16_t
+__attribute__((__nonnull__)) qrpenalty_t
 qrmask_penalty(qrmask_t* self);
-__attribute__((__nonnull__)) void
-qrmask_apply(qrmask_t* self);
 
 __attribute__((__nonnull__)) void
 qrmask_pbox(const qrmask_t* self);

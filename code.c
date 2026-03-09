@@ -440,7 +440,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
 
   if (verbose)
   {
-    pinfo("Calculated codewords (%hu):", finalvl->len);
+    pinfo("Encoded codewords (%hu):", finalvl->len);
     printf("0x%x", bytes_byte(arr, 0));
     for (i = 1; i < finalvl->len; i++)
     {
@@ -576,8 +576,8 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   uint8_t selected = 0;
   for (i = 0; i < NUM_MASKS; i++)
   {
-    uint16_t score = qrmask_penalty((*self)->masks_[i]);
-    qrmask_apply((*self)->masks_[i]);
+    qrpenalty_t p = qrmask_penalty((*self)->masks_[i]);
+    uint16_t score = p.run + p.box + p.finder + p.balance;
     if (score < minscore)
     {
       minscore = score;
@@ -585,7 +585,12 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
     if (verbose)
     {
-      pinfo("Mask [%zu] penalty: %u", i, score);
+      pinfo("Mask [%zu] total penalty: %u\n"
+        "         run:     %hu\n"
+        "         box:     %hu\n"
+        "         finder:  %hu\n"
+        "         balance: %hu", i, score,
+        p.run, p.box, p.finder, p.balance);
     }
   }
   (*self)->selected_mask_ = selected;
