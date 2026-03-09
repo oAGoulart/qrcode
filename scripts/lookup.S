@@ -26,7 +26,7 @@
 #elif defined(__APPLE__)
   .section __TEXT,__const
 #else
-  .section .rodata,"aR",@progbits
+  .section .rodata,"a",@progbits
 #endif
 
 globale_ sym_(logt)
