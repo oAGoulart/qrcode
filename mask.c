@@ -12,6 +12,12 @@
 #define VERINFO_LEN 18
 #define MIN_VERINFO_VERSION 7
 
+#if defined(__FreeBSD__)
+#define EMPTY_CHARACTER " "
+#else
+#define EMPTY_CHARACTER " "
+#endif
+
 extern const uint16_t* qrindex[];
 extern const uint16_t* qralign[];
 extern const uint16_t  qrfmtinfo[];
@@ -75,7 +81,7 @@ mask_double_(const uint8_t* __restrict__ v, const uint8_t order)
     switch (ch_case)
     {
     case 0:
-      printf(" ");
+      printf(EMPTY_CHARACTER);
       break;
     case 1:
       printf("▄");
@@ -99,7 +105,7 @@ mask_single_(const uint8_t* __restrict__ v, const uint8_t order)
   {
     if (v[top] == 0)
     {
-      printf(" ");
+      printf(EMPTY_CHARACTER);
     }
     else
     {
