@@ -1,5 +1,6 @@
 #include "bytes.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -134,6 +135,17 @@ bytes_copy(const bytes_t* self, void* dst, const size_t dstlen)
 {
   size_t n = (dstlen < self->length_) ? dstlen : self->length_;
   memcpy(dst, self->data_, n);
+}
+
+void
+bytes_print(const bytes_t* self)
+{
+  printf("%x", self->data_[0]);
+  for (size_t i = 1; i < self->length_; i++)
+  {
+    printf(" %x", self->data_[0]);
+  }
+  puts("");
 }
 
 __inline__ uint8_t __attribute__((__const__))

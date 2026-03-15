@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <xkeycheck.h>
 
 #include "bytes.h"
 #include "vector.h"
@@ -145,10 +146,12 @@ struct qrcode_s
 {
   qrmask_t* masks_[NUM_MASKS];
   bits_t*   bits_;
+  bytes_t*  segments_;
   vector_t* blocks_;
   bytes_t*  modules_;
   uint8_t   selected_mask_;
   uint8_t   version_;
+  size_t    strcount_;
 };
 
 static __inline__ uint8_t __attribute__((__const__))
@@ -168,6 +171,347 @@ remainderbits_(const uint8_t version)
          (((mask4 >> version) & 1) * 4);
 }
 
+static __inline__ uint8_t __attribute__((__const__))
+minversion_(size_t required, eclevel_t level, uint8_t max_version)
+{
+  for (uint8_t i = 0; i <= max_version; i++)
+  {
+    if (required <= qrinfo[i * EC_COUNT + level].len)
+    {
+      return i;
+    }
+  }
+  return max_version;
+}
+
+static int __attribute__((__nonnull__))
+apply_segments_(qrcode_t* self, const char* str, bool optimize)
+{
+  int err = create_bytes(&self->segments_, sizeof(segment_t));
+  if (err != 0)
+  {
+    return err;
+  }
+  segment_t segment = { SUBSET_BYTE, 0 };
+  size_t i = 0;
+  if (!optimize)
+  {
+    segment.count = self->strcount_;
+    bytes_push(self->segments_, &segment, sizeof(segment_t));
+    return 0;
+  }
+  pdebug("optimizing data bits");
+  segment_t seg = count_segment_(str);
+  segment.count = seg.count;
+  if (seg.type != SUBSET_BYTE)
+  {
+    if (seg.type == SUBSET_ALPHA &&
+        seg.count >= minimum_segment_(
+          self->version_, PHASE_ONE))
+    {
+      segment.type = SUBSET_ALPHA;
+    }
+    else
+    {
+      segment.type = (seg.count >= minimum_segment_(
+        self->version_, PHASE_TWO)
+      ) ?
+        SUBSET_NUMERIC : SUBSET_ALPHA;
+    }
+  }
+  bool pushseg = false;
+  for (i = segment.count; i < self->strcount_; i++)
+  {
+    seg = count_segment_(&str[i]);
+    if (seg.type == segment.type)
+    {
+      i += seg.count - 1;
+      segment.count += seg.count;
+      continue;
+    }
+    switch (segment.type)
+    {
+    case SUBSET_NUMERIC:
+    {
+      if (seg.type != SUBSET_NUMERIC)
+      {
+        pushseg = true;
+      }
+      break;
+    }
+    case SUBSET_ALPHA:
+    {
+      if (seg.type == SUBSET_BYTE ||
+         (seg.type == SUBSET_NUMERIC &&
+          seg.count > minimum_segment_(
+            self->version_, PHASE_FOUR) &&
+          which_subset_(str[i + 1 + seg.count]) == SUBSET_ALPHA))
+      {
+        pushseg = true;
+      }
+      break;
+    }
+    default:
+    {
+      if (seg.type == SUBSET_NUMERIC)
+      {
+        subset_t subset = which_subset_(str[i + 1 + seg.count]);
+        if (subset == SUBSET_BYTE &&
+            seg.count >= minimum_segment_(
+              self->version_, PHASE_FIVE))
+        {
+          pushseg = true;
+        }
+        if (subset == SUBSET_ALPHA &&
+            seg.count >= minimum_segment_(
+              self->version_, PHASE_SIX))
+        {
+          pushseg = true;
+        }
+      }
+      else if (seg.type == SUBSET_ALPHA)
+      {
+        if (seg.count == 0)
+        {
+          break;
+        }
+        subset_t subset = which_subset_(str[i + 1 + seg.count]);
+        if (subset == SUBSET_BYTE &&
+            seg.count >= minimum_segment_(
+              self->version_, PHASE_SEVEN))
+        {
+          pushseg = true;
+        }
+      }
+      break;
+    } /* default */
+    } /* switch */
+    if (pushseg)
+    {
+      bytes_push(self->segments_, &segment, sizeof(segment_t));
+      segment = seg;
+      i += seg.count - 1;
+      pushseg = false;
+    }
+    else
+    {
+      segment.count++;
+    }
+  }
+  bytes_push(self->segments_, &segment, sizeof(segment_t));
+  return 0;
+}
+
+static void __attribute__((__nonnull__))
+encode_segments_(qrcode_t* self, const char* str)
+{
+  segment_t segment = {0};
+  const size_t seglen = bytes_length(self->segments_) / sizeof(segment_t);
+  size_t k = 0;
+  for (size_t i = 0; i < seglen; i++)
+  {
+    bytes_at(self->segments_, i,
+      sizeof(segment_t), &segment
+    );
+    bits_push(self->bits_, segment.type, 4);
+    const uint8_t max = maximum_count_(self->version_,
+      segment.type
+    );
+    bits_push(self->bits_, segment.count, max);
+
+    char bseg[4] = { '\0', '\0', '\0', '\0' };
+    uint8_t blen = 0;
+    for (size_t j = 0; j < segment.count; j++)
+    {
+      switch (segment.type)
+      {
+        case SUBSET_NUMERIC:
+        {
+          bseg[blen] = str[k + j];
+          blen++;
+          if (blen == 3 || j == segment.count - 1)
+          {
+            const uint8_t maxb[3] = { 4, 7, 10 };
+            bseg[blen] = '\0';
+            int numch = atoi(bseg);
+            bits_push(self->bits_, numch, maxb[blen - 1]);
+            blen = 0;
+          }
+          break;
+        }
+        case SUBSET_ALPHA:
+        {
+          bseg[blen] = str[k + j];
+          blen++;
+          if (blen == 2 || j == segment.count - 1)
+          {
+            if (blen == 2)
+            {
+              uint16_t value = (uint16_t)frombyte_(bseg[0]) * 45 +
+                               (uint16_t)frombyte_(bseg[1]);
+              bits_push(self->bits_, value, 11);
+            }
+            else
+            {
+              uint8_t value = frombyte_(bseg[0]);
+              bits_push(self->bits_, value, 6);
+            }
+            blen = 0;
+          }
+          break;
+        }
+        default:
+        {
+          bits_push(self->bits_, str[k + j], 8);
+          break;
+        }
+      } 
+    }
+    k += segment.count;
+  }
+  bits_flush(self->bits_);
+}
+
+static int __attribute__((__nonnull__))
+interleave_codewords_(qrcode_t* self, const qrinfo_t* finalvl)
+{
+  int err = create_vector(&self->blocks_,
+    (void (*)(void **))&delete_qrdata
+  );
+  if (err != 0)
+  {
+    return err;
+  }
+  bytes_t* arr = bits_bytes(self->bits_);
+
+  pdebug("starting polynomial division (long division)");
+  size_t mod = 0;
+  uint16_t nblocks = finalvl->blocks[0] + finalvl->blocks[1];
+  for (size_t i = 0; i < nblocks; i++)
+  {
+    uint8_t dlen = (i < finalvl->blocks[0]) ? finalvl->datapb[0] : finalvl->datapb[1];
+    qrdata_t* qrdata = NULL;
+    err = create_qrdata(&qrdata,
+      bytes_span(arr, mod),
+      dlen, finalvl->eccpb
+    );
+    if (err != 0)
+    {
+      return err;
+    }
+    vector_push(self->blocks_, qrdata);
+    mod += dlen;
+  }
+
+  size_t fullen = nblocks * finalvl->eccpb + finalvl->len;
+  err = create_bytes(&self->modules_, fullen);
+  if (err != 0)
+  {
+    return err;
+  }
+
+  /* NOTE: data interleaving */
+  uint8_t highpb = (finalvl->blocks[1] == 0) ? finalvl->datapb[0] : finalvl->datapb[1];
+  for (size_t i = 0; i < highpb; i++)
+  {
+    size_t j = 0;
+    for (qrdata_t** d = (qrdata_t**)vector_begin(self->blocks_);
+         d != (qrdata_t**)vector_end(self->blocks_); d++, j++)
+    {
+      if (j < finalvl->blocks[0] && i >= finalvl->datapb[0])
+      {
+        continue;
+      }
+      bytes_push(self->modules_,
+        &qrdata_codewords(*d)[i], 1
+      );
+    }
+  }
+  /* NOTE: ecc interleaving */
+  for (size_t i = 0; i < finalvl->eccpb; i++)
+  {
+    size_t j = 0;
+    for (qrdata_t** d = (qrdata_t**)vector_begin(self->blocks_);
+        d != (qrdata_t**)vector_end(self->blocks_); d++, j++)
+    {
+      uint8_t dlen = (j < finalvl->blocks[0]) ?
+        finalvl->datapb[0] : finalvl->datapb[1];
+      bytes_push(self->modules_,
+        &qrdata_codewords(*d)[i + dlen], 1
+      );
+    }
+  }
+  return 0;
+}
+
+static int __attribute__((__nonnull__))
+apply_masks_(qrcode_t* self, const eclevel_t level, const bool verbose)
+{
+  pdebug("applying XOR masks");
+  size_t i = 0;
+  for (; i < NUM_MASKS; i++)
+  {
+    int err = create_qrmask(&self->masks_[i],
+      self->version_, level, i);
+    if (err)
+    {
+      eprintf("could not create mask [%zu]", i);
+      return err;
+    }
+  }
+  size_t datalen = bytes_length(self->modules_);
+  for (i = 0; i < datalen; i++)
+  {
+    size_t offset = i * 8;
+    /* NOTE: bitstream goes from bit 7 to bit 0 */
+    for (int8_t bit = 7; bit >= 0; bit--)
+    {
+      uint8_t module =
+        (bytes_byte(self->modules_, i) & 1 << bit) >> bit & 1;
+      uint8_t uj8 = 0;
+      for (; uj8 < NUM_MASKS; uj8++)
+      {
+        uint16_t index = (uint16_t)(offset + (7 - bit));
+        qrmask_set(self->masks_[uj8], index, module);
+      }
+    }
+  }
+  /* NOTE: padding bits, MUST check xor */
+  for (i = 0; i < remainderbits_(self->version_); i++)
+  {
+    for (uint8_t j = 0; j < NUM_MASKS; j++)
+    {
+      uint16_t index = (uint16_t)(datalen * 8) + i;
+      qrmask_set(self->masks_[j], index, MASK_LIGHT);
+    }
+  }
+
+  pdebug("calculating masks penalty");
+  uint32_t minscore = UINT32_MAX;
+  uint8_t selected = 0;
+  for (i = 0; i < NUM_MASKS; i++)
+  {
+    qrpenalty_t p = qrmask_penalty(self->masks_[i]);
+    uint32_t score = p.run + p.box + p.finder + p.balance;
+    if (score < minscore)
+    {
+      minscore = score;
+      selected = i;
+    }
+    if (verbose)
+    {
+      pinfo("Mask [%zu] total penalty: %u\n"
+        "         run:     %hu\n"
+        "         box:     %hu\n"
+        "         finder:  %hu\n"
+        "         balance: %hu", i, score,
+        p.run, p.box, p.finder, p.balance);
+    }
+  }
+  self->selected_mask_ = selected;
+  return 0;
+}
+
 int
 create_qrcode(qrcode_t** self, const char* __restrict__ str,
               const qrconfig_t* config)
@@ -183,414 +527,105 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     eprintf("cannot allocate %zu bytes", sizeof(qrcode_t));
     return ENOMEM;
   }
+  memset((*self)->masks_, 0, sizeof((*self)->masks_));
+  (*self)->blocks_ = NULL;
+  (*self)->segments_ = NULL;
+  (*self)->modules_ = NULL;
   (*self)->bits_ = NULL;
   int err = create_bits(&(*self)->bits_);
   if (err)
   {
     eprintf("cannot create bits_ member of qrcode");
-    free(*self);
-    *self = NULL;
-    return err;
+    goto cleanup;
   }
   bytes_t* arr = bits_bytes((*self)->bits_);
   uint8_t ver = (config->version >= 0 && config->version < MAX_VERSION) ?
     config->version - 1 : MAX_VERSION - 1;
-  size_t strcount = strlen(str);
+  (*self)->strcount_ = strlen(str);
   /* NOTE: initial version selection */
-  size_t i = 0;
-  if (config->version != ver)
-  {
-    for (; i <= ver; i++)
-    {
-      if (strcount <= qrinfo[i * EC_COUNT + config->level].len - 2)
-      {
-        ver = i;
-        break;
-      }
-    }
-  }
+  ver = minversion_((*self)->strcount_ + 2,
+    config->level, ver
+  );
   (*self)->version_ = ver;
   if (config->verbose)
   {
     pinfo("Queuing subset segments");
   }
-  bytes_t* segments = NULL;
-  err = create_bytes(&segments, sizeof(segment_t));
-  if (err)
+  err = apply_segments_(*self, str, config->optimize);
+  if (err != 0)
   {
-    eprintf("cannot create heaparray for subset segments");
-    delete_qrcode(self);
-    return err;
+    eprintf("cannot optimize segments");
+    goto cleanup;
   }
-  segment_t segment = { SUBSET_BYTE, 0 };
-  if (config->optimize)
-  {
-    pdebug("optimizing data bits");
-    segment_t seg = count_segment_(str);
-    segment.count = seg.count;
-    if (seg.type != SUBSET_BYTE)
-    {
-      if (seg.type == SUBSET_ALPHA &&
-          seg.count >= minimum_segment_(ver, PHASE_ONE))
-      {
-        segment.type = SUBSET_ALPHA;
-      }
-      else
-      {
-        if (seg.count >= minimum_segment_(ver, PHASE_TWO))
-        {
-          segment.type = SUBSET_NUMERIC;
-        }
-        else
-        {
-          segment.type = SUBSET_ALPHA;
-        }
-      }
-    }
-    bool pushseg = false;
-    for (i = segment.count; i < strcount; i++)
-    {
-      seg = count_segment_(&str[i]);
-      if (seg.type == segment.type)
-      {
-        i += seg.count - 1;
-        segment.count += seg.count;
-        continue;
-      }
-      switch (segment.type)
-      {
-      case SUBSET_NUMERIC:
-      {
-        if (seg.type != SUBSET_NUMERIC)
-        {
-          pushseg = true;
-        }
-        break;
-      }
-      case SUBSET_ALPHA:
-      {
-        if (seg.type == SUBSET_BYTE ||
-           (seg.type == SUBSET_NUMERIC &&
-            seg.count > minimum_segment_(ver, PHASE_FOUR) &&
-            which_subset_(str[i + 1 + seg.count]) == SUBSET_ALPHA))
-        {
-          pushseg = true;
-        }
-        break;
-      }
-      default:
-      {
-        if (seg.type == SUBSET_NUMERIC)
-        {
-          subset_t subset = which_subset_(str[i + 1 + seg.count]);
-          if (subset == SUBSET_BYTE &&
-              seg.count >= minimum_segment_(ver, PHASE_FIVE))
-          {
-            pushseg = true;
-          }
-          if (subset == SUBSET_ALPHA &&
-              seg.count >= minimum_segment_(ver, PHASE_SIX))
-          {
-            pushseg = true;
-          }
-        }
-        else if (seg.type == SUBSET_ALPHA)
-        {
-          if (seg.count == 0)
-          {
-            break;
-          }
-          subset_t subset = which_subset_(str[i + 1 + seg.count]);
-          if (subset == SUBSET_BYTE &&
-              seg.count >= minimum_segment_(ver, PHASE_SEVEN))
-          {
-            pushseg = true;
-          }
-        }
-        break;
-      } /* default */
-      } /* switch */
-      if (pushseg)
-      {
-        bytes_push(segments, &segment, sizeof(segment_t));
-        segment = seg;
-        i += seg.count - 1;
-        pushseg = false;
-      }
-      else
-      {
-        segment.count++;
-      }
-    }
-    bytes_push(segments, &segment, sizeof(segment_t));
-  }
-  else
-  {
-    segment.count = strcount;
-    bytes_push(segments, &segment, sizeof(segment_t));
-  }
-
   if (config->verbose)
   {
     pinfo("Encoding data bits");
   }
-  const size_t seglen = bytes_length(segments) / sizeof(segment_t);
-  size_t k = 0;
-  for (i = 0; i < seglen; i++)
-  {
-    bytes_at(segments, i, sizeof(segment_t), &segment);
-    bits_push((*self)->bits_, segment.type, 4);
-    const uint8_t max = maximum_count_(
-      (*self)->version_,
-      segment.type
-    );
-    bits_push((*self)->bits_, segment.count, max);
-    char bseg[4] = { '\0', '\0', '\0', '\0' };
-    uint8_t blen = 0;
-    for (size_t j = 0; j < segment.count; j++)
-    {
-      switch (segment.type)
-      {
-      case SUBSET_NUMERIC:
-      {
-        bseg[blen] = str[k + j];
-        blen++;
-        if (blen == 3 || j == segment.count - 1)
-        {
-          const uint8_t maxb[3] = { 4, 7, 10 };
-          bseg[blen] = '\0';
-          int numch = atoi(bseg);
-          bits_push((*self)->bits_, numch, maxb[blen - 1]);
-          blen = 0;
-        }
-        break;
-      }
-      case SUBSET_ALPHA:
-      {
-        bseg[blen] = str[k + j];
-        blen++;
-        if (blen == 2 || j == segment.count - 1)
-        {
-          if (blen == 2)
-          {
-            uint16_t value = (uint16_t)frombyte_(bseg[0]) * 45 +
-                             (uint16_t)frombyte_(bseg[1]);
-            bits_push((*self)->bits_, value, 11);
-          }
-          else
-          {
-            uint8_t value = frombyte_(bseg[0]);
-            bits_push((*self)->bits_, value, 6);
-          }
-          blen = 0;
-        }
-        break;
-      }
-      default:
-      {
-        bits_push((*self)->bits_, str[k + j], 8);
-        break;
-      } /* default */
-      } /* switch */
-    }
-    k += segment.count;
-  }
-  bits_flush((*self)->bits_);
-  delete_bytes(&segments);
+  encode_segments_(*self, str);
 
   /* NOTE: final version selection */
   size_t datalen = bytes_length(arr);
-  for (i = ver; i > 0; i--)
-  {
-    if (datalen > qrinfo[(i - 1) * EC_COUNT + config->level].len)
-    {
-      break;
-    }
-  }
-  ver = i;
+  ver = minversion_(datalen, config->level, ver);
   (*self)->version_ = ver;
   const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT + config->level];
   if (datalen > finalvl->len)
   {
     eprintf("data must be less than %u characters long", finalvl->len - 2u);
-    delete_qrcode(self);
-    return EINVAL;
+    err = EINVAL;
+    goto cleanup;
   }
   if (config->verbose)
   {
-    pinfo("String length: %zu", strcount);
+    pinfo("String length: %zu",(*self)->strcount_);
     pinfo("Data length: %zu", datalen - 2u);
     pinfo("Version selected: %u", ver + 1u);
   }
   /* NOTE: padding bytes */
   const size_t padbytes = finalvl->len - datalen;
-  for (i = 0; i < padbytes; i++)
+  size_t i = 0;
+  for (; i < padbytes; i++)
   {
     uint8_t pad_byte = (i % 2 == 0) ? 0xec : 0x11;
     bits_push((*self)->bits_, pad_byte, 8);
   }
-
   if (config->verbose)
   {
     pinfo("Encoded codewords (%hu):", finalvl->len);
-    printf("0x%x", bytes_byte(arr, 0));
-    for (i = 1; i < finalvl->len; i++)
-    {
-      printf(", 0x%x", bytes_byte(arr, i));
-    }
-    puts("");
+    bytes_print(arr);
   }
 
-  (*self)->blocks_ = NULL;
-  err = create_vector(&(*self)->blocks_,
-    (void (*)(void **))&delete_qrdata);
+  err = interleave_codewords_(*self, finalvl);
   if (err != 0)
   {
-    eprintf("could not create vector type");
-    delete_qrcode(self);
-    return err;
+    eprintf("could not interleave data and ecc blocks");
+    goto cleanup;
   }
-
-  pdebug("starting polynomial division (long division)");
-  size_t mod = 0;
-  uint16_t nblocks = finalvl->blocks[0] + finalvl->blocks[1];
-  for (i = 0; i < nblocks; i++)
-  {
-    uint8_t dlen = (i < finalvl->blocks[0]) ?
-      finalvl->datapb[0] : finalvl->datapb[1];
-    qrdata_t* qrdata = NULL;
-    err = create_qrdata(&qrdata,
-      bytes_span(arr, mod),
-      dlen, finalvl->eccpb
-    );
-    if (err != 0)
-    {
-      eprintf("could not create qrdata type");
-      delete_qrcode(self);
-      return err;
-    }
-    vector_push((*self)->blocks_, qrdata);
-    mod += dlen;
-  }
-
-  size_t fullen = nblocks * finalvl->eccpb + finalvl->len;
-  (*self)->modules_ = NULL;
-  err = create_bytes(&(*self)->modules_, fullen);
-  if (err != 0)
-  {
-    eprintf("could not create bytes type");
-    delete_qrcode(self);
-    return err;
-  }
-  /* NOTE: data interleaving */
-  uint8_t highpb = (finalvl->blocks[1] == 0) ?
-    finalvl->datapb[0] : finalvl->datapb[1];
-  for (i = 0; i < highpb; i++)
-  {
-    size_t j = 0;
-    for (qrdata_t** d = (qrdata_t**)vector_begin((*self)->blocks_);
-         d != (qrdata_t**)vector_end((*self)->blocks_); d++, j++)
-    {
-      if (j < finalvl->blocks[0] && i >= finalvl->datapb[0])
-      {
-        continue;
-      }
-      bytes_push((*self)->modules_,
-        &qrdata_codewords(*d)[i], 1);
-    }
-  }
-  /* NOTE: ecc interleaving */
-  for (i = 0; i < finalvl->eccpb; i++)
-  {
-    size_t j = 0;
-    for (qrdata_t** d = (qrdata_t**)vector_begin((*self)->blocks_);
-        d != (qrdata_t**)vector_end((*self)->blocks_); d++, j++)
-    {
-      uint8_t dlen = (j < finalvl->blocks[0]) ?
-        finalvl->datapb[0] : finalvl->datapb[1];
-      bytes_push((*self)->modules_,
-        &qrdata_codewords(*d)[i + dlen], 1);
-    }
-  }
-
   datalen = bytes_length((*self)->modules_);
   if (config->verbose)
   {
     pinfo("Interleaved codewords (%zu):", datalen);
-    printf("0x%x", bytes_byte((*self)->modules_, 0));
-    for (i = 1; i < datalen; i++)
-    {
-      printf(", 0x%x", bytes_byte((*self)->modules_, i));
-    }
-    puts("");
+    bytes_print((*self)->modules_);
   }
-
-  pdebug("applying XOR masks");
-  memset((*self)->masks_, 0, sizeof((*self)->masks_));
-  for (i = 0; i < NUM_MASKS; i++)
+  err = apply_masks_(*self,
+    config->level, config->verbose
+  );
+  if (err != 0)
   {
-    err = create_qrmask(&(*self)->masks_[i],
-      ver, config->level, i);
-    if (err)
-    {
-      delete_qrcode(self);
-      return err;
-    }
+    eprintf("could not apply masks");
+    goto cleanup;
   }
-  for (i = 0; i < datalen; i++)
-  {
-    size_t offset = i * 8;
-    /* NOTE: bitstream goes from bit 7 to bit 0 */
-    for (int8_t bit = 7; bit >= 0; bit--)
-    {
-      uint8_t module =
-        (bytes_byte((*self)->modules_, i) & 1 << bit) >> bit & 1;
-      uint8_t uj8 = 0;
-      for (; uj8 < NUM_MASKS; uj8++)
-      {
-        uint16_t index = (uint16_t)(offset + (7 - bit));
-        qrmask_set((*self)->masks_[uj8], index, module);
-      }
-    }
-  }
-  /* NOTE: padding bits, MUST check xor */
-  for (i = 0; i < remainderbits_(ver); i++)
-  {
-    for (uint8_t j = 0; j < NUM_MASKS; j++)
-    {
-      uint16_t index = (uint16_t)(datalen * 8) + i;
-      qrmask_set((*self)->masks_[j], index, MASK_LIGHT);
-    }
-  }
-
-  pdebug("calculating masks penalty");
-  uint16_t minscore = UINT16_MAX;
-  uint8_t selected = 0;
-  for (i = 0; i < NUM_MASKS; i++)
-  {
-    qrpenalty_t p = qrmask_penalty((*self)->masks_[i]);
-    uint16_t score = p.run + p.box + p.finder + p.balance;
-    if (score < minscore)
-    {
-      minscore = score;
-      selected = i;
-    }
-    if (config->verbose)
-    {
-      pinfo("Mask [%zu] total penalty: %u\n"
-        "         run:     %hu\n"
-        "         box:     %hu\n"
-        "         finder:  %hu\n"
-        "         balance: %hu", i, score,
-        p.run, p.box, p.finder, p.balance);
-    }
-  }
-  (*self)->selected_mask_ = selected;
   if (config->verbose)
   {
-    pinfo("Mask selected: %hhu", selected);
+    pinfo("Mask selected: %hhu", (*self)->selected_mask_);
   }
-  return 0;
+  err = 0;
+
+cleanup:
+  if (err != 0)
+  {
+    delete_qrcode(self);
+  }
+  return err;
 }
 
 void
@@ -601,6 +636,7 @@ delete_qrcode(qrcode_t** self)
     delete_bits(&(*self)->bits_);
     delete_vector(&(*self)->blocks_);
     delete_bytes(&(*self)->modules_);
+    delete_bytes(&(*self)->segments_);
     uint8_t i = 0;
     for (; i < NUM_MASKS; i++)
     {
