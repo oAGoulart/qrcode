@@ -12,11 +12,19 @@ typedef enum imgfmt_e
   FMT_SVG
 } __attribute__((packed)) imgfmt_t;
 
+typedef struct qrcofig_s
+{
+  int version;
+  eclevel_t level;
+  bool optimize;
+  bool verbose;
+} qrconfig_t;
+
 typedef struct qrcode_s qrcode_t;
 
 __attribute__((__nonnull__)) int
 create_qrcode(qrcode_t** self, const char* __restrict__ str,
-              int version, eclevel_t level, bool optimize, bool verbose);
+              const qrconfig_t* config);
 __attribute__((__nonnull__)) void
 delete_qrcode(qrcode_t** self);
 

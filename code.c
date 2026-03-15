@@ -170,8 +170,7 @@ remainderbits_(const uint8_t version)
 
 int
 create_qrcode(qrcode_t** self, const char* __restrict__ str,
-              const int version, const eclevel_t level,
-              const bool optimize, const bool verbose)
+              const qrconfig_t* config)
 {
   if (*self != NULL)
   {
@@ -194,16 +193,16 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     return err;
   }
   bytes_t* arr = bits_bytes((*self)->bits_);
-  uint8_t ver = (version >= 0 && version < MAX_VERSION) ?
-    version - 1 : MAX_VERSION - 1;
+  uint8_t ver = (config->version >= 0 && config->version < MAX_VERSION) ?
+    config->version - 1 : MAX_VERSION - 1;
   size_t strcount = strlen(str);
   /* NOTE: initial version selection */
   size_t i = 0;
-  if (version != ver)
+  if (config->version != ver)
   {
     for (; i <= ver; i++)
     {
-      if (strcount <= qrinfo[i * EC_COUNT + level].len - 2)
+      if (strcount <= qrinfo[i * EC_COUNT + config->level].len - 2)
       {
         ver = i;
         break;
@@ -211,7 +210,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
   }
   (*self)->version_ = ver;
-  if (verbose)
+  if (config->verbose)
   {
     pinfo("Queuing subset segments");
   }
@@ -224,7 +223,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     return err;
   }
   segment_t segment = { SUBSET_BYTE, 0 };
-  if (optimize)
+  if (config->optimize)
   {
     pdebug("optimizing data bits");
     segment_t seg = count_segment_(str);
@@ -331,7 +330,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     bytes_push(segments, &segment, sizeof(segment_t));
   }
 
-  if (verbose)
+  if (config->verbose)
   {
     pinfo("Encoding data bits");
   }
@@ -403,21 +402,21 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t datalen = bytes_length(arr);
   for (i = ver; i > 0; i--)
   {
-    if (datalen > qrinfo[(i - 1) * EC_COUNT + level].len)
+    if (datalen > qrinfo[(i - 1) * EC_COUNT + config->level].len)
     {
       break;
     }
   }
   ver = i;
   (*self)->version_ = ver;
-  const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT + level];
+  const qrinfo_t* finalvl = &qrinfo[ver * EC_COUNT + config->level];
   if (datalen > finalvl->len)
   {
     eprintf("data must be less than %u characters long", finalvl->len - 2u);
     delete_qrcode(self);
     return EINVAL;
   }
-  if (verbose)
+  if (config->verbose)
   {
     pinfo("String length: %zu", strcount);
     pinfo("Data length: %zu", datalen - 2u);
@@ -431,7 +430,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     bits_push((*self)->bits_, pad_byte, 8);
   }
 
-  if (verbose)
+  if (config->verbose)
   {
     pinfo("Encoded codewords (%hu):", finalvl->len);
     printf("0x%x", bytes_byte(arr, 0));
@@ -515,7 +514,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   }
 
   datalen = bytes_length((*self)->modules_);
-  if (verbose)
+  if (config->verbose)
   {
     pinfo("Interleaved codewords (%zu):", datalen);
     printf("0x%x", bytes_byte((*self)->modules_, 0));
@@ -531,7 +530,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   for (i = 0; i < NUM_MASKS; i++)
   {
     err = create_qrmask(&(*self)->masks_[i],
-      ver, level, i);
+      ver, config->level, i);
     if (err)
     {
       delete_qrcode(self);
@@ -576,7 +575,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
       minscore = score;
       selected = i;
     }
-    if (verbose)
+    if (config->verbose)
     {
       pinfo("Mask [%zu] total penalty: %u\n"
         "         run:     %hu\n"
@@ -587,7 +586,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     }
   }
   (*self)->selected_mask_ = selected;
-  if (verbose)
+  if (config->verbose)
   {
     pinfo("Mask selected: %hhu", selected);
   }

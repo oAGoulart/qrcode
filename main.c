@@ -196,12 +196,11 @@ main(const int argc, char* argv[])
   }
 
   pdebug("creating qrcode object");
+  qrconfig_t config = {
+    version, level, options & ARG_OPTIMIZE, verbose > 2
+  };
   qrcode_t* qrcode = NULL;
-  int err = create_qrcode(&qrcode,
-    argv[argc - 1], version, level,
-    options & ARG_OPTIMIZE,
-    verbose > 2
-  );
+  int err = create_qrcode(&qrcode, argv[argc - 1], &config);
   if (err != 0)
   {
     eprintf("could not create qrcode");
