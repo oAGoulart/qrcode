@@ -484,8 +484,7 @@ create_qrmask(qrmask_t** self, const uint8_t version,
   if ((*self)->v_ == NULL)
   {
     eprintf("cannot allocate %hu bytes", (*self)->count_);
-    free(*self);
-    *self = NULL;
+    delete_qrmask(self);
     return ENOMEM;
   }
   (*self)->dark_ = 100;

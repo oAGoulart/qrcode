@@ -28,17 +28,22 @@ create_bits(bits_t** self)
     return ENOMEM;
   }
   (*self)->data_ = NULL;
-  const int err = create_bytes(&(*self)->data_, 1);
-  if (err)
+  int err = create_bytes(&(*self)->data_, 1);
+  if (err != 0)
   {
     eprintf("cannot create data_ member of bits_t");
-    free(*self);
-    *self = NULL;
-    return err;
+    goto cleanup;
   }
   (*self)->bit_ = 0;
   (*self)->buffer_ = 0;
-  return 0;
+  err = 0;
+
+cleanup:
+  if (err != 0)
+  {
+    delete_bits(self);
+  }
+  return err;
 }
 
 void

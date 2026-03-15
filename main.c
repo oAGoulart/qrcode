@@ -197,7 +197,10 @@ main(const int argc, char* argv[])
 
   pdebug("creating qrcode object");
   qrconfig_t config = {
-    version, level, options & ARG_OPTIMIZE, verbose > 2
+    version,
+    level,
+    options & ARG_OPTIMIZE,
+    verbose > 2
   };
   qrcode_t* qrcode = NULL;
   int err = create_qrcode(&qrcode, argv[argc - 1], &config);
@@ -205,48 +208,49 @@ main(const int argc, char* argv[])
   {
     eprintf("could not create qrcode");
     perrno(err);
+    goto cleanup;
   }
-  else
+  if (mask != -1)
   {
-    if (mask != -1)
+    err = qrcode_forcemask(qrcode, mask);
+    if (err != 0)
     {
-      err = qrcode_forcemask(qrcode, mask);
-      if (err != 0)
-      {
-        eprintf("could not force qrcode mask choice");
-      }
-      else if (verbose > 2)
-      {
-        pinfo("Forced mask: %d", mask);
-      }
+      eprintf("could not force qrcode mask choice");
     }
-    if (verbose > 0)
+    else if (verbose > 2)
     {
-      const uint8_t vers = qrcode_version(qrcode);
-      if (vers > INLINE_VERSION_LIMIT && !(options & ARG_NOLIMIT))
-      {
-        eprintf("could not print inline qrcode, version %uhh too high,"
-                "use --nolimit and try again", vers);
-      }
-      else
-      {
-        pdebug("printing inline qrcode");
-        qrcode_print(qrcode, options & ARG_RAW);
-      }
-    }
-    if (filename != NULL)
-    {
-      err = qrcode_output(qrcode, imgfmt, scale, filename);
-      if (err != 0)
-      {
-        eprintf("could not output qrcode image");
-      }
-      else if (verbose > 2)
-      {
-        pinfo("Image saved to: %s", filename);
-      }
+      pinfo("Forced mask: %d", mask);
     }
   }
+  if (verbose > 0)
+  {
+    const uint8_t vers = qrcode_version(qrcode);
+    if (vers > INLINE_VERSION_LIMIT && !(options & ARG_NOLIMIT))
+    {
+      eprintf("could not print inline qrcode, version %uhh too high,"
+              "use --nolimit and try again", vers);
+    }
+    else
+    {
+      pdebug("printing inline qrcode");
+      qrcode_print(qrcode, options & ARG_RAW);
+    }
+  }
+  if (filename != NULL)
+  {
+    err = qrcode_output(qrcode, imgfmt, scale, filename);
+    if (err != 0)
+    {
+      eprintf("could not output qrcode image");
+    }
+    else if (verbose > 2)
+    {
+      pinfo("Image saved to: %s", filename);
+    }
+  }
+  err = 0;
+
+cleanup:
   pdebug("resources clean-up");
   delete_qrcode(&qrcode);
   return err;

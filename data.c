@@ -68,8 +68,7 @@ create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
   if ((*self)->ecc_ == NULL)
   {
     eprintf("cannot allocate %zu bytes", maxlen);
-    free(*self);
-    *self = NULL;
+    delete_qrdata(self);
     return ENOMEM;
   }
   memcpy((*self)->ecc_, codewords, length);
@@ -96,7 +95,10 @@ delete_qrdata(qrdata_t** self)
 {
   if (*self != NULL)
   {
-    free((*self)->ecc_);
+    if ((*self)->ecc_ != NULL)
+    {
+      free((*self)->ecc_);
+    }
     free(*self);
     *self = NULL;
   }

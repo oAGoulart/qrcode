@@ -30,18 +30,17 @@ create_vector(vector_t** self, void (*deleter)(void**))
     return ENOMEM;
   }
   (*self)->available_ = MINIMUM_VECTOR_COUNT;
+  (*self)->count_ = 0;
+  (*self)->deleter_ = deleter;
   (*self)->v_ = malloc((*self)->available_ * sizeof(void*));
   if ((*self)->v_ == NULL)
   {
     eprintf("cannot allocate %zu bytes", (*self)->available_);
-    free(*self);
-    *self = NULL;
+    delete_vector(self);
     return ENOMEM;
   }
   /* NOTE: last element must be NULL */
   (*self)->available_--;
-  (*self)->count_ = 0;
-  (*self)->deleter_ = deleter;
   return 0;
 }
 
@@ -55,7 +54,10 @@ delete_vector(vector_t** self)
     {
       (*self)->deleter_(b);
     }
-    free((*self)->v_);
+    if ((*self)->v_ != NULL)
+    {
+      free((*self)->v_);
+    }
     free(*self);
     *self = NULL;
   }

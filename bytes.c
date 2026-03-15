@@ -40,8 +40,7 @@ create_bytes(bytes_t** self, const size_t size)
   if ((*self)->data_ == NULL)
   {
     eprintf("cannot allocate %zu bytes", (*self)->available_);
-    free(*self);
-    *self = NULL;
+    delete_bytes(self);
     return ENOMEM;
   }
   (*self)->length_ = 0;
