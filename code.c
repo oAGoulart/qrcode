@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <xkeycheck.h>
 
 #include "bytes.h"
 #include "vector.h"
