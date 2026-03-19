@@ -142,7 +142,7 @@ bytes_print(const bytes_t* self)
   printf("%x", self->data_[0]);
   for (size_t i = 1; i < self->length_; i++)
   {
-    printf(" %x", self->data_[0]);
+    printf(" %x", self->data_[i]);
   }
   puts("");
 }
