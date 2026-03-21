@@ -25,7 +25,7 @@ jobs:
       - name: Generate compile_commands.json
         run: |
           make clean || true
-          bear -- make -j$(nproc) debug
+          bear -- make debug
           echo "--- compile_commands.json ---"
           ls -lh compile_commands.json
           echo "--- file head ---"
