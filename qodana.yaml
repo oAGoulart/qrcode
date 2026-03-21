@@ -3,7 +3,8 @@
 ####################################################################################################################
 
 version: "1.0"
-linter: jetbrains/qodana-cpp:2025.1
+#linter: jetbrains/qodana-cpp:2025.3
+image: jetbrains/qodana-cpp:2025.3-eap
 profile:
   name: qodana.recommended
 include:
