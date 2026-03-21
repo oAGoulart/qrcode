@@ -26,6 +26,7 @@ jobs:
         run: |
           make clean || true
           bear -- make debug
+          sed -i "s|${{ github.workspace }}|/data/project|g" compile_commands.json
           echo "--- file content ---"
           cat compile_commands.json
       - name: 'Qodana Scan'
