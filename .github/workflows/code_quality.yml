@@ -24,7 +24,12 @@ jobs:
           sudo apt-get install -y bear
       - name: Generate compile_commands.json
         run: |
-          bear -- make debug
+          make clean || true
+          bear -- make -j$(nproc) debug
+          echo "--- compile_commands.json ---"
+          ls -lh compile_commands.json
+          echo "--- file head ---"
+          head -n 20 compile_commands.json
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2025.3
         with:
