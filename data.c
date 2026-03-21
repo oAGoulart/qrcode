@@ -48,7 +48,7 @@ struct qrdata_s
 
 int
 create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
-              size_t length, uint8_t eclen)
+              const size_t length, const uint8_t eclen)
 {
   if (*self != NULL)
   {

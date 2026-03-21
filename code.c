@@ -168,7 +168,8 @@ remainderbits_(const uint8_t version)
 }
 
 static __inline__ uint8_t __attribute__((__const__))
-minversion_(size_t required, eclevel_t level, uint8_t max_version)
+minversion_(const size_t required, const eclevel_t level,
+            const uint8_t max_version)
 {
   for (uint8_t i = 0; i <= max_version; i++)
   {
@@ -181,7 +182,7 @@ minversion_(size_t required, eclevel_t level, uint8_t max_version)
 }
 
 static int __attribute__((__nonnull__))
-apply_segments_(qrcode_t* self, const char* str, bool optimize)
+apply_segments_(qrcode_t* self, const char* str, const bool optimize)
 {
   int err = create_bytes(&self->segments_, sizeof(segment_t));
   if (err != 0)
@@ -251,7 +252,7 @@ apply_segments_(qrcode_t* self, const char* str, bool optimize)
     {
       if (seg.type == SUBSET_NUMERIC)
       {
-        subset_t subset = which_subset_(str[i + 1 + seg.count]);
+        const subset_t subset = which_subset_(str[i + 1 + seg.count]);
         if (subset == SUBSET_BYTE &&
             seg.count >= minimum_segment_(
               self->version_, PHASE_FIVE))
@@ -271,7 +272,7 @@ apply_segments_(qrcode_t* self, const char* str, bool optimize)
         {
           break;
         }
-        subset_t subset = which_subset_(str[i + 1 + seg.count]);
+        const subset_t subset = which_subset_(str[i + 1 + seg.count]);
         if (subset == SUBSET_BYTE &&
             seg.count >= minimum_segment_(
               self->version_, PHASE_SEVEN))
@@ -343,13 +344,14 @@ encode_segments_(const qrcode_t* self, const char* str)
           {
             if (blen == 2)
             {
-              uint16_t value = (uint16_t)frombyte_(bseg[0]) * 45 +
-                               (uint16_t)frombyte_(bseg[1]);
+              const uint16_t value =
+                (uint16_t)frombyte_(bseg[0]) * 45 +
+                (uint16_t)frombyte_(bseg[1]);
               bits_push(self->bits_, value, 11);
             }
             else
             {
-              uint8_t value = frombyte_(bseg[0]);
+              const uint8_t value = frombyte_(bseg[0]);
               bits_push(self->bits_, value, 6);
             }
             blen = 0;
@@ -378,14 +380,15 @@ interleave_codewords_(qrcode_t* self, const qrinfo_t* finalvl)
   {
     return err;
   }
-  bytes_t* arr = bits_bytes(self->bits_);
+  const bytes_t* arr = bits_bytes(self->bits_);
 
   pdebug("starting polynomial division (long division)");
   size_t mod = 0;
-  uint16_t nblocks = finalvl->blocks[0] + finalvl->blocks[1];
+  const uint16_t nblocks = finalvl->blocks[0] + finalvl->blocks[1];
   for (size_t i = 0; i < nblocks; i++)
   {
-    uint8_t dlen = (i < finalvl->blocks[0]) ? finalvl->datapb[0] : finalvl->datapb[1];
+    const uint8_t dlen = (i < finalvl->blocks[0]) ?
+      finalvl->datapb[0] : finalvl->datapb[1];
     qrdata_t* qrdata = NULL;
     err = create_qrdata(&qrdata,
       bytes_span(arr, mod),
@@ -399,7 +402,7 @@ interleave_codewords_(qrcode_t* self, const qrinfo_t* finalvl)
     mod += dlen;
   }
 
-  size_t fullen = nblocks * finalvl->eccpb + finalvl->len;
+  const size_t fullen = nblocks * finalvl->eccpb + finalvl->len;
   err = create_bytes(&self->modules_, fullen);
   if (err != 0)
   {
@@ -407,7 +410,8 @@ interleave_codewords_(qrcode_t* self, const qrinfo_t* finalvl)
   }
 
   /* NOTE: data interleaving */
-  uint8_t highpb = (finalvl->blocks[1] == 0) ? finalvl->datapb[0] : finalvl->datapb[1];
+  const uint8_t highpb = (finalvl->blocks[1] == 0) ?
+    finalvl->datapb[0] : finalvl->datapb[1];
   for (size_t i = 0; i < highpb; i++)
   {
     size_t j = 0;
@@ -430,7 +434,7 @@ interleave_codewords_(qrcode_t* self, const qrinfo_t* finalvl)
     for (qrdata_t** d = (qrdata_t**)vector_begin(self->blocks_);
         d != (qrdata_t**)vector_end(self->blocks_); d++, j++)
     {
-      uint8_t dlen = (j < finalvl->blocks[0]) ?
+      const uint8_t dlen = (j < finalvl->blocks[0]) ?
         finalvl->datapb[0] : finalvl->datapb[1];
       bytes_push(self->modules_,
         &qrdata_codewords(*d)[i + dlen], 1
@@ -447,27 +451,27 @@ apply_masks_(qrcode_t* self, const eclevel_t level, const bool verbose)
   size_t i = 0;
   for (; i < NUM_MASKS; i++)
   {
-    int err = create_qrmask(&self->masks_[i],
-      self->version_, level, i);
+    const int err = create_qrmask(&self->masks_[i],
+      self->version_, level, i
+    );
     if (err)
     {
       eprintf("could not create mask [%zu]", i);
       return err;
     }
   }
-  size_t datalen = bytes_length(self->modules_);
+  const size_t datalen = bytes_length(self->modules_);
   for (i = 0; i < datalen; i++)
   {
-    size_t offset = i * 8;
+    const size_t offset = i * 8;
     /* NOTE: bitstream goes from bit 7 to bit 0 */
     for (int8_t bit = 7; bit >= 0; bit--)
     {
-      uint8_t module =
+      const uint8_t module =
         (bytes_byte(self->modules_, i) & 1 << bit) >> bit & 1;
-      uint8_t uj8 = 0;
-      for (; uj8 < NUM_MASKS; uj8++)
+      for (uint8_t uj8 = 0; uj8 < NUM_MASKS; uj8++)
       {
-        uint16_t index = (uint16_t)(offset + (7 - bit));
+        const uint16_t index = (uint16_t)(offset + (7 - bit));
         qrmask_set(self->masks_[uj8], index, module);
       }
     }
@@ -477,7 +481,7 @@ apply_masks_(qrcode_t* self, const eclevel_t level, const bool verbose)
   {
     for (uint8_t j = 0; j < NUM_MASKS; j++)
     {
-      uint16_t index = (uint16_t)(datalen * 8) + i;
+      const uint16_t index = (uint16_t)(datalen * 8) + i;
       qrmask_set(self->masks_[j], index, MASK_LIGHT);
     }
   }
@@ -487,8 +491,8 @@ apply_masks_(qrcode_t* self, const eclevel_t level, const bool verbose)
   uint8_t selected = 0;
   for (i = 0; i < NUM_MASKS; i++)
   {
-    qrpenalty_t p = qrmask_penalty(self->masks_[i]);
-    uint32_t score = p.run + p.box + p.finder + p.balance;
+    const qrpenalty_t p = qrmask_penalty(self->masks_[i]);
+    const uint32_t score = p.run + p.box + p.finder + p.balance;
     if (score < minscore)
     {
       minscore = score;
@@ -534,7 +538,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
     eprintf("cannot create bits_ member of qrcode");
     goto cleanup;
   }
-  bytes_t* arr = bits_bytes((*self)->bits_);
+  const bytes_t* arr = bits_bytes((*self)->bits_);
   uint8_t ver = (config->version >= 0 && config->version < MAX_VERSION) ?
     config->version - 1 : MAX_VERSION - 1;
   (*self)->strcount_ = strlen(str);
@@ -581,7 +585,7 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   size_t i = 0;
   for (; i < padbytes; i++)
   {
-    uint8_t pad_byte = (i % 2 == 0) ? 0xec : 0x11;
+    const uint8_t pad_byte = (i % 2 == 0) ? 0xEC : 0x11;
     bits_push((*self)->bits_, pad_byte, 8);
   }
   if (config->verbose)
@@ -633,8 +637,7 @@ delete_qrcode(qrcode_t** self)
     delete_vector(&(*self)->blocks_);
     delete_bytes(&(*self)->modules_);
     delete_bytes(&(*self)->segments_);
-    uint8_t i = 0;
-    for (; i < NUM_MASKS; i++)
+    for (uint8_t i = 0; i < NUM_MASKS; i++)
     {
       delete_qrmask(&(*self)->masks_[i]);
     }
@@ -650,7 +653,7 @@ qrcode_version(const qrcode_t *self)
 }
 
 __inline__ int
-qrcode_forcemask(qrcode_t* self, int mask)
+qrcode_forcemask(qrcode_t* self, const int mask)
 {
   if (mask >= 0 && mask < 8)
   {
@@ -661,7 +664,7 @@ qrcode_forcemask(qrcode_t* self, int mask)
 }
 
 __inline__ void
-qrcode_print(const qrcode_t* self, bool useraw)
+qrcode_print(const qrcode_t* self, const bool useraw)
 {
   if (useraw)
   {
@@ -674,7 +677,7 @@ qrcode_print(const qrcode_t* self, bool useraw)
 }
 
 int
-qrcode_output(const qrcode_t* self, imgfmt_t fmt, int scale,
+qrcode_output(const qrcode_t* self, const imgfmt_t fmt, int scale,
               const char* __restrict__ filename)
 {
   scale = (scale == -1) ? 1 : scale;

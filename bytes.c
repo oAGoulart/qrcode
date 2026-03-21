@@ -131,7 +131,7 @@ bytes_length(const bytes_t* self)
 __inline__ void
 bytes_copy(const bytes_t* self, void* dst, const size_t dstlen)
 {
-  size_t n = (dstlen < self->length_) ? dstlen : self->length_;
+  const size_t n = (dstlen < self->length_) ? dstlen : self->length_;
   memcpy(dst, self->data_, n);
 }
 

@@ -189,7 +189,7 @@ place_format_info_(qrmask_t* self)
     {
       idx2 = self->order_ * 8 + self->order_ - 8 + i - 7;
     }
-    uint8_t bit = (maskinfo_(self->pattern_, self->level_) >>
+    const uint8_t bit = (maskinfo_(self->pattern_, self->level_) >>
       (FMTINFO_LEN - i - 1)) & 1;
     self->v_[idx1] = bit;
     self->v_[idx2] = bit;
@@ -214,7 +214,7 @@ place_version_info_(qrmask_t* self)
       idx1 += self->order_;
       idx2++;
     }
-    uint8_t bit = (qrverinfo[self->version_ - 6] >> i) & 1;
+    const uint8_t bit = (qrverinfo[self->version_ - 6] >> i) & 1;
     self->v_[idx1] = bit;
     self->v_[idx2] = bit;
     self->dark_ += (bit * 2);
@@ -238,7 +238,7 @@ place_timing_(qrmask_t* self)
   size_t idx2 = self->order_ * 8u + 6u;
   for (size_t i = 0; i < self->order_ - 16u; i++)
   {
-    uint8_t module = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
+    const uint8_t module = (i % 2 == 0) ? MASK_DARK : MASK_LIGHT;
     self->v_[idx1] = module;
     self->v_[idx2] = module;
     if (module == MASK_DARK)
@@ -275,7 +275,7 @@ percentage_penalty_(qrmask_t* self)
 static __inline__ uint8_t __attribute__((__nonnull__))
 finder_ratio_(const uint16_t* line)
 {
-  uint16_t n = line[1];
+  const uint16_t n = line[1];
   if (n == 0)
   {
     return 0;
@@ -309,7 +309,7 @@ module_penalty_(qrmask_t* self)
     uint8_t pad_left = 1;
     for (uint8_t c = 0; c < self->order_; c++)
     {
-      uint8_t color = self->v_[r * self->order_ + c];
+      const uint8_t color = self->v_[r * self->order_ + c];
       if (color == run_color)
       {
         run_count++;
@@ -345,10 +345,10 @@ module_penalty_(qrmask_t* self)
       if (r < self->order_ - 1 && c < self->order_ - 1)
       {
         /* NOTE: box penalty */
-        uint8_t c1 = color;
-        uint8_t c2 = self->v_[r * self->order_ + (c + 1)];
-        uint8_t c3 = self->v_[(r + 1) * self->order_ + c];
-        uint8_t c4 = self->v_[(r + 1) * self->order_ + (c + 1)];
+        const uint8_t c1 = color;
+        const uint8_t c2 = self->v_[r * self->order_ + (c + 1)];
+        const uint8_t c3 = self->v_[(r + 1) * self->order_ + c];
+        const uint8_t c4 = self->v_[(r + 1) * self->order_ + (c + 1)];
         if (c1 == c2 && c2 == c3 && c3 == c4)
         {
           self->penalty_.box += 3;
@@ -604,7 +604,7 @@ qrmask_outbmp(const qrmask_t* self,
   const uint8_t nbytes = nlongs * 4;
   const uint32_t datalen = nlongs * nbits;
   const uint32_t offset = (uint32_t)sizeof(bitmap_t);
-  bitmap_t bm = {
+  const bitmap_t bm = {
     { 'B', 'M' }, offset + datalen,
     0, offset, 40, nbits,
     nbits, 1, 1, 0,
