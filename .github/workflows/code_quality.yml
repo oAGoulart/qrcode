@@ -1,0 +1,38 @@
+name: Qodana
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  qodana:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
+          fetch-depth: 0  # a full history is required for pull request analysis
+      - name: Install Build EAR
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bear
+      - name: Generate compile_commands.json
+        run: |
+          make clean || true
+          bear -- make debug
+          sed -i "s|${{ github.workspace }}|/data/project|g" compile_commands.json
+          echo "--- file content ---"
+          cat compile_commands.json
+      - name: 'Qodana Scan'
+        uses: JetBrains/qodana-action@v2025.3
+        with:
+          pr-mode: false
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+          QODANA_ENDPOINT: 'https://qodana.cloud'
