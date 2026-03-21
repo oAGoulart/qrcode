@@ -299,7 +299,7 @@ apply_segments_(qrcode_t* self, const char* str, bool optimize)
 }
 
 static void __attribute__((__nonnull__))
-encode_segments_(qrcode_t* self, const char* str)
+encode_segments_(const qrcode_t* self, const char* str)
 {
   segment_t segment = {0};
   const size_t seglen = bytes_length(self->segments_) / sizeof(segment_t);
@@ -361,7 +361,7 @@ encode_segments_(qrcode_t* self, const char* str)
           bits_push(self->bits_, str[k + j], 8);
           break;
         }
-      } 
+      }
     }
     k += segment.count;
   }

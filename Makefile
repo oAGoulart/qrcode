@@ -1,5 +1,4 @@
-.PHONY: default
-default: build
+.PHONY: default clean lint debug build
 
 TARGET_EXEC := qrcode
 
@@ -16,36 +15,43 @@ SRCS := vector.c bits.c bytes.c mask.c data.c code.c main.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
+default: build
+
 lint: lint_clang lint_cppcheck
 lint_clang:
-	clang-tidy $(SRCS) -checks=-*,performance-*,portability-* -- -D__clang__
+	clang-tidy $(SRCS) -checks=-*,performance-*,portability-*\
+	-- -D__clang__
 lint_cppcheck:
-	cppcheck $(SRCS) -D__clang__ --force --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction
+	cppcheck $(SRCS) -D__clang__ --force --enable=all\
+	--suppress=missingIncludeSystem --suppress=unusedFunction
 
 debug: debug_build
 debug_build: CCFLAGS ::= -g3 -O0
 debug_build: build
 
-build: lookup.o $(OBJS)
-	$(CC) $(BUILD_DIR)/lookup.o $(OBJS) -o $(BUILD_DIR)/$(TARGET_EXEC) $(LDFLAGS)
+build: $(BUILD_DIR)/$(TARGET_EXEC)
 
-$(BUILD_DIR)/%.o: %.c
+$(BUILD_DIR)/$(TARGET_EXEC): $(BUILD_DIR)/lookup.o $(OBJS)
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	$(CC) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 \
 	-Wno-gnu-zero-variadic-macro-arguments \
-	--std=gnu11 $(CCFLAGS) -c $< -o $@
+	--std=gnu11 $(CCFLAGS) -MMD -MP -c $< -o $@
 
-lookup.o: lookup.S
-	mkdir -p $(BUILD_DIR) ; \
-	$(CC) -c lookup.S -o $(BUILD_DIR)/lookup.o -save-temps
+$(BUILD_DIR)/lookup.o: lookup.S | $(BUILD_DIR)
+	$(CC) -c lookup.S -o $@ -save-temps
 
-lookup.S:
+$(BUILD_DIR):
+	mkdir -p $@
+
+lookup.S: $(SCRIPT_DIR)/lookup.sh $(SCPT:%=$(SCRIPT_DIR)/%)
 	chmod 777 $(SCRIPT_DIR)/lookup.sh $(SCPT:%=$(SCRIPT_DIR)/%) ; \
 	rm -f lookup.S ; \
-	bash -c $(SCRIPT_DIR)/lookup.sh
+	sh $(SCRIPT_DIR)/lookup.sh
 
-.PHONY: clean
 clean:
-	rm -f -r $(BUILD_DIR) ; \
+	rm -rf $(BUILD_DIR) ; \
 	rm -f lookup.S lookup.s
 
 -include $(DEPS)

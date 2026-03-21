@@ -2,7 +2,6 @@
 #define QR_BYTES_H 1
 
 #include <stdint.h>
-#include <stddef.h>
 
 #include "shared.h"
 

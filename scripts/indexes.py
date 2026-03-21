@@ -1,23 +1,23 @@
 import math
 import sys
 
-def visualize_module_path(version: int, indexes: list) -> None:
+def visualize_module_path(version_: int, indexes_: list) -> None:
   # NOTE: keep imports here to use only in debug mode
   import matplotlib.pyplot as plt
   from collections import Counter
 
-  order = 4 * version + 17
-  x_coords = [idx % order for idx in indexes]
-  y_coords = [idx // order for idx in indexes]
+  order = 4 * version_ + 17
+  x_coords = [idx % order for idx in indexes_]
+  y_coords = [idx // order for idx in indexes_]
 
   # NOTE: checks for duplicates
-  counts = Counter(indexes)
-  dup_indexes = [idx for idx, count in counts.items() if count > 1]
+  counts = Counter(indexes_)
+  dup_indexes = [idx for idx, amount in counts.items() if amount > 1]
   dup_x = [idx % order for idx in dup_indexes]
   dup_y = [idx // order for idx in dup_indexes]
 
   plt.figure(figsize=(10, 10))
-  sequence_numbers = list(range(len(indexes)))
+  sequence_numbers = list(range(len(indexes_)))
   sc = plt.scatter(x_coords, y_coords, c=sequence_numbers, cmap='viridis', 
                    s=40, marker='s', label='Modules')
   cbar = plt.colorbar(sc, label='Placement sequence', shrink=0.7)
@@ -34,8 +34,8 @@ def visualize_module_path(version: int, indexes: list) -> None:
   else:
     print("DEBUG: No duplicate indixes found.")
 
-  plt.title(f"QR Code Version {version} module path\n" +
-            f"Total modules placed: {len(indexes)}")
+  plt.title(f"QR Code Version {version_} module path\n" +
+            f"Total modules placed: {len(indexes_)}")
   plt.xlim(-1, order)
   plt.ylim(-1, order)
   plt.gca().invert_yaxis()
@@ -75,11 +75,11 @@ align_patterns_coords = [
 
 orders = [4 * i + 17 for i in range(2, 41)]
 
-def is_pattern(version: int, row: int, col: int) -> bool:
-  if not (2 <= version <= 40):
+def is_pattern(version_: int, row: int, col: int) -> bool:
+  if not (2 <= version_ <= 40):
     return False
-  version -= 2
-  for coords in align_patterns_coords[version]:
+  version_ -= 2
+  for coords in align_patterns_coords[version_]:
     if (coords[0] - 2 <= col <= coords[0] + 2) and\
        (coords[1] - 2 <= row <= coords[1] + 2):
       return True
@@ -92,21 +92,21 @@ num_bytes = [
 ]
 assert(len(num_bytes) == 40)
 
-def remainder_bits(version: int) -> int:
-  if 2 <= version <= 6:
+def remainder_bits(version_: int) -> int:
+  if 2 <= version_ <= 6:
     return 7
-  if 14 <= version <= 20 or 28 <= version <= 34:
+  if 14 <= version_ <= 20 or 28 <= version_ <= 34:
     return 3
-  if 21 <= version <= 27:
+  if 21 <= version_ <= 27:
     return 4
   return 0
 
-def generate_indexes(version: int, mode: str) -> None:
-  order = 4 * version + 17
-  num_bits = num_bytes[version - 1] * 8 + remainder_bits(version)
+def generate_indexes(version_: int, mode_: str) -> None:
+  order = 4 * version_ + 17
+  num_bits = num_bytes[version_ - 1] * 8 + remainder_bits(version_)
 
   def is_vinfo(row_: int, col_: int) -> bool:
-    if version < 7:
+    if version_ < 7:
       return False
     return (row_ < 6 and col_ > order - 12) or\
            (col_ < 6 and row_ > order - 12)
@@ -121,12 +121,12 @@ def generate_indexes(version: int, mode: str) -> None:
       return row_ == order - 1 or (row_ == order - 9 and col_ < 9)
 
   def should_skip(row_: int, col_: int) -> bool:
-    return row_ == 6 or is_pattern(version, row_, col_) or is_vinfo(row_, col_)
+    return row_ == 6 or is_pattern(version_, row_, col_) or is_vinfo(row_, col_)
 
   direction = -1 # -1=up 1=down
   idx = (order * order) - 1
   flipped = False
-  indexes = []
+  modules_index = []
   for i in range(num_bits):
     if flipped:
       flipped = False
@@ -146,7 +146,7 @@ def generate_indexes(version: int, mode: str) -> None:
       row = math.floor(idx / order)
       column = idx % order
     if should_flip(row, column, direction):
-      indexes.extend([idx, idx - 1])
+      modules_index.extend([idx, idx - 1])
       flipped = True
       if row == order - 1 and column == 10:
         idx = (order - 9) * order + 8
@@ -163,13 +163,13 @@ def generate_indexes(version: int, mode: str) -> None:
         idx = next_index(idx)
       row = math.floor(idx / order)
       column = idx % order
-    indexes.append(idx)
+    modules_index.append(idx)
     idx = next_index(idx)
-  indexes = indexes[:num_bits]
-  if mode == "debug":
-    visualize_module_path(version, indexes)
+  modules_index = modules_index[:num_bits]
+  if mode_ == "debug":
+    visualize_module_path(version_, modules_index)
   else:
-    print("  .short " + ",".join(map(str, indexes)))
+    print("  .short " + ",".join(map(str, modules_index)))
 
 if __name__ == "__main__":
   count = len(sys.argv)

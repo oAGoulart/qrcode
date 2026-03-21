@@ -14,7 +14,7 @@ jobs:
       pull-requests: write
       checks: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
           fetch-depth: 0  # a full history is required for pull request analysis
@@ -25,10 +25,8 @@ jobs:
       - name: Generate compile_commands.json
         run: |
           make clean || true
-          bear -- make debug
+          bear -- make -j $(nproc) debug
           sed -i "s|${{ github.workspace }}|/data/project|g" compile_commands.json
-          echo "--- file content ---"
-          cat compile_commands.json
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2025.3
         with:

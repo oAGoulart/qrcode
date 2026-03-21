@@ -196,7 +196,7 @@ main(const int argc, char* argv[])
   }
 
   pdebug("creating qrcode object");
-  qrconfig_t config = {
+  const qrconfig_t config = {
     version,
     level,
     options & ARG_OPTIMIZE,

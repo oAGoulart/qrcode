@@ -115,7 +115,7 @@ mask_single_(const uint8_t* __restrict__ v, const uint8_t order)
 }
 
 static void __attribute__((__nonnull__))
-place_finder_(qrmask_t* self)
+place_finder_(const qrmask_t* self)
 {
   static const uint8_t finder[7][7] = {
     { 1, 1, 1, 1, 1, 1, 1 },
@@ -251,7 +251,7 @@ place_timing_(qrmask_t* self)
 }
 
 static __inline__ void __attribute__((__nonnull__))
-place_darkmodule_(qrmask_t* self)
+place_darkmodule_(const qrmask_t* self)
 {
   self->v_[(self->order_ - 8) * self->order_ + 8] = MASK_DARK;
 }
@@ -332,7 +332,7 @@ module_penalty_(qrmask_t* self)
         run_history[0] = run_count;
         if (pad_left)
         {
-          run_history[0] += self->order_; 
+          run_history[0] += self->order_;
           pad_left = 0;
         }
         if (run_color == 0)
@@ -375,14 +375,14 @@ module_penalty_(qrmask_t* self)
       {
         run_history[i] = run_history[i - 1];
       }
-      run_history[0] = self->order_; 
+      run_history[0] = self->order_;
       self->penalty_.finder += finder_ratio_(run_history) * 40;
     }
   }
   /* NOTE: column run (repeat as above) */
   for (uint8_t c = 0; c < self->order_; c++)
   {
-    uint8_t run_color = 0; 
+    uint8_t run_color = 0;
     uint16_t run_count = 0;
     uint16_t run_history[7] = {0};
     uint8_t pad_top = 1;
@@ -410,7 +410,7 @@ module_penalty_(qrmask_t* self)
         run_history[0] = run_count;
         if (pad_top)
         {
-          run_history[0] += self->order_; 
+          run_history[0] += self->order_;
           pad_top = 0;
         }
         if (run_color == 0)

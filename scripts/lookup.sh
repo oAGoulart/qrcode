@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 OUT_FILE="lookup.S"
 CSV_FILE="qrinfo.csv"
@@ -13,15 +13,19 @@ generate_info() {
 
 generate_indexes_data() {
   echo "[2/4] Generating align pattern indexes data"
-  for ((i = 2 ; i <= MAX_VERSION ; i++)); do
+  i=2
+  while [ "$i" -le "$MAX_VERSION" ]; do
     printf "\nglobale_ sym_(%s_%i)\n" "qralign" "$i" >> "$OUT_FILE"
     python3 "$SCRIPT_DIR"/indexes.py "$i" align >> "$OUT_FILE"
+    i=$((i + 1))
   done
 
   echo "[3/4] Generating module indexes data"
-  for ((i = 1 ; i <= MAX_VERSION ; i++)); do
+  i=1
+  while [ "$i" -le "$MAX_VERSION" ]; do
     printf "\nglobale_ sym_(%s_%i)\n" "qrindex" "$i" >> "$OUT_FILE"
     python3 "$SCRIPT_DIR"/indexes.py "$i" >> "$OUT_FILE"
+    i=$((i + 1))
   done
 }
 
@@ -39,13 +43,17 @@ generate_pointers() {
 EOF
 
   printf "\nglobale_ sym_(%s)\n" "qralign" >> "$OUT_FILE"
-  for ((i = 2 ; i <= MAX_VERSION ; i++)); do
+  i=2
+  while [ "$i" -le "$MAX_VERSION" ]; do
     printf "  pointer_ sym_(%s_%i)\n" "qralign" "$i" >> "$OUT_FILE"
+    i=$((i + 1))
   done
 
   printf "\nglobale_ sym_(%s)\n" "qrindex" >> "$OUT_FILE"
-  for ((i = 1 ; i <= MAX_VERSION ; i++)); do
+  i=1
+  while [ "$i" -le "$MAX_VERSION" ]; do
     printf "  pointer_ sym_(%s_%i)\n" "qrindex" "$i" >> "$OUT_FILE"
+    i=$((i + 1))
   done
 }
 
