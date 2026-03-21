@@ -76,7 +76,7 @@ create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
   const uint8_t* gen = reedsolomon_(eclen);
   for (size_t i = 0; i < length; i++)
   {
-    uint8_t lead = (*self)->ecc_[i];
+    const uint8_t lead = (*self)->ecc_[i];
     if (lead == 0)
     {
       continue;

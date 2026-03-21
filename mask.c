@@ -38,7 +38,7 @@ struct qrmask_s
 static __inline__ uint16_t
 maskinfo_(const uint8_t pattern, const eclevel_t level)
 {
-  return qrfmtinfo[pattern + ((uint8_t)level * 8)];
+  return qrfmtinfo[pattern + (uint8_t)level * 8];
 }
 
 static __inline__ bool __attribute__((__const__))
@@ -130,7 +130,7 @@ place_finder_(const qrmask_t* self)
   {
     memcpy(&self->v_[self->order_ * i], &finder[i], 7u);
     memcpy(
-      &self->v_[(self->order_ - 7u) + self->order_ * i],
+      &self->v_[self->order_ - 7u + self->order_ * i],
       &finder[i], 7u
     );
     memcpy(
@@ -156,7 +156,7 @@ place_align_(qrmask_t* self)
   {
     for (size_t i = 0; i < 5; i++)
     {
-      memcpy(&self->v_[(*index) + i * self->order_],
+      memcpy(&self->v_[*index + i * self->order_],
         &align[i], 5u);
     }
     self->dark_ += 17;
@@ -193,7 +193,7 @@ place_format_info_(qrmask_t* self)
       (FMTINFO_LEN - i - 1)) & 1;
     self->v_[idx1] = bit;
     self->v_[idx2] = bit;
-    self->dark_ += (bit * 2);
+    self->dark_ += bit * 2;
   }
 }
 
@@ -217,7 +217,7 @@ place_version_info_(qrmask_t* self)
     const uint8_t bit = (qrverinfo[self->version_ - 6] >> i) & 1;
     self->v_[idx1] = bit;
     self->v_[idx2] = bit;
-    self->dark_ += (bit * 2);
+    self->dark_ += bit * 2;
   }
 }
 
@@ -259,7 +259,7 @@ place_darkmodule_(const qrmask_t* self)
 static void __attribute__((__nonnull__))
 percentage_penalty_(qrmask_t* self)
 {
-  int32_t diff = (int32_t)(self->dark_ * 20) - (int32_t)(self->count_ * 10);
+  int32_t diff = self->dark_ * 20 - self->count_ * 10;
   if (diff < 0)
   {
     diff = -diff;
@@ -303,10 +303,10 @@ module_penalty_(qrmask_t* self)
   /* NOTE: row run */
   for (uint8_t r = 0; r < self->order_; r++)
   {
-    uint8_t run_color = 0;
+    uint8_t  run_color = 0;
     uint16_t run_count = 0;
     uint16_t run_history[7] = {0};
-    uint8_t pad_left = 1;
+    uint8_t  pad_left = 1;
     for (uint8_t c = 0; c < self->order_; c++)
     {
       const uint8_t color = self->v_[r * self->order_ + c];
@@ -382,13 +382,13 @@ module_penalty_(qrmask_t* self)
   /* NOTE: column run (repeat as above) */
   for (uint8_t c = 0; c < self->order_; c++)
   {
-    uint8_t run_color = 0;
+    uint8_t  run_color = 0;
     uint16_t run_count = 0;
     uint16_t run_history[7] = {0};
-    uint8_t pad_top = 1;
+    uint8_t  pad_top = 1;
     for (uint8_t r = 0; r < self->order_; r++)
     {
-      uint8_t color = self->v_[r * self->order_ + c];
+      const uint8_t color = self->v_[r * self->order_ + c];
       if (color == run_color)
       {
         run_count++;
@@ -600,10 +600,10 @@ qrmask_outbmp(const qrmask_t* self,
 {
   const uint32_t nbits = (8 + self->order_) * scale;
   uint32_t remain = nbits % 32u;
-  const uint8_t nlongs = (nbits - remain) / 32u + 1u;
-  const uint8_t nbytes = nlongs * 4;
+  const uint8_t  nlongs  = (nbits - remain) / 32u + 1u;
+  const uint8_t  nbytes  = nlongs * 4;
   const uint32_t datalen = nlongs * nbits;
-  const uint32_t offset = (uint32_t)sizeof(bitmap_t);
+  const uint32_t offset  = sizeof(bitmap_t);
   const bitmap_t bm = {
     { 'B', 'M' }, offset + datalen,
     0, offset, 40, nbits,

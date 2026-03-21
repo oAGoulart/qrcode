@@ -184,7 +184,7 @@ minversion_(const size_t required, const eclevel_t level,
 static int __attribute__((__nonnull__))
 apply_segments_(qrcode_t* self, const char* str, const bool optimize)
 {
-  int err = create_bytes(&self->segments_, sizeof(segment_t));
+  const int err = create_bytes(&self->segments_, sizeof(segment_t));
   if (err != 0)
   {
     return err;
@@ -210,8 +210,8 @@ apply_segments_(qrcode_t* self, const char* str, const bool optimize)
     }
     else
     {
-      segment.type = (seg.count >= minimum_segment_(
-        self->version_, PHASE_TWO)
+      segment.type = (seg.count >=
+        minimum_segment_(self->version_, PHASE_TWO)
       ) ?
         SUBSET_NUMERIC : SUBSET_ALPHA;
     }
