@@ -26,10 +26,8 @@ jobs:
         run: |
           make clean || true
           bear -- make debug
-          echo "--- compile_commands.json ---"
-          ls -lh compile_commands.json
-          echo "--- file head ---"
-          head -n 20 compile_commands.json
+          echo "--- file content ---"
+          cat compile_commands.json
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2025.3
         with:
