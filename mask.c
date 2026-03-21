@@ -565,8 +565,7 @@ qrmask_praw(const qrmask_t* self)
   for (size_t row = 0; row < self->order_; row++)
   {
     printf("%hhu", self->v_[row * self->order_]);
-    size_t col = 1;
-    for (; col < self->order_; col++)
+    for (size_t col = 1; col < self->order_; col++)
     {
       printf(", %hhu", self->v_[row * self->order_ + col]);
     }
