@@ -1,9 +1,7 @@
 #include "code.h"
 
 #include <assert.h>
-#include <limits.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,9 +163,8 @@ remainderbits_(const uint8_t version)
   const uint64_t mask7 = 62;
   const uint64_t mask3 = 17046691840ULL;
   const uint64_t mask4 = 133169152;
-  return (((mask7 >> version) & 1) * 7) |
-         (((mask3 >> version) & 1) * 3) |
-         (((mask4 >> version) & 1) * 4);
+  return (mask7 >> version & 1) * 7 + (mask3 >> version & 1) * 3 +
+    (mask4 >> version & 1) * 4;
 }
 
 static __inline__ uint8_t __attribute__((__const__))
@@ -332,8 +329,8 @@ encode_segments_(qrcode_t* self, const char* str)
           {
             const uint8_t maxb[3] = { 4, 7, 10 };
             bseg[blen] = '\0';
-            int numch = atoi(bseg);
-            bits_push(self->bits_, numch, maxb[blen - 1]);
+            const long lch = strtol(bseg, NULL, 10);
+            bits_push(self->bits_, lch, maxb[blen - 1]);
             blen = 0;
           }
           break;

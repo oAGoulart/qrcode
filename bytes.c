@@ -171,7 +171,7 @@ bytes_quad(const bytes_t* self, const size_t index)
   return *(uint64_t*)&self->data_[index];
 }
 
-__inline__ const uint8_t* const __attribute__((__const__))
+__inline__ const uint8_t* __attribute__((__const__))
 bytes_span(const bytes_t* self, const size_t index)
 {
   return &self->data_[index];

@@ -14,7 +14,7 @@ create_qrdata(qrdata_t** self, const uint8_t* __restrict__ codewords,
 __attribute__((__nonnull__)) void
 delete_qrdata(qrdata_t** self);
 
-__attribute__((__nonnull__)) const uint8_t* const
-qrdata_codewords(qrdata_t* self);
+__attribute__((__nonnull__)) const uint8_t*
+qrdata_codewords(const qrdata_t* self);
 
 #endif

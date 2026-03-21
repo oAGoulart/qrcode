@@ -104,8 +104,8 @@ delete_qrdata(qrdata_t** self)
   }
 }
 
-__inline__ const uint8_t* const
-qrdata_codewords(qrdata_t* self)
+__inline__ const uint8_t*
+qrdata_codewords(const qrdata_t* self)
 {
   return self->ecc_;
 }
