@@ -44,7 +44,6 @@
   errno = err; \
   perror(_c(31, "  \u25CF ") "runtime error")
 
-
 #if defined(pinfo)
 #   error "pinfo already defined"
 #endif

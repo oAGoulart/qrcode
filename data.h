@@ -4,8 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "shared.h"
-
 typedef struct qrdata_s qrdata_t;
 
 __attribute__((__nonnull__)) int

@@ -19,10 +19,10 @@ default: build
 
 lint: lint_clang lint_cppcheck
 lint_clang:
-	clang-tidy $(SRCS) -checks=-*,performance-*,portability-*\
+	clang-tidy $(SRCS) -checks=-*,performance-*,portability-* \
 	-- -D__clang__
 lint_cppcheck:
-	cppcheck $(SRCS) -D__clang__ --force --enable=all\
+	cppcheck $(SRCS) -D__clang__ --force --enable=all \
 	--suppress=missingIncludeSystem --suppress=unusedFunction
 
 debug: debug_build

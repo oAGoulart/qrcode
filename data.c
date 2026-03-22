@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+
+#include "shared.h"
 
 extern const uint8_t logt[];
 extern const uint8_t alogt[];
