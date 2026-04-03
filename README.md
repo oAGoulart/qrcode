@@ -27,8 +27,9 @@ There are no dependencies, generator can be built from code on any platform. Out
 1. Reed-Solomon error correction generator polynomials.
 2. Galois field of 256 (285 primitive) log and anti-log table.
 3. Placement index of each module onto the encoding region.
-4. QR Code Format and Version information tables.
-5. QR Code Group/Block information table.
+4. XOR masks for each codeword, with all eight patterns.
+5. QR Code Format and Version information tables.
+6. QR Code Group/Block information table.
 
 ## Usage
 
@@ -91,21 +92,21 @@ qrcode oagoulart.github.io/rambles/keep-thyself-credible
 **Output:**
 ```bash
 
-    █▀▀▀▀▀█ ▄█  █▄▀▄█▀▀▀█ █▀▀▀▀▀█
-    █ ███ █ ▄█  █▄█▀▄▄    █ ███ █
-    █ ▀▀▀ █ ▄█  ▀ ▄▄▀▄█▀▀ █ ▀▀▀ █
-    ▀▀▀▀▀▀▀ ▀▄▀ ▀ █▄▀ █▄▀ ▀▀▀▀▀▀▀
-    █████ ▀█▀█ ▄▀█▀ ▄█▄▄█▀▄█▄█▄█▄
-    ▄██▀ ▀▀ ██  ▀ ▀█▄ ▄▄█▄ ▀▀█▀ ▄
-    ▄▀▄ █ ▀▀ ▀ █▀▀▀▀█▀▄█ ▄▄▄▄█▀▄▄
-     ▀  ▀ ▀▀█▄▄▄█▀▀██  ▄██▀█▄█   
-    ▄▄▀▀█ ▀█ ▀█▄▀█   ▀ █▄ ▄▄▄▄██▄
-    █ █▄██▀█▄▄▄ ▄ ██ ▀▀ ▀  ▄ ▄  ▄
-    ▀  ▀▀▀▀▀█▄ █▀▀▀▀███▀█▀▀▀█ ▀▄█
-    █▀▀▀▀▀█ ▀█  ▀▀▄██▀ ██ ▀ ██   
-    █ ███ █ ██▀▄▀▀█▀▄█▄ █▀▀▀▀▀▀▀▄
+    █▀▀▀▀▀█ ▄█ ▄▄▄▀▄█▀▀▀█ █▀▀▀▀▀█
+    █ ███ █ ▄█▀█▄▄█▀▄▄    █ ███ █
+    █ ▀▀▀ █ ▄ █ ▀ ▄▄▀▄█▀▀ █ ▀▀▀ █
+    ▀▀▀▀▀▀▀ ▀ ▀ ▀ █▄▀ █▄▀ ▀▀▀▀▀▀▀
+    ▀▀█▀▀▄▀███▀▄▀█▀ ▄█▄▄█▀▄█▄█▄█▄
+       █▀█▀▀▀█▄ ▀ ▀█▄ ▄▄█▄ ▀▀█▀ ▄
+    ▀▄▄ █▀▀  █▄█▀▀▀▀█▀▄█ ▄▄▄▄█▀▄▄
+    ▄█▀  ▀▀▀ ▀█▄█▀▀██  ▄██▀█▄█   
+    █ █▀ ▀▀▄▀▄▀▄▀█   ▀ █▄ ▄▄▄▄██▄
+    █ ██▀ ▀▀ █▄ ▄ ██ ▀▀ ▀  ▄ ▄  ▄
+    ▀   ▀ ▀▀█▄ █▀▀▀▀███▀█▀▀▀█ ▀▄█
+    █▀▀▀▀▀█ ▀▀  ▀▀▄██▀ ██ ▀ ██   
+    █ ███ █ ███▄▀▀█▀▄█▄ █▀▀▀▀▀▀▀▄
     █ ▀▀▀ █ █▄▀  ▀ ██▀▀▀██▀ █▄▀█ 
-    ▀▀▀▀▀▀▀ ▀▀▀ ▀▀▀▀ ▀   ▀▀▀▀▀▀  
+    ▀▀▀▀▀▀▀ ▀ ▀ ▀▀▀▀ ▀   ▀▀▀▀▀▀  
 
 ```
 

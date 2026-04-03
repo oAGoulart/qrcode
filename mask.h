@@ -21,13 +21,15 @@ typedef struct qrpenalty_s
 } qrpenalty_t;
 
 __attribute__((__nonnull__)) int
-create_qrmask(qrmask_t** self, uint8_t version,
-              eclevel_t level, uint8_t pattern);
+create_qrmask(qrmask_t** self, uint8_t version, eclevel_t level,
+              uint16_t codewords, uint8_t pattern);
 __attribute__((__nonnull__)) void
 delete_qrmask(qrmask_t** self);
 
 __attribute__((__nonnull__)) void
-qrmask_set(qrmask_t* self, uint16_t index, uint8_t module);
+qrmask_set(qrmask_t* self, uint16_t offset, uint8_t modules);
+__attribute__((__nonnull__)) void
+qrmask_apply_remainder(qrmask_t* self);
 __attribute__((__nonnull__)) qrpenalty_t
 qrmask_penalty(qrmask_t* self);
 

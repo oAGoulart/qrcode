@@ -158,16 +158,6 @@ frombyte_(const uint8_t b)
 }
 
 static __inline__ uint8_t __attribute__((__const__))
-remainderbits_(const uint8_t version)
-{
-  const uint64_t mask7 = 62;
-  const uint64_t mask3 = 17046691840ULL;
-  const uint64_t mask4 = 133169152;
-  return (mask7 >> version & 1) * 7 + (mask3 >> version & 1) * 3 +
-    (mask4 >> version & 1) * 4;
-}
-
-static __inline__ uint8_t __attribute__((__const__))
 minversion_(const size_t required, const eclevel_t level,
             const uint8_t max_version)
 {
@@ -448,11 +438,12 @@ static int __attribute__((__nonnull__))
 apply_masks_(qrcode_t* self, const eclevel_t level, const bool verbose)
 {
   pdebug("applying XOR masks");
+  const size_t datalen = bytes_length(self->modules_);
   size_t i = 0;
   for (; i < NUM_MASKS; i++)
   {
     const int err = create_qrmask(&self->masks_[i],
-      self->version_, level, i
+      self->version_, level, datalen, i
     );
     if (err)
     {
@@ -460,30 +451,17 @@ apply_masks_(qrcode_t* self, const eclevel_t level, const bool verbose)
       return err;
     }
   }
-  const size_t datalen = bytes_length(self->modules_);
   for (i = 0; i < datalen; i++)
   {
-    const size_t offset = i * 8;
-    /* NOTE: bitstream goes from bit 7 to bit 0 */
-    for (int8_t bit = 7; bit >= 0; bit--)
-    {
-      const uint8_t module =
-        (bytes_byte(self->modules_, i) & 1 << bit) >> bit & 1;
-      for (uint8_t uj8 = 0; uj8 < NUM_MASKS; uj8++)
-      {
-        const uint16_t index = (uint16_t)(offset + (7 - bit));
-        qrmask_set(self->masks_[uj8], index, module);
-      }
-    }
-  }
-  /* NOTE: padding bits, MUST check xor */
-  for (i = 0; i < remainderbits_(self->version_); i++)
-  {
+    const uint8_t modules = bytes_byte(self->modules_, i);
     for (uint8_t j = 0; j < NUM_MASKS; j++)
     {
-      const uint16_t index = (uint16_t)(datalen * 8) + i;
-      qrmask_set(self->masks_[j], index, MASK_LIGHT);
+      qrmask_set(self->masks_[j], i, modules);
     }
+  }
+  for (i = 0; i < NUM_MASKS; i++)
+  {
+    qrmask_apply_remainder(self->masks_[i]);
   }
 
   pdebug("calculating masks penalty");

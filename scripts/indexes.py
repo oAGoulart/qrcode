@@ -49,6 +49,44 @@ def visualize_module_path(version_: int, indexes_: list) -> None:
   plt.tight_layout(rect=[0, 0, 1, 0.92])
   plt.show()
 
+def generate_xor_masks(version_: int, indexes_: list) -> None:
+  order = 4 * version_ + 17
+
+  def should_xor(row_: int, col_: int, pattern_: int) -> bool:
+    if pattern_ == 0:
+      return (row_ + col_) % 2 == 0
+    elif pattern_ == 1:
+      return row_ % 2 == 0
+    elif pattern_ == 2:
+      return col_ % 3 == 0
+    elif pattern_ == 3:
+      return (row_ + col_) % 3 == 0
+    elif pattern_ == 4:
+      return (math.floor(row_ / 2) + math.floor(col_ / 3)) % 2 == 0
+    elif pattern_ == 5:
+      return ((row_ * col_) % 2) + ((row_ * col_) % 3) == 0
+    elif pattern_ == 6:
+      return (((row_ * col_) % 2) + ((row_ * col_) % 3) ) % 2 == 0
+    elif pattern_ == 7:
+      return (((row_ + col_) % 2) + ((row_ * col_) % 3) ) % 2 == 0
+    return False
+
+  for pattern in range(8):
+    cnt = 0
+    ubyte = 0
+    ubytes = []
+    for i in indexes_:
+      col = i % order
+      row = (i - col) / order
+      is_xor = should_xor(row, col, pattern)
+      ubyte = ubyte | (is_xor << (7 - cnt))
+      cnt = cnt + 1
+      if cnt == 8:
+        ubytes.append(ubyte)
+        cnt = 0
+        ubyte = 0
+    print("  .byte " + ",".join(map(str, ubytes)))
+
 # NOTE: starts at Version 2
 align_patterns = [
   [18],[22],[26],[30],[34],
@@ -168,6 +206,8 @@ def generate_indexes(version_: int, mode_: str) -> None:
   modules_index = modules_index[:num_bits]
   if mode_ == "debug":
     visualize_module_path(version_, modules_index)
+  elif mode_ == "masks":
+    generate_xor_masks(version_, modules_index)
   else:
     print("  .short " + ",".join(map(str, modules_index)))
 

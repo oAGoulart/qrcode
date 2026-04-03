@@ -19,12 +19,12 @@
 
 extern const uint16_t* qrindex[];
 extern const uint16_t* qralign[];
+extern const uint8_t*  qrmasks[];
 extern const uint16_t  qrfmtinfo[];
 extern const uint32_t  qrverinfo[];
 
 struct qrmask_s
 {
-  const uint16_t* i_;
   uint16_t    count_;
   uint8_t*    v_;
   eclevel_t   level_;
@@ -33,7 +33,18 @@ struct qrmask_s
   uint8_t     pattern_;
   uint16_t    dark_;
   qrpenalty_t penalty_;
+  uint16_t    cw_;
 };
+
+static __inline__ uint8_t __attribute__((__const__))
+remainderbits_(const uint8_t version)
+{
+  const uint64_t mask7 = 62;
+  const uint64_t mask3 = 17046691840ULL;
+  const uint64_t mask4 = 133169152;
+  return (mask7 >> version & 1) * 7 + (mask3 >> version & 1) * 3 +
+    (mask4 >> version & 1) * 4;
+}
 
 static __inline__ uint16_t
 maskinfo_(const uint8_t pattern, const eclevel_t level)
@@ -454,8 +465,8 @@ symbol_order_(const uint8_t version)
 }
 
 int
-create_qrmask(qrmask_t** self, const uint8_t version,
-              const eclevel_t level, const uint8_t pattern)
+create_qrmask(qrmask_t** self, const uint8_t version, const eclevel_t level,
+              const uint16_t codewords, const uint8_t pattern)
 {
   if (*self != NULL)
   {
@@ -475,10 +486,10 @@ create_qrmask(qrmask_t** self, const uint8_t version,
   }
   (*self)->version_ = version;
   (*self)->level_ = level;
+  (*self)->cw_ = codewords;
   (*self)->order_ = symbol_order_(version);
   (*self)->count_ = (*self)->order_ * (*self)->order_;
   (*self)->pattern_ = pattern;
-  (*self)->i_ = qrindex[version];
   (*self)->v_ = (uint8_t*)calloc((*self)->count_, 1);
   if ((*self)->v_ == NULL)
   {
@@ -517,15 +528,28 @@ delete_qrmask(qrmask_t** self)
 }
 
 void
-qrmask_set(qrmask_t* self, const uint16_t index, uint8_t module)
+qrmask_set(qrmask_t* self, const uint16_t offset, const uint8_t modules)
 {
-  const uint16_t idx = self->i_[index];
-  if (should_xor_(self->order_, idx, self->pattern_))
+  const uint8_t mask = *(qrmasks[self->version_] +
+    self->cw_ * self->pattern_ + offset) ^ modules;
+  for (int bit = 7; bit >= 0; bit--)
   {
-    module = !module;
+    const uint16_t idx = qrindex[self->version_][(offset * 8) + (7 - bit)];
+    self->v_[idx] = mask >> bit & 1;
+    self->dark_ += (self->v_[idx] == MASK_DARK);
   }
-  self->v_[idx] = module;
-  self->dark_ += (module == MASK_DARK);
+}
+
+void
+qrmask_apply_remainder(qrmask_t* self)
+{
+  const uint8_t bits = remainderbits_(self->version_);
+  for (uint8_t i = 0; i < bits; i++)
+  {
+    const uint16_t idx = qrindex[self->version_][(self->cw_ * 8) + i];
+    self->v_[idx] ^= should_xor_(self->order_, idx, self->pattern_);
+    self->dark_ += (self->v_[idx] == MASK_DARK);
+  }
 }
 
 qrpenalty_t
