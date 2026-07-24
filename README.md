@@ -139,7 +139,7 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 
 ![QR Code](assets/gen.svg)
 
-### 4. Placeholder generation
+#### 4. Placeholder generation
 
 **Command-line:**
 ```bash
