@@ -18,6 +18,7 @@ typedef struct qrcofig_s
   eclevel_t level;
   bool optimize;
   bool verbose;
+  bool placeholder;
 } qrconfig_t;
 
 typedef struct qrcode_s qrcode_t;

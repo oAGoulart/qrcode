@@ -149,6 +149,7 @@ struct qrcode_s
   uint8_t   selected_mask_;
   uint8_t   version_;
   size_t    strcount_;
+  bool      placeholder_;
 };
 
 static __inline__ uint8_t __attribute__((__const__))
@@ -491,6 +492,21 @@ apply_masks_(qrcode_t* self, const eclevel_t level, const bool verbose)
 }
 
 int
+as_placeholder_(qrcode_t* self)
+{
+  const int err = create_qrmask(&self->masks_[0],
+    self->version_, EC_LOW, 0, UINT8_MAX
+  );
+  if (err)
+  {
+    eprintf("could not create mask for placeholder");
+    return err;
+  }
+  self->selected_mask_ = 0;
+  return 0;
+}
+
+int
 create_qrcode(qrcode_t** self, const char* __restrict__ str,
               const qrconfig_t* config)
 {
@@ -510,6 +526,16 @@ create_qrcode(qrcode_t** self, const char* __restrict__ str,
   (*self)->segments_ = NULL;
   (*self)->modules_ = NULL;
   (*self)->bits_ = NULL;
+  (*self)->placeholder_ = config->placeholder;
+  if (config->placeholder)
+  {
+    (*self)->version_ = config->version;
+    if (config->verbose)
+    {
+      pinfo("Creating placeholder barcode");
+    }
+    return as_placeholder_(*self);
+  }
   int err = create_bits(&(*self)->bits_);
   if (err)
   {
@@ -633,7 +659,7 @@ qrcode_version(const qrcode_t *self)
 __inline__ int
 qrcode_forcemask(qrcode_t* self, const int mask)
 {
-  if (mask >= 0 && mask < 8)
+  if (mask >= 0 && mask < 8 && !self->placeholder_)
   {
     self->selected_mask_ = (uint8_t)mask;
     return 0;

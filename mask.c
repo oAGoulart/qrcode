@@ -200,8 +200,12 @@ place_format_info_(qrmask_t* self)
     {
       idx2 = self->order_ * 8 + self->order_ - 8 + i - 7;
     }
-    const uint8_t bit = (maskinfo_(self->pattern_, self->level_) >>
-      (FMTINFO_LEN - i - 1)) & 1;
+    uint8_t bit = 1;
+    if (self->pattern_ != UINT8_MAX)
+    {
+      bit = (maskinfo_(self->pattern_, self->level_) >>
+        (FMTINFO_LEN - i - 1)) & 1;
+    }
     self->v_[idx1] = bit;
     self->v_[idx2] = bit;
     self->dark_ += bit * 2;
@@ -225,7 +229,11 @@ place_version_info_(qrmask_t* self)
       idx1 += self->order_;
       idx2++;
     }
-    const uint8_t bit = (qrverinfo[self->version_ - 6] >> i) & 1;
+    uint8_t bit = 1;
+    if (self->pattern_ != UINT8_MAX)
+    {
+      bit = (qrverinfo[self->version_ - 6] >> i) & 1;
+    }
     self->v_[idx1] = bit;
     self->v_[idx2] = bit;
     self->dark_ += bit * 2;
@@ -510,6 +518,10 @@ create_qrmask(qrmask_t** self, const uint8_t version, const eclevel_t level,
     place_align_(*self);
   }
   place_darkmodule_(*self);
+  if (pattern == UINT8_MAX)
+  {
+    place_infos_(*self);
+  }
   return 0;
 }
 

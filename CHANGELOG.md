@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 - Add XOR masks pre-calculated LUT
+- Add placeholder generation
 
 ## [1.20.0] - 2026-03-09
 

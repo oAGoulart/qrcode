@@ -12,12 +12,13 @@
 
 typedef enum cli_argument_e
 {
-  ARG_NONE     = 0,
-  ARG_RAW      = 1,
-  ARG_INFO     = 2,
-  ARG_OPTIMIZE = 4,
-  ARG_HELP     = 8,
-  ARG_NOLIMIT  = 0x10,
+  ARG_NONE        = 0,
+  ARG_RAW         = 1,
+  ARG_INFO        = 2,
+  ARG_OPTIMIZE    = 4,
+  ARG_HELP        = 8,
+  ARG_NOLIMIT     = 0x10,
+  ARG_PLACEHOLDER = 0x20,
   ARG_RESERVED __attribute__((unavailable("bit mask limit"))) = 0x8000,
   ARG_VERBOSE,
   ARG_MASK,
@@ -34,7 +35,8 @@ typedef struct cli_option_s
   cli_argument_t type;
 } cli_option_t;
 
-static const cli_option_t cli_options_[] = {
+static const cli_option_t
+cli_options_[] = {
   { "--raw", ARG_RAW },
   { "--version", ARG_INFO },
   { "-v", ARG_INFO },
@@ -42,6 +44,7 @@ static const cli_option_t cli_options_[] = {
   { "--help", ARG_HELP },
   { "-h", ARG_HELP },
   { "--nolimit", ARG_NOLIMIT },
+  { "--placeholder", ARG_PLACEHOLDER },
   { "-g", ARG_VERBOSE },
   { "-m", ARG_MASK },
   { "-l", ARG_LEVEL },
@@ -63,6 +66,7 @@ print_help_(const char* __restrict__ cmdln)
     "  --nolimit      ignore inline Version limit (for larger terminals)" _nl
     "  --optimize     reduce data size, encode numeric, alphanumeric, byte" _nl
     "                   segments separately (if any)" _nl
+    "  --placeholder  print with empty encoding region" _nl
     "  --raw          print generated code with chars 1, 0 (no box-chars)" _nl
     "  -v, --version  show generator's version and build information" _nl
     "  -g <uint>      level of on-screen information <0-3>" _nl
@@ -97,6 +101,7 @@ lvlfromchar_(const char ch)
 int
 main(const int argc, char* argv[])
 {
+  char* const default_data = "empty";
 #if defined(_WIN32) || defined(__CYGWIN__)
   /* NOTE: to allow box-drawing characters */
   system("chcp 65001>nul");
@@ -110,6 +115,7 @@ main(const int argc, char* argv[])
   int version     = -1;
   int scale       = -1;
   long arg_count  =  0;
+  char* data      = default_data;
   char* filename  = NULL;
 
   pdebug("started parsing cmdln arguments");
@@ -184,10 +190,14 @@ main(const int argc, char* argv[])
   {
     return print_help_(argv[0]);
   }
-  if (argc - arg_count < NUM_MANDATORY_ARGS + 1)
+  if (!(options & ARG_PLACEHOLDER))
   {
-    eprintf("must provide " _xstr(NUM_MANDATORY_ARGS) " mandatory argument(s)");
-    return EXIT_FAILURE;
+    if (argc - arg_count < NUM_MANDATORY_ARGS + 1)
+    {
+      eprintf("must provide " _xstr(NUM_MANDATORY_ARGS) " mandatory argument(s)");
+      return EXIT_FAILURE;
+    }
+    data = argv[argc - 1];
   }
   if (verbose > 1)
   {
@@ -200,10 +210,11 @@ main(const int argc, char* argv[])
     version,
     level,
     options & ARG_OPTIMIZE,
-    verbose > 2
+    verbose > 2,
+    options & ARG_PLACEHOLDER
   };
   qrcode_t* qrcode = NULL;
-  int err = create_qrcode(&qrcode, argv[argc - 1], &config);
+  int err = create_qrcode(&qrcode, data, &config);
   if (err != 0)
   {
     eprintf("could not create qrcode");

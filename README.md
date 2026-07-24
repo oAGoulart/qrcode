@@ -42,6 +42,7 @@ OPTIONS:
   --nolimit      ignore inline Version limit (for larger terminals)
   --optimize     reduce data size, encode numeric, alphanumeric, byte
                    segments separately (if any)
+  --placeholder  print with empty encoding region
   --raw          print generated code with chars 1, 0 (no box-chars)
   -v, --version  show generator's version and build information
   -g <uint>      level of on-screen information <0-3>
@@ -137,6 +138,17 @@ qrcode -K gen.svg oagoulart.github.io/rambles/keep-thyself-credible
 **Output:**
 
 ![QR Code](assets/gen.svg)
+
+### 4. Placeholder generation
+
+**Command-line:**
+```bash
+qrcode -V 6 --placeholder
+```
+
+**Output:**
+
+![QR Code](assets/gen.png)
 
 ### Module path visualizer
 
